@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getApp } from "firebase-admin/app";
 import { adminApp, adminAuth, adminDb, col, parsePrivateKey } from "@/lib/firebase-admin";
 
@@ -7,7 +7,16 @@ interface TestResult {
   [key: string]: unknown;
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // Gate access behind DEBUG_ENDPOINT_KEY
+  const expectedKey = process.env.DEBUG_ENDPOINT_KEY;
+  if (!expectedKey) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  const providedKey = req.nextUrl.searchParams.get("key");
+  if (providedKey !== expectedKey) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
   const tests: Record<string, TestResult> = {};
   let passed = 0;
 

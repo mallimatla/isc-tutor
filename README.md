@@ -1,93 +1,67 @@
 # ISC Tutor
 
-> *"My son just started ISC 11th, Science stream. ISC Mathematics is dense — calculus, vectors, probability, linear programming — and good coaching in India runs ₹60K–1.5L per subject per year. I'm a daily Claude Code user. I built him an AI tutor that he uses every day. This is what I shipped in a week."*
+> AI math tutor that thinks like an expert teacher — diagnoses where reasoning breaks instead of just grading. Built for my son, currently in ISC Class 11 Science.
 
-An LLM-backed practice tutor for **ISC Class 11 & 12 Mathematics** (Computer Science roadmapped for Phase 2). Generates adaptive practice questions on any chapter from the ISC syllabus, evaluates free-text answers, and walks the student through step-by-step solutions with LaTeX-rendered math.
+## Try it
 
-Built solo in 6 days using Claude Code as the primary development environment.
+**Live URL:** https://isc-tutor.vercel.app
+Sign in with any Google account.
 
-**Live:** [isc-tutor.vercel.app](https://isc-tutor.vercel.app) *(replace with actual URL after deploy)*
-**Source:** [github.com/mallimatla/isc-tutor](https://github.com/mallimatla/isc-tutor)
+## What's built
 
----
+- **Socratic Diagnosis Engine** — multi-turn dialogue (up to 5 turns) where the tutor asks targeted questions to find exactly where the student's reasoning breaks, instead of revealing solutions immediately
+- **Adaptive difficulty** — rolling 5-question window adjusts question difficulty up/down based on recent performance
+- **Concept tracking** — every wrong answer tagged with specific sub-skills (e.g., "complement-notation", "cardinality-formula") for weakness surfacing
+- **Real-world question grounding** — easy-medium questions framed in contexts a 16-year-old cares about (Instagram, FIFA, Spotify Wrapped, JEE) instead of "100 students" textbook scenarios. Board-exam-level questions stay formal.
+- **Personalized greeting** — Claude reads session history and recommends the next chapter based on weaknesses
+- **Mastery map** — visual grid of progress per chapter across Class 11 and 12
+- **Streaming responses** — tutor messages stream word-by-word via Server-Sent Events; skeleton loaders before content arrives
+- **English TTS** — browser-native speech synthesis (en-IN preferred) reads tutor messages aloud, with LaTeX-to-verbal translation
+- **Google Sign-In auth** — Firebase Auth with per-user data isolation via prefixed Firestore collections (`isctutor_*`) inside a shared Firebase project
 
-## The Problem
+## Architecture
 
-ISC (Indian School Certificate) Class 11 & 12 is widely considered the toughest higher-secondary board in India. The Mathematics syllabus alone spans:
+Stack: Next.js 16 + TypeScript + Tailwind v4 + Claude Sonnet 4 + Firebase (Auth + Firestore) + Vercel + KaTeX. See [PRD.md](./PRD.md) for full system design (23 sections), [DESIGN.md](./DESIGN.md) for architecture summary.
 
-- **Class 11:** Sets, Relations, Functions, Trigonometry, Complex Numbers, Inequalities, Permutations & Combinations, Binomial Theorem, Sequences & Series, Coordinate Geometry, Conic Sections, Limits & Derivatives, Probability, Statistics
-- **Class 12:** Inverse Trigonometry, Matrices, Determinants, Continuity & Differentiability, Applications of Derivatives, Integrals, Differential Equations, Vectors, 3D Geometry, Linear Programming, Probability
+Key design decisions: lazy-init for Firebase Admin (defers credential parsing past `next build`); collection prefix (`FIRESTORE_COLLECTION_PREFIX`) for safe coexistence with other apps inside the shared Firebase project; SSE-based streaming for the Socratic dialogue route; version-controlled LLM prompts in `lib/prompts/` (qgen-v1.3, eval-v1.1, socratic-v1.0, greeting-v1.0).
 
-Most students rely on private coaching (₹60K–1.5L per subject per year in metros) because:
-1. School pace is too fast or too slow for any one student
-2. Practice problem sets are static — same questions for every kid, regardless of where they're strong or weak
-3. When a student gets a problem wrong, there's nobody at home at 10 PM to walk them through it
+A debug endpoint exists at `/api/debug-firebase` for operational diagnostics — requires `DEBUG_ENDPOINT_KEY` env var to be set and `?key=` query param to access.
 
-I have one of those students at home. So I built a tutor for him.
+## What's broken / what I'd do with more time
 
-## What It Does
+This is a solo build. Honest limitations:
 
-1. **Personalized greeting.** The tutor greets you by name, references your recent sessions and weak spots, and recommends what to work on next.
-2. **Mastery map.** A visual grid showing your progress across all 29 ISC Math chapters — mastered, practicing, or untouched — with accuracy stats per chapter.
-3. **Pick a topic.** Class 11 or 12 → chapter from the ISC syllabus → topic.
-4. **Get a real-world practice question** at your current difficulty level, grounded in contexts a 16-year-old finds engaging (gaming, social media, sports, money), with all math properly rendered in LaTeX.
-5. **Type your answer** (free-text — no multiple choice).
-6. **Socratic dialogue.** Instead of a simple right/wrong verdict, the tutor diagnoses your reasoning and asks targeted follow-up questions (up to 5 turns) to help you find your own mistakes. Tutor personality adapts by difficulty level.
-7. **Streaming responses.** Tutor messages appear token-by-token in real-time — no dead-air waits.
-8. **Full solution + reflection.** After the dialogue concludes, see the step-by-step canonical solution and a reflection question about the key insight.
-9. **Difficulty adapts.** A rolling 5-question correctness window bumps difficulty up at ≥80% and down at ≤40%.
+- **Computer Science track not built** — code-execution sandboxing (Java) and SQL evaluation are separate engineering problems. Roadmapped as Phase 2.
+- **Occasional false negatives on creative methods** — the evaluator sometimes marks a mathematically-valid alternate method as incorrect on the first pass. Mitigated by the Socratic engine giving the student room to defend their reasoning, but not eliminated.
+- **No persistent week-over-week trends** — the mastery map shows current state but doesn't surface "you've improved 30% on Sets this week"
+- **No parent dashboard** — kept out of scope intentionally (student privacy + scope discipline)
+- **No handwritten math input** — would unlock R.D. Sharma textbook scanning via Claude vision. Phase 4 roadmap.
+- **No mock board paper mode** — timed 3-hour exam simulation. Easy to add.
+- **No mobile app wrapper** — web-responsive only. PWA-installable but not native.
+- **Hallucinations on edge-case topics** — the in_syllabus prompt check catches most off-topic generations but isn't 100% reliable. The flag system lets users surface these for review.
+- **Streaming JSON parsing uses regex** for the tutor_message field rather than a proper incremental JSON parser. Works in practice but could be more robust.
+- **English TTS uses browser speech synthesis** — sounds robotic. A paid TTS API (ElevenLabs, OpenAI) would sound much better but wasn't worth the cost or latency for v1.
+- **Single-user-per-session** — no shared/collaborative sessions or class-mode.
 
-## How It's Built
+## Built with Claude Code
 
-| Layer | Tech | Why |
-|---|---|---|
-| Frontend | Next.js 15 + React 19 + Tailwind | Fast iteration, great DX, deploys to Vercel in seconds |
-| Math rendering | KaTeX | LaTeX is non-negotiable for ISC Maths — no LaTeX, no tutor |
-| LLM | Claude (Anthropic API) — Sonnet 4 | Best-in-class reasoning on math; tool-use ready for Phase 2 |
-| State | Firebase (Firestore, anonymous auth) | Session state, history, adaptive-difficulty signals |
-| Deployment | Vercel | One-command deploys, env-var secrets, zero-ops |
+Every commit in this repo was authored in tandem with Claude (via Claude Code CLI). The commit history shows the human + AI authorship pattern explicitly. I treated Claude as a senior collaborator, not autocomplete. The decisions that mattered — what to build, what NOT to build, when to scope down vs. ship — those were mine. The implementation velocity came from Claude.
 
-See [DESIGN.md](./DESIGN.md) for architecture, data flow, tradeoffs, and failure modes.
-
-## Why I Built It This Way (Tradeoffs)
-
-- **No user accounts (v1).** Anonymous Firebase auth keeps the friction at zero. My son is the user; the URL is the login. A real product would need accounts, but for v1 it's deliberate cut.
-- **Curated chapter list, not full textbook ingestion.** I pasted the ISC syllabus structure into a JSON file rather than parsing textbooks. PDFs of ISC textbooks are not freely distributable, and the LLM already knows the syllabus topics. The student picks topic → LLM generates question.
-- **Free-text answers, no multiple choice.** ISC math is about working through problems, not picking from four options. Free-text evaluation is harder for the LLM but worth it.
-- **Topic-agnostic LLM-generated questions, not a curated question bank.** Trades static quality control for infinite variety. The "What's Broken" section lists when this breaks.
-- **No code execution for CS (yet).** Computer Science is Phase 2. Sandboxing Java in the browser is a much bigger engineering problem and didn't belong in a week-1 build.
-
-## What's Broken / What I'd Do With More Time
-
-Honest list. None of these are deal-breakers for my son's use, but they'd matter for anyone else.
-
-- **Hallucinations on edge-case topics.** The LLM occasionally generates questions slightly off-syllabus (e.g., topic from JEE Advanced when asked for ISC). I check the chapter mapping but don't enforce it strictly. Fix: add an ISC syllabus-grounding step in the prompt with explicit "in-syllabus / out-of-syllabus" check.
-- **No answer-verification ground truth.** I rely on the LLM to evaluate the student's answer. For most ISC questions this works, but a complex multi-step calculus problem can occasionally be marked wrong when the student took an equivalent path. Fix: dual-evaluator approach + manual review queue for low-confidence verdicts.
-- **No persistent learning history.** Difficulty resets per session. Real adaptive learning needs cross-session memory of which topics the student struggles with. Fix: weekly summaries written to Firebase, surfaced as "you've been weak on Integrals this week — let's spend 20 minutes there."
-- **Computer Science not yet shipped.** Roadmapped as Phase 2 — needs Java code execution sandbox (likely Piston API or similar), execution-trace explanation, and SQL question handling. Estimated 1 more week.
-- **No mobile app, no offline mode.** Web only. My son's school has wifi. A real product would need a Capacitor wrapper.
-- **No parent dashboard.** I told my son I'd see what he's been studying. I haven't. A weekly digest email to parents is a real feature for a real product.
-- **No content moderation.** If you ask the tutor for something off-topic, it'll mostly redirect, but I haven't tested adversarial inputs.
-
-## Running Locally
+## Local development
 
 ```bash
 git clone https://github.com/mallimatla/isc-tutor
 cd isc-tutor
 npm install
-cp .env.example .env.local  # fill in CLAUDE_API_KEY and FIREBASE_* keys
+cp .env.example .env.local  # fill in API keys and Firebase credentials
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Why This Project
+## Submission notes
 
-This was my submission for the [Build at Damco Challenge](https://www.damcogroup.com/build-at-damco) — Engineers track. The brief was: pick a real problem you've personally experienced, build a solution, ship it, walk us through your thinking. ISC math tutoring isn't a fake problem I made up for an interview. My son still uses it. The repo is the receipt.
-
-## Acknowledgments
-
-Built primarily with **Claude Code** as the development environment. Claude is also the LLM the tutor runs on. This is a deliberate design choice — for an AI-engineering submission, using AI to build with AI surfaces both the engineering judgment and the product mindset.
+Built for the Build at Damco Challenge, May 2026. Track: Engineers.
 
 ---
 

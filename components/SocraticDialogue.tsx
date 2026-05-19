@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import StreamingMessage from "@/components/StreamingMessage";
 import LatexRenderer from "@/components/LatexRenderer";
 import SkeletonLoader from "@/components/SkeletonLoader";
+import SpeakButton from "@/components/SpeakButton";
 import FlagButton from "@/components/FlagButton";
 import { auth } from "@/lib/firebase";
 
@@ -241,10 +242,17 @@ export default function SocraticDialogue({
               }`}
             >
               {turn.role === "tutor" ? (
-                <StreamingMessage
-                  text={turn.message}
-                  isStreaming={!!turn.isStreaming}
-                />
+                <div className="flex flex-col gap-1">
+                  <StreamingMessage
+                    text={turn.message}
+                    isStreaming={!!turn.isStreaming}
+                  />
+                  {!turn.isStreaming && turn.message && (
+                    <div className="mt-1">
+                      <SpeakButton text={turn.message} />
+                    </div>
+                  )}
+                </div>
               ) : (
                 <span className="whitespace-pre-wrap">{turn.message}</span>
               )}
@@ -320,9 +328,15 @@ export default function SocraticDialogue({
       {/* Final solution + reflection */}
       {isFinal && fullSolutionSteps && (
         <div className="mt-2 flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Full solution
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Full solution
+            </h3>
+            <SpeakButton
+              text={fullSolutionSteps.join(". ")}
+              label="Listen to solution"
+            />
+          </div>
           <ol className="flex flex-col gap-2 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
             {fullSolutionSteps.map((step, idx) => (
               <li key={idx} className="list-decimal leading-relaxed">
@@ -333,9 +347,12 @@ export default function SocraticDialogue({
 
           {reflectionQuestion && (
             <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-              <p className="mb-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Reflection
-              </p>
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Reflection
+                </p>
+                <SpeakButton text={reflectionQuestion} />
+              </div>
               <p className="text-sm text-zinc-600 dark:text-zinc-400">
                 <LatexRenderer text={reflectionQuestion} />
               </p>
