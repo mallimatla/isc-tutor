@@ -7,7 +7,7 @@ import {
 import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
-function parsePrivateKey(): string {
+export function parsePrivateKey(): string {
   const raw = process.env.FIREBASE_PRIVATE_KEY;
   if (!raw) {
     throw new Error("FIREBASE_PRIVATE_KEY environment variable is not set");
@@ -34,53 +34,66 @@ function parsePrivateKey(): string {
   return key;
 }
 
-function getAdminApp(): App {
-  if (getApps().length > 0) return getApps()[0];
+// Check if required env vars are present (build-time guard)
+const hasEnvVars =
+  !!process.env.FIREBASE_PROJECT_ID &&
+  !!process.env.FIREBASE_CLIENT_EMAIL &&
+  !!process.env.FIREBASE_PRIVATE_KEY;
 
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const key = parsePrivateKey();
+let adminApp: App;
+let adminAuth: Auth;
+let adminDb: Firestore;
 
-  console.log("[firebase-admin] init for project:", projectId, "key prefix:", key.slice(0, 30));
+if (hasEnvVars) {
+  if (getApps().length > 0) {
+    adminApp = getApps()[0];
+  } else {
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const key = parsePrivateKey();
 
-  return initializeApp({
-    credential: cert({
+    console.log(
+      "[firebase-admin] init for project:",
       projectId,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: key,
-    }),
+      "client_email prefix:",
+      (clientEmail ?? "").slice(0, 50),
+      "key length:",
+      key.length,
+      "key suffix:",
+      key.slice(-50)
+    );
+
+    adminApp = initializeApp({
+      credential: cert({ projectId, clientEmail, privateKey: key }),
+    });
+  }
+
+  adminAuth = getAuth(adminApp);
+  adminDb = getFirestore(adminApp);
+} else {
+  // Build-time: env vars not available — export stubs that throw at runtime
+  const unavailable = (name: string): never => {
+    throw new Error(
+      `[firebase-admin] ${name} called but Firebase Admin SDK is not initialized. Missing env vars: FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, or FIREBASE_PRIVATE_KEY.`
+    );
+  };
+
+  adminApp = new Proxy({} as App, {
+    get() {
+      return unavailable("adminApp");
+    },
+  });
+  adminAuth = new Proxy({} as Auth, {
+    get() {
+      return unavailable("adminAuth");
+    },
+  });
+  adminDb = new Proxy({} as Firestore, {
+    get() {
+      return unavailable("adminDb");
+    },
   });
 }
-
-let _app: App | undefined;
-let _auth: Auth | undefined;
-let _db: Firestore | undefined;
-
-const adminApp: App = new Proxy({} as App, {
-  get(_, prop) {
-    if (!_app) _app = getAdminApp();
-    return Reflect.get(_app, prop);
-  },
-});
-
-const adminAuth: Auth = new Proxy({} as Auth, {
-  get(_, prop) {
-    if (!_auth) {
-      if (!_app) _app = getAdminApp();
-      _auth = getAuth(_app);
-    }
-    return Reflect.get(_auth, prop);
-  },
-});
-
-const adminDb: Firestore = new Proxy({} as Firestore, {
-  get(_, prop) {
-    if (!_db) {
-      if (!_app) _app = getAdminApp();
-      _db = getFirestore(_app);
-    }
-    return Reflect.get(_db, prop);
-  },
-});
 
 /**
  * Returns a prefixed Firestore collection name.
