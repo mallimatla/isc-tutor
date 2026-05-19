@@ -33,8 +33,46 @@ export async function verifyRequest(req: Request): Promise<VerifiedUser> {
       photoURL: decoded.picture,
     };
   } catch (err) {
-    throw new UnauthorizedError("Invalid or expired ID token", {
-      cause: err,
+    // Parse JWT payload for diagnostic context (never log the full token)
+    let tokenAud: string | undefined;
+    try {
+      const payloadB64 = token.split(".")[1];
+      if (payloadB64) {
+        const payload = JSON.parse(Buffer.from(payloadB64, "base64").toString());
+        tokenAud = payload.aud;
+      }
+    } catch {
+      // JWT parsing failed — not critical for diagnostics
+    }
+
+    const firebaseCode =
+      err instanceof Error && "code" in err
+        ? (err as Error & { code: string }).code
+        : undefined;
+
+    console.error("[verify-token] ID token verification failed", {
+      firebaseCode,
+      errorMessage: err instanceof Error ? err.message : String(err),
+      tokenPrefix: token.slice(0, 30),
+      expectedProjectId: process.env.FIREBASE_PROJECT_ID,
+      tokenAud,
     });
+
+    let message: string;
+    switch (firebaseCode) {
+      case "auth/id-token-expired":
+        message = "Token expired";
+        break;
+      case "auth/argument-error":
+        message = "Token malformed";
+        break;
+      case "auth/id-token-revoked":
+        message = "Token revoked";
+        break;
+      default:
+        message = "Token verification failed";
+    }
+
+    throw new UnauthorizedError(message, { cause: err });
   }
 }
