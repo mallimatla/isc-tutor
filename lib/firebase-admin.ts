@@ -7,13 +7,46 @@ import {
 import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
+function parsePrivateKey(): string {
+  const raw = process.env.FIREBASE_PRIVATE_KEY;
+  if (!raw) {
+    throw new Error("FIREBASE_PRIVATE_KEY environment variable is not set");
+  }
+
+  let key = raw;
+
+  // Strip wrapping quotes if present (common when pasting from JSON files)
+  key = key.replace(/^["']|["']$/g, "");
+
+  // Convert literal \n strings to actual newlines (idempotent — does nothing if already real newlines)
+  key = key.replace(/\\n/g, "\n");
+
+  // Sanity check: must look like a PEM private key
+  if (
+    !key.includes("-----BEGIN PRIVATE KEY-----") ||
+    !key.includes("-----END PRIVATE KEY-----")
+  ) {
+    throw new Error(
+      "FIREBASE_PRIVATE_KEY does not look like a valid PEM key. Expected to find -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY----- markers."
+    );
+  }
+
+  return key;
+}
+
 function getAdminApp(): App {
   if (getApps().length > 0) return getApps()[0];
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const key = parsePrivateKey();
+
+  console.log("[firebase-admin] init for project:", projectId, "key prefix:", key.slice(0, 30));
+
   return initializeApp({
     credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
+      projectId,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      privateKey: key,
     }),
   });
 }
