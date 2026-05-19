@@ -1,16 +1,18 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import LatexRenderer from "@/components/LatexRenderer";
+import SkeletonLoader from "@/components/SkeletonLoader";
 import FlagButton from "@/components/FlagButton";
-import { apiFetch } from "@/lib/api-client";
+import { auth } from "@/lib/firebase";
 
 interface DialogueTurn {
   role: "student" | "tutor";
   message: string;
+  isStreaming?: boolean;
 }
 
-interface SocraticResponse {
+interface SocraticDonePayload {
   decision: "ASK" | "AFFIRM_AND_REVEAL" | "REVEAL";
   tutorMessage: string;
   turnNumber: number;
@@ -38,6 +40,7 @@ export default function SocraticDialogue({
   const [input, setInput] = useState("");
   const [turnNumber, setTurnNumber] = useState(1);
   const [isWaiting, setIsWaiting] = useState(false);
+  const [hasFirstToken, setHasFirstToken] = useState(false);
   const [isFinal, setIsFinal] = useState(false);
   const [fullSolutionSteps, setFullSolutionSteps] = useState<string[] | null>(
     null
@@ -46,51 +49,154 @@ export default function SocraticDialogue({
     null
   );
   const [error, setError] = useState<string | null>(null);
-  const [lastEvaluationId] = useState<string | null>(null);
   const threadEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [turns, isWaiting]);
+  }, [turns, isWaiting, hasFirstToken]);
 
-  const submitTurn = async (message: string) => {
-    setError(null);
-    setTurns((prev) => [...prev, { role: "student", message }]);
-    setInput("");
-    setIsWaiting(true);
+  const submitTurn = useCallback(
+    async (message: string) => {
+      setError(null);
+      setTurns((prev) => [...prev, { role: "student", message }]);
+      setInput("");
+      setIsWaiting(true);
+      setHasFirstToken(false);
 
-    try {
-      const res = await apiFetch<SocraticResponse>("/api/socratic", {
-        method: "POST",
-        body: JSON.stringify({
-          questionId,
-          studentTurn: message,
-          turnNumber,
-        }),
-      });
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) throw new Error("Not authenticated");
+        const token = await currentUser.getIdToken();
 
-      setTurns((prev) => [
-        ...prev,
-        { role: "tutor", message: res.tutorMessage },
-      ]);
+        const res = await fetch("/api/socratic", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            questionId,
+            studentTurn: message,
+            turnNumber,
+          }),
+        });
 
-      if (res.isFinal) {
-        setIsFinal(true);
-        setFullSolutionSteps(res.fullSolutionSteps);
-        setReflectionQuestion(res.reflectionQuestion);
-      } else {
-        setTurnNumber((n) => (n + 1) as 1 | 2 | 3 | 4 | 5);
+        if (!res.ok || !res.body) {
+          const errBody = await res.json().catch(() => ({}));
+          throw new Error(
+            (errBody as Record<string, string>).error || `HTTP ${res.status}`
+          );
+        }
+
+        // Read SSE stream
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let streamedTutorMessage = "";
+        let tutorTurnAdded = false;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // Parse SSE events from buffer
+          const lines = buffer.split("\n");
+          buffer = lines.pop() ?? "";
+
+          let eventType = "";
+          for (const line of lines) {
+            if (line.startsWith("event: ")) {
+              eventType = line.slice(7);
+            } else if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+
+              if (eventType === "delta") {
+                const { text } = JSON.parse(data) as { text: string };
+                streamedTutorMessage += text;
+
+                if (!tutorTurnAdded) {
+                  tutorTurnAdded = true;
+                  setHasFirstToken(true);
+                  setTurns((prev) => [
+                    ...prev,
+                    {
+                      role: "tutor",
+                      message: streamedTutorMessage,
+                      isStreaming: true,
+                    },
+                  ]);
+                } else {
+                  // Update last turn in place
+                  setTurns((prev) => {
+                    const updated = [...prev];
+                    updated[updated.length - 1] = {
+                      role: "tutor",
+                      message: streamedTutorMessage,
+                      isStreaming: true,
+                    };
+                    return updated;
+                  });
+                }
+              } else if (eventType === "done") {
+                const payload = JSON.parse(data) as SocraticDonePayload;
+
+                // Finalize the tutor message (remove streaming flag)
+                setTurns((prev) => {
+                  const updated = [...prev];
+                  if (
+                    updated.length > 0 &&
+                    updated[updated.length - 1].role === "tutor"
+                  ) {
+                    updated[updated.length - 1] = {
+                      role: "tutor",
+                      message: payload.tutorMessage,
+                      isStreaming: false,
+                    };
+                  }
+                  return updated;
+                });
+
+                if (payload.isFinal) {
+                  setIsFinal(true);
+                  setFullSolutionSteps(payload.fullSolutionSteps);
+                  setReflectionQuestion(payload.reflectionQuestion);
+                } else {
+                  setTurnNumber(
+                    (n) => (n + 1) as 1 | 2 | 3 | 4 | 5
+                  );
+                }
+              } else if (eventType === "error") {
+                const errPayload = JSON.parse(data) as {
+                  error: string;
+                  message?: string;
+                };
+                throw new Error(errPayload.message || errPayload.error);
+              }
+              eventType = "";
+            }
+          }
+        }
+      } catch (err) {
+        // Remove the student turn we optimistically added (and any partial tutor turn)
+        setTurns((prev) => {
+          const lastStudentIdx = prev.findLastIndex(
+            (t) => t.role === "student"
+          );
+          if (lastStudentIdx >= 0) return prev.slice(0, lastStudentIdx);
+          return prev;
+        });
+        setError(
+          err instanceof Error ? err.message : "Failed to get tutor response."
+        );
+      } finally {
+        setIsWaiting(false);
+        setHasFirstToken(false);
       }
-    } catch (err) {
-      // Remove the student turn we optimistically added
-      setTurns((prev) => prev.slice(0, -1));
-      setError(
-        err instanceof Error ? err.message : "Failed to get tutor response."
-      );
-    } finally {
-      setIsWaiting(false);
-    }
-  };
+    },
+    [questionId, turnNumber]
+  );
 
   const handleSubmit = () => {
     const trimmed = input.trim();
@@ -134,7 +240,12 @@ export default function SocraticDialogue({
               }`}
             >
               {turn.role === "tutor" ? (
-                <LatexRenderer text={turn.message} />
+                <>
+                  <LatexRenderer text={turn.message} />
+                  {turn.isStreaming && (
+                    <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-zinc-500" />
+                  )}
+                </>
               ) : (
                 <span className="whitespace-pre-wrap">{turn.message}</span>
               )}
@@ -142,13 +253,9 @@ export default function SocraticDialogue({
           </div>
         ))}
 
-        {/* Waiting indicator */}
-        {isWaiting && (
-          <div className="flex justify-start">
-            <div className="rounded-lg bg-zinc-100 px-4 py-3 text-sm text-zinc-500 dark:bg-zinc-800">
-              Thinking...
-            </div>
-          </div>
+        {/* Skeleton: only before first token arrives */}
+        {isWaiting && !hasFirstToken && (
+          <SkeletonLoader variant="tutor-message" />
         )}
 
         <div ref={threadEndRef} />
@@ -167,7 +274,7 @@ export default function SocraticDialogue({
         </div>
       )}
 
-      {/* Input area — hidden when final */}
+      {/* Input area */}
       {!isFinal && !isWaiting && (
         <div className="flex flex-col gap-2">
           <textarea
@@ -187,9 +294,7 @@ export default function SocraticDialogue({
             <span className="text-xs text-zinc-400">
               {input.length} / 5000
               {turnNumber > 1 && (
-                <span className="ml-2">
-                  Turn {turnNumber} of 5
-                </span>
+                <span className="ml-2">Turn {turnNumber} of 5</span>
               )}
             </span>
             <div className="flex gap-2">
@@ -239,10 +344,7 @@ export default function SocraticDialogue({
           )}
 
           <div className="flex items-center justify-between pt-2">
-            <FlagButton
-              questionId={questionId}
-              evaluationId={lastEvaluationId}
-            />
+            <FlagButton questionId={questionId} evaluationId={null} />
             <button
               onClick={onNext}
               className="rounded-md bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"

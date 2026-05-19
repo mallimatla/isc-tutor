@@ -6,6 +6,8 @@ import Link from "next/link";
 import AuthGate from "@/components/AuthGate";
 import QuestionCard from "@/components/QuestionCard";
 import SocraticDialogue from "@/components/SocraticDialogue";
+import DifficultyIndicator from "@/components/DifficultyIndicator";
+import SkeletonLoader from "@/components/SkeletonLoader";
 import { apiFetch } from "@/lib/api-client";
 import { useAuth } from "@/lib/use-auth";
 
@@ -107,10 +109,16 @@ function PracticeContent() {
           </div>
         )}
 
-        {/* Loading question */}
+        {/* Loading question — show skeleton with known chapter info */}
         {isLoadingQuestion && (
-          <div className="flex items-center justify-center py-16">
-            <p className="text-sm text-zinc-500">Generating question...</p>
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium text-zinc-600 dark:text-zinc-400">
+                {chapterLabel}
+              </span>
+              <DifficultyIndicator level={2} />
+            </div>
+            <SkeletonLoader variant="question" />
           </div>
         )}
 

@@ -139,3 +139,76 @@ export async function callClaude<TSchema extends z.ZodSchema>(
 
   throw lastError ?? new ClaudeMalformedOutputError("All retries exhausted");
 }
+
+// --- Streaming variant ---
+
+export async function callClaudeStreaming<TSchema extends z.ZodSchema>(
+  params: CallClaudeParams<TSchema>,
+  onDelta: (text: string) => void
+): Promise<CallClaudeResult<z.infer<TSchema>>> {
+  const { system, user, schema } = params;
+  const start = Date.now();
+
+  let accumulated = "";
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  try {
+    const stream = client.messages.stream(
+      {
+        model: MODEL,
+        max_tokens: 4096,
+        system,
+        messages: [{ role: "user", content: user }],
+      },
+      { timeout: 60_000 }
+    );
+
+    for await (const event of stream) {
+      if (
+        event.type === "content_block_delta" &&
+        event.delta.type === "text_delta"
+      ) {
+        accumulated += event.delta.text;
+        onDelta(event.delta.text);
+      }
+    }
+
+    const finalMessage = await stream.finalMessage();
+    inputTokens = finalMessage.usage.input_tokens;
+    outputTokens = finalMessage.usage.output_tokens;
+  } catch (err) {
+    // If we got partial data, try to parse it; otherwise fall back to non-streaming
+    if (!accumulated) {
+      if (err instanceof Anthropic.RateLimitError) {
+        throw new ClaudeRateLimitError("Claude API rate limited", {
+          cause: err,
+        });
+      }
+      // Fallback: retry with non-streaming
+      return callClaude(params);
+    }
+    // We have partial data — try to parse what we got
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(accumulated.trim());
+  } catch {
+    // Streaming produced invalid JSON — fall back to non-streaming retry
+    return callClaude(params);
+  }
+
+  const result = schema.safeParse(parsed);
+  if (!result.success) {
+    // Schema validation failed — fall back to non-streaming retry
+    return callClaude(params);
+  }
+
+  const latencyMs = Date.now() - start;
+  return {
+    data: result.data as z.infer<TSchema>,
+    usage: { input: inputTokens, output: outputTokens },
+    latencyMs,
+  };
+}
