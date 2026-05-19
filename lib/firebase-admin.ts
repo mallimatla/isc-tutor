@@ -19,7 +19,12 @@ export function parsePrivateKey(): string {
   key = key.replace(/^["']|["']$/g, "");
 
   // Convert literal \n strings to actual newlines (idempotent — does nothing if already real newlines)
+  // Apply twice to handle double-escaped \\n → \n → newline
   key = key.replace(/\\n/g, "\n");
+  key = key.replace(/\\n/g, "\n");
+
+  // Also handle \r\n (Windows line endings from some env var managers)
+  key = key.replace(/\r\n/g, "\n");
 
   // Sanity check: must look like a PEM private key
   if (
@@ -63,9 +68,22 @@ if (hasEnvVars) {
       key.slice(-50)
     );
 
-    adminApp = initializeApp({
-      credential: cert({ projectId, clientEmail, privateKey: key }),
-    });
+    try {
+      adminApp = initializeApp({
+        credential: cert({ projectId, clientEmail, privateKey: key }),
+      });
+    } catch (err) {
+      console.error("[firebase-admin] cert() failed. Key diagnostics:", {
+        keyLength: key.length,
+        newlineCount: (key.match(/\n/g) || []).length,
+        hasRealNewlines: key.includes("\n"),
+        hasLiteralBackslashN: key.includes("\\n"),
+        first80: key.slice(0, 80),
+        last80: key.slice(-80),
+        errorMessage: err instanceof Error ? err.message : String(err),
+      });
+      throw err;
+    }
   }
 
   adminAuth = getAuth(adminApp);
