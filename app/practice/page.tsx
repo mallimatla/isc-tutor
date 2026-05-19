@@ -9,6 +9,7 @@ import AnswerInput from "@/components/AnswerInput";
 import Verdict from "@/components/Verdict";
 import FlagButton from "@/components/FlagButton";
 import { apiFetch } from "@/lib/api-client";
+import { useAuth } from "@/lib/use-auth";
 
 interface QuestionResponse {
   questionId: string;
@@ -32,6 +33,7 @@ interface EvaluationResponse {
 }
 
 function PracticeContent() {
+  const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const subject = searchParams.get("subject") || "mathematics";
   const classLevel = searchParams.get("class") || "11";
@@ -70,8 +72,8 @@ function PracticeContent() {
   }, [subject, classLevel, chapterId]);
 
   useEffect(() => {
-    if (chapterId) fetchQuestion();
-  }, [chapterId, fetchQuestion]);
+    if (chapterId && !authLoading && user) fetchQuestion();
+  }, [chapterId, authLoading, user, fetchQuestion]);
 
   const handleSubmitAnswer = async (answer: string) => {
     if (!question) return;
@@ -103,6 +105,14 @@ function PracticeContent() {
   const handleFlag = () => {
     // FlagButton handles its own modal — this is a no-op trigger
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <p className="text-sm text-zinc-500">Loading...</p>
+      </div>
+    );
+  }
 
   if (!chapterId) {
     return (
