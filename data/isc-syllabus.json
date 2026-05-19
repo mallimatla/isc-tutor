@@ -1,0 +1,54 @@
+{
+  "_comment": "ISC Mathematics syllabus structure. Source: CISCE ISC 2025-26 spec. Used as the topic picker source — the LLM generates questions on the chosen topic.",
+  "subjects": {
+    "mathematics": {
+      "label": "Mathematics",
+      "classes": {
+        "11": {
+          "label": "Class 11",
+          "chapters": [
+            { "id": "sets", "label": "Sets" },
+            { "id": "relations-functions", "label": "Relations and Functions" },
+            { "id": "trigonometric-functions", "label": "Trigonometric Functions" },
+            { "id": "principle-mathematical-induction", "label": "Principle of Mathematical Induction" },
+            { "id": "complex-numbers-quadratic", "label": "Complex Numbers and Quadratic Equations" },
+            { "id": "linear-inequalities", "label": "Linear Inequalities" },
+            { "id": "permutations-combinations", "label": "Permutations and Combinations" },
+            { "id": "binomial-theorem", "label": "Binomial Theorem" },
+            { "id": "sequences-series", "label": "Sequences and Series" },
+            { "id": "straight-lines", "label": "Straight Lines" },
+            { "id": "conic-sections", "label": "Conic Sections" },
+            { "id": "intro-3d-geometry", "label": "Introduction to Three-Dimensional Geometry" },
+            { "id": "limits-derivatives", "label": "Limits and Derivatives" },
+            { "id": "mathematical-reasoning", "label": "Mathematical Reasoning" },
+            { "id": "statistics", "label": "Statistics" },
+            { "id": "probability", "label": "Probability" }
+          ]
+        },
+        "12": {
+          "label": "Class 12",
+          "chapters": [
+            { "id": "relations-functions-12", "label": "Relations and Functions" },
+            { "id": "inverse-trigonometric-functions", "label": "Inverse Trigonometric Functions" },
+            { "id": "matrices", "label": "Matrices" },
+            { "id": "determinants", "label": "Determinants" },
+            { "id": "continuity-differentiability", "label": "Continuity and Differentiability" },
+            { "id": "applications-derivatives", "label": "Applications of Derivatives" },
+            { "id": "integrals", "label": "Integrals" },
+            { "id": "applications-integrals", "label": "Applications of Integrals" },
+            { "id": "differential-equations", "label": "Differential Equations" },
+            { "id": "vectors", "label": "Vector Algebra" },
+            { "id": "3d-geometry", "label": "Three-Dimensional Geometry" },
+            { "id": "linear-programming", "label": "Linear Programming" },
+            { "id": "probability-12", "label": "Probability" }
+          ]
+        }
+      }
+    },
+    "computer-science": {
+      "label": "Computer Science (Phase 2 — coming soon)",
+      "_note": "Roadmapped, not shipped in v1. Java code execution sandbox and SQL question handling are separate engineering problems.",
+      "classes": {}
+    }
+  }
+}
