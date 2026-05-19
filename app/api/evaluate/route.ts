@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use POST /api/socratic instead. This endpoint is kept as a
+ * fallback for question docs without Socratic dialogues. The new Socratic
+ * flow replaces single-shot evaluation with multi-turn diagnosis.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { FieldValue } from "firebase-admin/firestore";

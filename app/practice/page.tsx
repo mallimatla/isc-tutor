@@ -5,9 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import AuthGate from "@/components/AuthGate";
 import QuestionCard from "@/components/QuestionCard";
-import AnswerInput from "@/components/AnswerInput";
-import Verdict from "@/components/Verdict";
-import FlagButton from "@/components/FlagButton";
+import SocraticDialogue from "@/components/SocraticDialogue";
 import { apiFetch } from "@/lib/api-client";
 import { useAuth } from "@/lib/use-auth";
 
@@ -22,16 +20,6 @@ interface QuestionResponse {
   };
 }
 
-interface EvaluationResponse {
-  evaluationId: string;
-  verdict: "correct" | "partial" | "incorrect";
-  whereWentWrong: string | null;
-  fullSolutionSteps: string[];
-  confidence: number;
-  difficultyForNext: number;
-  metadata: { evaluationLatencyMs: number };
-}
-
 function PracticeContent() {
   const { user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
@@ -41,17 +29,16 @@ function PracticeContent() {
   const chapterLabel = searchParams.get("chapterLabel") || chapterId;
 
   const [question, setQuestion] = useState<QuestionResponse | null>(null);
-  const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null);
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false);
-  const [isLoadingEvaluation, setIsLoadingEvaluation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [syllabusWarning, setSyllabusWarning] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
+  // Key to force remount SocraticDialogue on new question
+  const [dialogueKey, setDialogueKey] = useState(0);
 
   const fetchQuestion = useCallback(async () => {
     setIsLoadingQuestion(true);
     setError(null);
-    setEvaluation(null);
     setSyllabusWarning(false);
 
     try {
@@ -61,6 +48,7 @@ function PracticeContent() {
       });
       setQuestion(res);
       setQuestionCount((c) => c + 1);
+      setDialogueKey((k) => k + 1);
       if (res.metadata.syllabusWarning) setSyllabusWarning(true);
     } catch (err) {
       setError(
@@ -74,37 +62,6 @@ function PracticeContent() {
   useEffect(() => {
     if (chapterId && !authLoading && user) fetchQuestion();
   }, [chapterId, authLoading, user, fetchQuestion]);
-
-  const handleSubmitAnswer = async (answer: string) => {
-    if (!question) return;
-    setIsLoadingEvaluation(true);
-    setError(null);
-
-    try {
-      const res = await apiFetch<EvaluationResponse>("/api/evaluate", {
-        method: "POST",
-        body: JSON.stringify({
-          questionId: question.questionId,
-          studentAnswer: answer || "(skipped)",
-        }),
-      });
-      setEvaluation(res);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to evaluate answer."
-      );
-    } finally {
-      setIsLoadingEvaluation(false);
-    }
-  };
-
-  const handleNext = () => {
-    fetchQuestion();
-  };
-
-  const handleFlag = () => {
-    // FlagButton handles its own modal — this is a no-op trigger
-  };
 
   if (authLoading) {
     return (
@@ -170,53 +127,16 @@ function PracticeContent() {
           </div>
         )}
 
-        {/* Question + Answer + Verdict */}
+        {/* Question + Socratic Dialogue */}
         {question && !isLoadingQuestion && (
           <div className="flex flex-col gap-6">
-            <QuestionCard
+            <QuestionCard question={question} chapterLabel={chapterLabel} />
+            <SocraticDialogue
+              key={dialogueKey}
+              questionId={question.questionId}
               question={question}
-              chapterLabel={chapterLabel}
+              onNext={fetchQuestion}
             />
-
-            {/* Flag question (before evaluation) */}
-            {!evaluation && (
-              <FlagButton
-                questionId={question.questionId}
-                evaluationId={null}
-              />
-            )}
-
-            {/* Answer input — hidden after evaluation */}
-            {!evaluation && (
-              <AnswerInput
-                onSubmit={handleSubmitAnswer}
-                disabled={isLoadingEvaluation}
-              />
-            )}
-
-            {/* Loading evaluation */}
-            {isLoadingEvaluation && (
-              <p className="text-center text-sm text-zinc-500">
-                Checking your answer...
-              </p>
-            )}
-
-            {/* Verdict */}
-            {evaluation && (
-              <>
-                <Verdict
-                  verdict={evaluation.verdict}
-                  whereWentWrong={evaluation.whereWentWrong}
-                  fullSolutionSteps={evaluation.fullSolutionSteps}
-                  onNext={handleNext}
-                  onFlag={handleFlag}
-                />
-                <FlagButton
-                  questionId={question.questionId}
-                  evaluationId={evaluation.evaluationId}
-                />
-              </>
-            )}
           </div>
         )}
       </div>
