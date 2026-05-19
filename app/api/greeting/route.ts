@@ -23,110 +23,121 @@ export async function POST(req: NextRequest) {
     const totalCorrect = sessionData?.totalCorrect ?? 0;
     const displayName = user.displayName ?? "there";
 
-    // Load recent questions to build session summaries
-    const recentQuestionsSnap = await adminDb
-      .collection(col("questions"))
-      .where("sessionId", "==", uid)
-      .orderBy("generatedAt", "desc")
-      .limit(30)
-      .get();
+    // Aggregation queries — all optional, missing indexes are OK
+    let recentSessions: Array<{
+      chapterId: string;
+      chapterLabel: string;
+      questionsAnswered: number;
+      correct: number;
+    }> = [];
+    let struggledSubSkills: string[] = [];
 
-    // Group by chapter for recent session summaries
-    const chapterMap = new Map<
-      string,
-      { chapterId: string; classLevel: string; count: number }
-    >();
-    const questionIds: string[] = [];
-    for (const doc of recentQuestionsSnap.docs) {
-      const d = doc.data();
-      questionIds.push(doc.id);
-      const existing = chapterMap.get(d.chapterId) ?? {
-        chapterId: d.chapterId,
-        classLevel: d.class,
-        count: 0,
-      };
-      existing.count++;
-      chapterMap.set(d.chapterId, existing);
-    }
-
-    // Load evaluations for those questions
-    const evalsByQuestion = new Map<string, string>();
-    if (questionIds.length > 0) {
-      // Firestore 'in' queries limited to 30
-      const evalsSnap = await adminDb
-        .collection(col("evaluations"))
+    try {
+      const recentQuestionsSnap = await adminDb
+        .collection(col("questions"))
         .where("sessionId", "==", uid)
-        .orderBy("evaluatedAt", "desc")
-        .limit(50)
+        .orderBy("generatedAt", "desc")
+        .limit(30)
         .get();
-      for (const doc of evalsSnap.docs) {
+
+      const chapterMap = new Map<
+        string,
+        { chapterId: string; classLevel: string; count: number }
+      >();
+      const questionIds: string[] = [];
+      for (const doc of recentQuestionsSnap.docs) {
         const d = doc.data();
-        if (!evalsByQuestion.has(d.questionId)) {
-          evalsByQuestion.set(d.questionId, d.verdict);
+        questionIds.push(doc.id);
+        const existing = chapterMap.get(d.chapterId) ?? {
+          chapterId: d.chapterId,
+          classLevel: d.class,
+          count: 0,
+        };
+        existing.count++;
+        chapterMap.set(d.chapterId, existing);
+      }
+
+      const evalsByQuestion = new Map<string, string>();
+      if (questionIds.length > 0) {
+        const evalsSnap = await adminDb
+          .collection(col("evaluations"))
+          .where("sessionId", "==", uid)
+          .orderBy("evaluatedAt", "desc")
+          .limit(50)
+          .get();
+        for (const doc of evalsSnap.docs) {
+          const d = doc.data();
+          if (!evalsByQuestion.has(d.questionId)) {
+            evalsByQuestion.set(d.questionId, d.verdict);
+          }
         }
       }
-    }
 
-    // Build per-chapter accuracy
-    const chapterAccuracy = new Map<
-      string,
-      { answered: number; correct: number }
-    >();
-    for (const doc of recentQuestionsSnap.docs) {
-      const d = doc.data();
-      const verdict = evalsByQuestion.get(doc.id);
-      if (!verdict) continue;
-      const stats = chapterAccuracy.get(d.chapterId) ?? {
-        answered: 0,
-        correct: 0,
-      };
-      stats.answered++;
-      if (verdict === "correct") stats.correct++;
-      chapterAccuracy.set(d.chapterId, stats);
-    }
-
-    const recentSessions = Array.from(chapterMap.entries())
-      .slice(0, 5)
-      .map(([chapterId, info]) => {
-        const chapter = getChapter(
-          "mathematics",
-          info.classLevel as "11" | "12",
-          chapterId
-        );
-        const acc = chapterAccuracy.get(chapterId) ?? {
+      const chapterAccuracy = new Map<
+        string,
+        { answered: number; correct: number }
+      >();
+      for (const doc of recentQuestionsSnap.docs) {
+        const d = doc.data();
+        const verdict = evalsByQuestion.get(doc.id);
+        if (!verdict) continue;
+        const stats = chapterAccuracy.get(d.chapterId) ?? {
           answered: 0,
           correct: 0,
         };
-        return {
-          chapterId,
-          chapterLabel: chapter?.label ?? chapterId,
-          questionsAnswered: acc.answered,
-          correct: acc.correct,
-        };
-      });
+        stats.answered++;
+        if (verdict === "correct") stats.correct++;
+        chapterAccuracy.set(d.chapterId, stats);
+      }
 
-    // Load struggled sub-skills from recent dialogues
-    const dialoguesSnap = await adminDb
-      .collection(col("dialogues"))
-      .where("sessionId", "==", uid)
-      .orderBy("startedAt", "desc")
-      .limit(10)
-      .get();
+      recentSessions = Array.from(chapterMap.entries())
+        .slice(0, 5)
+        .map(([chapterId, info]) => {
+          const chapter = getChapter(
+            "mathematics",
+            info.classLevel as "11" | "12",
+            chapterId
+          );
+          const acc = chapterAccuracy.get(chapterId) ?? {
+            answered: 0,
+            correct: 0,
+          };
+          return {
+            chapterId,
+            chapterLabel: chapter?.label ?? chapterId,
+            questionsAnswered: acc.answered,
+            correct: acc.correct,
+          };
+        });
+    } catch (err) {
+      console.warn("[/api/greeting] questions/evaluations query failed (missing index?), proceeding without:", err instanceof Error ? err.message : String(err));
+    }
 
-    const skillCounts = new Map<string, number>();
-    for (const doc of dialoguesSnap.docs) {
-      const d = doc.data();
-      const struggled = d.subSkillsStruggled as string[] | undefined;
-      if (struggled) {
-        for (const skill of struggled) {
-          skillCounts.set(skill, (skillCounts.get(skill) ?? 0) + 1);
+    try {
+      const dialoguesSnap = await adminDb
+        .collection(col("dialogues"))
+        .where("sessionId", "==", uid)
+        .orderBy("startedAt", "desc")
+        .limit(10)
+        .get();
+
+      const skillCounts = new Map<string, number>();
+      for (const doc of dialoguesSnap.docs) {
+        const d = doc.data();
+        const struggled = d.subSkillsStruggled as string[] | undefined;
+        if (struggled) {
+          for (const skill of struggled) {
+            skillCounts.set(skill, (skillCounts.get(skill) ?? 0) + 1);
+          }
         }
       }
+      struggledSubSkills = Array.from(skillCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([skill]) => skill);
+    } catch (err) {
+      console.warn("[/api/greeting] dialogues query failed (missing index?), proceeding without:", err instanceof Error ? err.message : String(err));
     }
-    const struggledSubSkills = Array.from(skillCounts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([skill]) => skill);
 
     const now = new Date();
     const currentDateTime = now.toLocaleString("en-IN", {

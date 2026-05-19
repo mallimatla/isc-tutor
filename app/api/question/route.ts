@@ -74,16 +74,21 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Load recent question contexts for variety
-    const recentQSnap = await adminDb
-      .collection(col("questions"))
-      .where("sessionId", "==", uid)
-      .orderBy("generatedAt", "desc")
-      .limit(3)
-      .get();
-    const recentContexts = recentQSnap.docs.map((d) =>
-      (d.data().questionLatex as string).slice(0, 60)
-    );
+    // Load recent question contexts for variety (optional — missing index is OK)
+    let recentContexts: string[] = [];
+    try {
+      const recentQSnap = await adminDb
+        .collection(col("questions"))
+        .where("sessionId", "==", uid)
+        .orderBy("generatedAt", "desc")
+        .limit(3)
+        .get();
+      recentContexts = recentQSnap.docs.map((d) =>
+        (d.data().questionLatex as string).slice(0, 60)
+      );
+    } catch (err) {
+      console.warn("[/api/question] recent-contexts query failed (missing index?), proceeding without:", err instanceof Error ? err.message : String(err));
+    }
 
     // Generate question with in_syllabus retry logic
     const maxSyllabusRetries = 3;
