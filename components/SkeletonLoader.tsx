@@ -1,7 +1,7 @@
 "use client";
 
 interface SkeletonLoaderProps {
-  variant: "question" | "tutor-message";
+  variant: "question" | "tutor-thinking";
 }
 
 export default function SkeletonLoader({ variant }: SkeletonLoaderProps) {

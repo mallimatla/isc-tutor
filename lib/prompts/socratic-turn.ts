@@ -25,11 +25,11 @@ You will receive:
 - The question's difficulty (1=easy, 5=hard)
 - The current turn number (1 = student's first answer, 2-5 = Socratic follow-ups, 5 = last allowed Socratic turn before forced reveal)
 
-You output ONE JSON object with this exact shape — no preamble, no markdown fences:
+You output ONE JSON object with this exact shape — no preamble, no markdown fences. IMPORTANT: emit the fields in EXACTLY this order (decision first, tutor_message second) so the response can be streamed to the student in real-time:
 
 {
   "decision": "ASK" | "AFFIRM_AND_REVEAL" | "REVEAL",
-  "tutor_message": "<what you say to the student — markdown allowed, $...$ for inline LaTeX, $$...$$for display LaTeX>",
+  "tutor_message": "<what you say to the student — markdown allowed, $...$ for inline LaTeX, $$...$$ for display LaTeX>",
   "reasoning_diagnosis": "<one sentence describing what specifically you observed about the student's reasoning>",
   "sub_skills_tested": ["<3-5 specific sub-skills this question tests, e.g. 'set-complement-notation', 'cardinality-formula'>"],
   "sub_skills_struggled": ["<sub-skills where the student showed shaky understanding in their answer; empty array if they're solid>"],

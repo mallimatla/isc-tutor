@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import StreamingMessage from "@/components/StreamingMessage";
 import LatexRenderer from "@/components/LatexRenderer";
 import SkeletonLoader from "@/components/SkeletonLoader";
 import FlagButton from "@/components/FlagButton";
@@ -240,12 +241,10 @@ export default function SocraticDialogue({
               }`}
             >
               {turn.role === "tutor" ? (
-                <>
-                  <LatexRenderer text={turn.message} />
-                  {turn.isStreaming && (
-                    <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-zinc-500" />
-                  )}
-                </>
+                <StreamingMessage
+                  text={turn.message}
+                  isStreaming={!!turn.isStreaming}
+                />
               ) : (
                 <span className="whitespace-pre-wrap">{turn.message}</span>
               )}
@@ -255,7 +254,7 @@ export default function SocraticDialogue({
 
         {/* Skeleton: only before first token arrives */}
         {isWaiting && !hasFirstToken && (
-          <SkeletonLoader variant="tutor-message" />
+          <SkeletonLoader variant="tutor-thinking" />
         )}
 
         <div ref={threadEndRef} />
