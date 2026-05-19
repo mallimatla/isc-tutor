@@ -18,22 +18,76 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app: FirebaseApp =
-  getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
+function getApp(): FirebaseApp {
+  return getApps().length > 0 ? getApps()[0] : initializeApp(firebaseConfig);
+}
 
-const auth: Auth = getAuth(app);
-const db: Firestore = getFirestore(app);
+let _app: FirebaseApp | undefined;
+let _auth: Auth | undefined;
+let _db: Firestore | undefined;
+let _googleProvider: GoogleAuthProvider | undefined;
 
-const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope("profile");
-googleProvider.addScope("email");
+const app: FirebaseApp = new Proxy({} as FirebaseApp, {
+  get(_, prop) {
+    if (!_app) _app = getApp();
+    return Reflect.get(_app, prop);
+  },
+});
+
+const auth: Auth = new Proxy({} as Auth, {
+  get(_, prop) {
+    if (!_auth) {
+      if (!_app) _app = getApp();
+      _auth = getAuth(_app);
+    }
+    return Reflect.get(_auth, prop);
+  },
+});
+
+const db: Firestore = new Proxy({} as Firestore, {
+  get(_, prop) {
+    if (!_db) {
+      if (!_app) _app = getApp();
+      _db = getFirestore(_app);
+    }
+    return Reflect.get(_db, prop);
+  },
+});
+
+const googleProvider: GoogleAuthProvider = new Proxy(
+  {} as GoogleAuthProvider,
+  {
+    get(_, prop) {
+      if (!_googleProvider) {
+        _googleProvider = new GoogleAuthProvider();
+        _googleProvider.addScope("profile");
+        _googleProvider.addScope("email");
+      }
+      return Reflect.get(_googleProvider, prop);
+    },
+  }
+);
 
 export { app, auth, db, googleProvider };
 
 export async function signInWithGoogle(): Promise<UserCredential> {
-  return signInWithPopup(auth, googleProvider);
+  // Force lazy init before calling signInWithPopup
+  if (!_auth) {
+    if (!_app) _app = getApp();
+    _auth = getAuth(_app);
+  }
+  if (!_googleProvider) {
+    _googleProvider = new GoogleAuthProvider();
+    _googleProvider.addScope("profile");
+    _googleProvider.addScope("email");
+  }
+  return signInWithPopup(_auth, _googleProvider);
 }
 
 export async function signOutUser(): Promise<void> {
-  return signOut(auth);
+  if (!_auth) {
+    if (!_app) _app = getApp();
+    _auth = getAuth(_app);
+  }
+  return signOut(_auth);
 }
