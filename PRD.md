@@ -1167,4 +1167,14 @@ isc-tutor/
 
 ---
 
+## 23. Phase 6c — Personalization Features
+
+**Personalized Greeting.** The home page now shows a Claude-generated greeting that references the student's session history, accuracy, and struggled sub-skills. It recommends a specific next action (revisit a weakness, continue a chapter, or start a new one) as a primary CTA, with the full chapter picker accessible as a secondary option. This replaces the static "Pick a chapter to start practicing" heading.
+
+**Real-World Questions.** For difficulty 1-3, the question generation prompt now requires grounding problems in contexts a 16-year-old Indian student finds engaging — social media metrics, gaming scenarios, streaming stats, college admissions, money, and sports. Difficulty 4-5 retains formal board-exam phrasing. Recent question contexts are passed to the LLM to ensure variety. Prompt version bumped to qgen-v1.3.
+
+**Mastery Map.** The home page includes a visual grid showing per-chapter progress across Class 11 and Class 12. Each tile shows chapter name, status (mastered/practicing/untouched), questions attempted, and accuracy. "Mastered" requires >= 10 questions at >= 80% accuracy with at least 3 questions at difficulty >= 3. Clicking a tile navigates directly to practice. A summary line shows "X of 29 mastered" at the top.
+
+---
+
 *End of PRD.*

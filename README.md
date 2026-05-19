@@ -27,12 +27,15 @@ I have one of those students at home. So I built a tutor for him.
 
 ## What It Does
 
-1. **Pick a topic.** Class 11 or 12 → chapter from the ISC syllabus → topic.
-2. **Get a practice question** at your current difficulty level, with all math properly rendered in LaTeX.
-3. **Type your answer** (free-text — no multiple choice).
-4. **Get evaluated.** The tutor checks your answer, shows the correct solution step-by-step, and tells you exactly where you went wrong (if you did).
-5. **Difficulty adapts.** A rolling 5-question correctness window bumps difficulty up at ≥80% and down at ≤40%.
-6. **Bilingual explanations.** Toggle Telugu translation on the solution if English is the friction point.
+1. **Personalized greeting.** The tutor greets you by name, references your recent sessions and weak spots, and recommends what to work on next.
+2. **Mastery map.** A visual grid showing your progress across all 29 ISC Math chapters — mastered, practicing, or untouched — with accuracy stats per chapter.
+3. **Pick a topic.** Class 11 or 12 → chapter from the ISC syllabus → topic.
+4. **Get a real-world practice question** at your current difficulty level, grounded in contexts a 16-year-old finds engaging (gaming, social media, sports, money), with all math properly rendered in LaTeX.
+5. **Type your answer** (free-text — no multiple choice).
+6. **Socratic dialogue.** Instead of a simple right/wrong verdict, the tutor diagnoses your reasoning and asks targeted follow-up questions (up to 5 turns) to help you find your own mistakes. Tutor personality adapts by difficulty level.
+7. **Streaming responses.** Tutor messages appear token-by-token in real-time — no dead-air waits.
+8. **Full solution + reflection.** After the dialogue concludes, see the step-by-step canonical solution and a reflection question about the key insight.
+9. **Difficulty adapts.** A rolling 5-question correctness window bumps difficulty up at ≥80% and down at ≤40%.
 
 ## How It's Built
 

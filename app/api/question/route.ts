@@ -74,6 +74,17 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Load recent question contexts for variety
+    const recentQSnap = await adminDb
+      .collection(col("questions"))
+      .where("sessionId", "==", uid)
+      .orderBy("generatedAt", "desc")
+      .limit(3)
+      .get();
+    const recentContexts = recentQSnap.docs.map((d) =>
+      (d.data().questionLatex as string).slice(0, 60)
+    );
+
     // Generate question with in_syllabus retry logic
     const maxSyllabusRetries = 3;
     let result: {
@@ -89,6 +100,7 @@ export async function POST(req: NextRequest) {
         classLevel,
         chapterLabel: chapter.label,
         difficulty: currentDifficulty as 1 | 2 | 3 | 4 | 5,
+        recentContexts,
       });
 
       result = await callClaude({
