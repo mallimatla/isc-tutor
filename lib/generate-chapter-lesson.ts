@@ -29,6 +29,47 @@ p { color: #6b7280; font-size: 14px; max-width: 400px; line-height: 1.6; }
 </body></html>`;
 }
 
+/**
+ * Check if a cached lesson doc has complete, usable content.
+ * Does NOT check promptVersion — that's for admin invalidation only.
+ */
+function isCacheHit(data: Record<string, unknown>): {
+  hit: boolean;
+  reason: string;
+  hasNarrative: boolean;
+  hasVisualization: boolean;
+} {
+  const narrative = data.narrative as Record<string, unknown> | undefined;
+  const visualization = data.visualization as Record<string, unknown> | undefined;
+
+  const hasNarrative = !!(
+    narrative &&
+    narrative.hook &&
+    Array.isArray(narrative.narrativeBeats) &&
+    (narrative.narrativeBeats as unknown[]).length > 0 &&
+    narrative.keyTakeaway
+  );
+
+  const vizHtml = visualization?.html as string | undefined;
+  const hasVisualization = !!(
+    visualization &&
+    vizHtml &&
+    vizHtml.length > 100
+  );
+
+  if (!hasNarrative && !hasVisualization) {
+    return { hit: false, reason: "missing both narrative and visualization", hasNarrative, hasVisualization };
+  }
+  if (!hasNarrative) {
+    return { hit: false, reason: "missing narrative", hasNarrative, hasVisualization };
+  }
+  if (!hasVisualization) {
+    return { hit: false, reason: "missing visualization (html too short or absent)", hasNarrative, hasVisualization };
+  }
+
+  return { hit: true, reason: "complete", hasNarrative, hasVisualization };
+}
+
 export interface GenerateResult {
   status: "seeded" | "cached" | "failed";
   lesson: Record<string, unknown> | null;
@@ -47,16 +88,68 @@ export async function generateChapterLesson(
   try {
     const lessonRef = adminDb.collection(col("chapter_lessons")).doc(lessonId);
 
-    // Check cache
+    // Check cache (skip if force=true)
     if (!options.force) {
       const snap = await lessonRef.get();
-      if (snap.exists && snap.data()?.promptVersion === PROMPT_VERSION) {
-        return {
-          status: "cached",
-          lesson: snap.data()!,
-          error: null,
-          durationMs: Date.now() - start,
-        };
+      if (snap.exists) {
+        const data = snap.data()!;
+        const check = isCacheHit(data);
+
+        console.log("[chapter-lesson] cache check", {
+          lessonId,
+          exists: true,
+          hasNarrative: check.hasNarrative,
+          hasVisualization: check.hasVisualization,
+          storedPromptVersion: data.promptVersion,
+          willHit: check.hit,
+        });
+
+        if (check.hit) {
+          console.log("[chapter-lesson] CACHE HIT", { lessonId });
+          return {
+            status: "cached",
+            lesson: data,
+            error: null,
+            durationMs: Date.now() - start,
+          };
+        }
+
+        // Partial cache: has narrative but no viz → only regenerate viz
+        if (check.hasNarrative && !check.hasVisualization) {
+          console.log("[chapter-lesson] CACHE MISS (partial — regenerating viz only)", { lessonId, reason: check.reason });
+          const narrative = data.narrative as Record<string, unknown>;
+          const chapter = getChapter("mathematics", classLevel, chapterId);
+          if (chapter) {
+            const vizResult = await generateVisualization(
+              chapterId,
+              chapter.label,
+              classLevel,
+              chapter.description || chapter.label,
+              narrative.keyTakeaway as string
+            );
+            const updatedLesson = {
+              ...data,
+              visualization: vizResult,
+              promptVersion: PROMPT_VERSION,
+              generatedAt: FieldValue.serverTimestamp(),
+            };
+            await lessonRef.update({
+              visualization: vizResult,
+              promptVersion: PROMPT_VERSION,
+              generatedAt: FieldValue.serverTimestamp(),
+            });
+            return {
+              status: "seeded",
+              lesson: updatedLesson,
+              error: null,
+              durationMs: Date.now() - start,
+            };
+          }
+        }
+
+        console.log("[chapter-lesson] CACHE MISS", { lessonId, reason: check.reason });
+      } else {
+        console.log("[chapter-lesson] CACHE MISS", { lessonId, reason: "document does not exist" });
       }
     }
 
@@ -89,50 +182,13 @@ export async function generateChapterLesson(
     });
 
     // Generate visualization
-    const vizPrompt = buildChapterVisualizationPrompt({
+    const vizData = await generateVisualization(
       chapterId,
-      chapterLabel: chapter.label,
+      chapter.label,
       classLevel,
       chapterDescription,
-      keyTakeaway: narrativeResult.data.keyTakeaway,
-    });
-
-    let vizData: { title: string; interactionHint: string; html: string };
-    let sanitizationWarnings: string[] = [];
-
-    try {
-      const vizResult = await callClaude({
-        system: vizPrompt.system,
-        user: vizPrompt.user,
-        schema: ChapterVisualizationSchema,
-        promptVersion: vizPrompt.promptVersion,
-      });
-
-      const sanitized = sanitizeVizHtml(vizResult.data.html);
-      sanitizationWarnings = sanitized.warnings;
-
-      if (sanitized.safe) {
-        vizData = {
-          title: vizResult.data.title,
-          interactionHint: vizResult.data.interactionHint,
-          html: sanitized.safe,
-        };
-      } else {
-        vizData = {
-          title: chapter.label,
-          interactionHint: "Interactive visualization unavailable",
-          html: fallbackVizHtml(chapter.label, narrativeResult.data.keyTakeaway),
-        };
-        sanitizationWarnings.push("Fell back to static visualization");
-      }
-    } catch {
-      vizData = {
-        title: chapter.label,
-        interactionHint: "Interactive visualization unavailable",
-        html: fallbackVizHtml(chapter.label, narrativeResult.data.keyTakeaway),
-      };
-      sanitizationWarnings.push("Visualization generation failed, using fallback");
-    }
+      narrativeResult.data.keyTakeaway
+    );
 
     const lesson = {
       lessonId,
@@ -140,7 +196,7 @@ export async function generateChapterLesson(
       classLevel,
       promptVersion: PROMPT_VERSION,
       narrative: narrativeResult.data,
-      visualization: { ...vizData, sanitizationWarnings },
+      visualization: vizData,
       generatedAt: FieldValue.serverTimestamp(),
     };
 
@@ -158,6 +214,61 @@ export async function generateChapterLesson(
       lesson: null,
       error: err instanceof Error ? err.message : String(err),
       durationMs: Date.now() - start,
+    };
+  }
+}
+
+async function generateVisualization(
+  chapterId: string,
+  chapterLabel: string,
+  classLevel: "11" | "12",
+  chapterDescription: string,
+  keyTakeaway: string
+): Promise<{
+  title: string;
+  interactionHint: string;
+  html: string;
+  sanitizationWarnings: string[];
+}> {
+  const vizPrompt = buildChapterVisualizationPrompt({
+    chapterId,
+    chapterLabel,
+    classLevel,
+    chapterDescription,
+    keyTakeaway,
+  });
+
+  try {
+    const vizResult = await callClaude({
+      system: vizPrompt.system,
+      user: vizPrompt.user,
+      schema: ChapterVisualizationSchema,
+      promptVersion: vizPrompt.promptVersion,
+    });
+
+    const sanitized = sanitizeVizHtml(vizResult.data.html);
+
+    if (sanitized.safe) {
+      return {
+        title: vizResult.data.title,
+        interactionHint: vizResult.data.interactionHint,
+        html: sanitized.safe,
+        sanitizationWarnings: sanitized.warnings,
+      };
+    }
+
+    return {
+      title: chapterLabel,
+      interactionHint: "Interactive visualization unavailable",
+      html: fallbackVizHtml(chapterLabel, keyTakeaway),
+      sanitizationWarnings: [...sanitized.warnings, "Fell back to static visualization"],
+    };
+  } catch {
+    return {
+      title: chapterLabel,
+      interactionHint: "Interactive visualization unavailable",
+      html: fallbackVizHtml(chapterLabel, keyTakeaway),
+      sanitizationWarnings: ["Visualization generation failed, using fallback"],
     };
   }
 }
