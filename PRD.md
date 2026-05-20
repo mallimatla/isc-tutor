@@ -1177,4 +1177,16 @@ isc-tutor/
 
 ---
 
+## 24. Phase 6e — Chapter Learn Mode
+
+**AI-Generated Interactive Chapter Explanations.** Each chapter now has a "Learn" tab that renders before the student enters practice. The lesson consists of: (1) a real-world hook connecting the math to something the student cares about, (2) an AI-generated interactive SVG/HTML visualization rendered in a sandboxed iframe (`sandbox="allow-scripts"`) — e.g., draggable Venn diagrams for Sets, a unit circle with a movable point for Trigonometric Functions, (3) 4-6 narrative beats building intuition step-by-step, (4) a "Common Mistakes" callout, and (5) a key takeaway.
+
+**Generation and caching.** Two parallel Claude API calls generate the narrative and visualization. Results are cached in `isctutor_chapter_lessons` in Firestore; subsequent visits are instant (~50ms). A pre-generation script (`scripts/pregenerate-lessons.ts`) can populate all 29 chapters at once for ~$2-3.
+
+**Security.** AI-generated HTML is sanitized via `lib/sanitize-viz-html.ts` which blocks eval, fetch, localStorage, external resources, and nested iframes. The iframe uses `sandbox="allow-scripts"` with no `allow-same-origin` — full origin isolation. If sanitization fails, a static fallback visualization renders the chapter title and key takeaway.
+
+**Learn/Practice flow.** The practice page defaults to Learn mode. The Practice tab unlocks after the student clicks "Got it" or spends 30 seconds on the Learn tab. A "Skip to practice" link is always available. The choice persists in sessionStorage for the current browser session.
+
+---
+
 *End of PRD.*

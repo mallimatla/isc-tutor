@@ -1,8 +1,9 @@
 import syllabusData from "@/data/isc-syllabus.json";
 
-interface Chapter {
+export interface Chapter {
   id: string;
   label: string;
+  description?: string;
 }
 
 interface Subject {

@@ -9,6 +9,7 @@ Sign in with any Google account.
 
 ## What's built
 
+- **AI-generated interactive chapter explanations** — each chapter has a "Learn" tab with a real-world hook, an interactive Claude-generated SVG visualization (sandboxed iframe), narrative beats building intuition, and common mistakes. Cached in Firestore after first generation.
 - **Socratic Diagnosis Engine** — multi-turn dialogue (up to 5 turns) where the tutor asks targeted questions to find exactly where the student's reasoning breaks, instead of revealing solutions immediately
 - **Adaptive difficulty** — rolling 5-question window adjusts question difficulty up/down based on recent performance
 - **Concept tracking** — every wrong answer tagged with specific sub-skills (e.g., "complement-notation", "cardinality-formula") for weakness surfacing
@@ -21,7 +22,7 @@ Sign in with any Google account.
 
 ## Architecture
 
-Stack: Next.js 16 + TypeScript + Tailwind v4 + Claude Sonnet 4 + Firebase (Auth + Firestore) + Vercel + KaTeX. See [PRD.md](./PRD.md) for full system design (23 sections), [DESIGN.md](./DESIGN.md) for architecture summary.
+Stack: Next.js 16 + TypeScript + Tailwind v4 + Claude Sonnet 4 + Firebase (Auth + Firestore) + Vercel + KaTeX. See [PRD.md](./PRD.md) for full system design (24 sections), [DESIGN.md](./DESIGN.md) for architecture summary.
 
 Key design decisions: lazy-init for Firebase Admin (defers credential parsing past `next build`); collection prefix (`FIRESTORE_COLLECTION_PREFIX`) for safe coexistence with other apps inside the shared Firebase project; SSE-based streaming for the Socratic dialogue route; version-controlled LLM prompts in `lib/prompts/` (qgen-v1.3, eval-v1.1, socratic-v1.0, greeting-v1.0).
 
@@ -39,6 +40,8 @@ This is a solo build. Honest limitations:
 - **No mock board paper mode** — timed 3-hour exam simulation. Easy to add.
 - **No mobile app wrapper** — web-responsive only. PWA-installable but not native.
 - **Hallucinations on edge-case topics** — the in_syllabus prompt check catches most off-topic generations but isn't 100% reliable. The flag system lets users surface these for review.
+- **Interactive visualization quality varies** — Claude generates HTML/SVG fresh per chapter, and some chapters produce more elegant visualizations than others. We sandbox aggressively but quality control is best-effort.
+- **First chapter load takes 15-25 seconds** — the Learn tab generates narrative + visualization on first visit. Subsequent visits are instant via Firestore cache.
 - **Streaming JSON parsing uses regex** for the tutor_message field rather than a proper incremental JSON parser. Works in practice but could be more robust.
 - **English TTS uses browser speech synthesis** — sounds robotic. A paid TTS API (ElevenLabs, OpenAI) would sound much better but wasn't worth the cost or latency for v1.
 - **Single-user-per-session** — no shared/collaborative sessions or class-mode.
