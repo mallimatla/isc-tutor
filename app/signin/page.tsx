@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/use-auth";
+import Logo from "@/components/Logo";
 
 export default function SignInPage() {
   const { user, loading, signIn, error } = useAuth();
@@ -26,11 +27,12 @@ export default function SignInPage() {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4">
-      <div className="text-center">
+      <div className="flex flex-col items-center gap-3">
+        <Logo size={56} showText={false} />
         <h1 className="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
           ISC Tutor
         </h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
+        <p className="text-zinc-600 dark:text-zinc-400">
           Practice ISC Class 11 &amp; 12 Mathematics. Adaptive, AI-powered.
         </p>
       </div>
