@@ -1,4 +1,5 @@
 import { adminAuth } from "@/lib/firebase-admin";
+import { isAdmin } from "@/lib/admin";
 
 export class UnauthorizedError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -12,6 +13,12 @@ interface VerifiedUser {
   email: string;
   displayName?: string;
   photoURL?: string;
+}
+
+export function assertAdmin(user: VerifiedUser): void {
+  if (!isAdmin(user.email)) {
+    throw new UnauthorizedError("Admin access required");
+  }
 }
 
 export async function verifyRequest(req: Request): Promise<VerifiedUser> {

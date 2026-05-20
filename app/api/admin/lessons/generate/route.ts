@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { verifyRequest, UnauthorizedError } from "@/lib/verify-token";
+import { verifyRequest, assertAdmin, UnauthorizedError } from "@/lib/verify-token";
 import { generateChapterLesson } from "@/lib/generate-chapter-lesson";
 
 const RequestBodySchema = z.object({
   chapterId: z.string().min(1),
   classLevel: z.enum(["11", "12"]),
+  force: z.boolean().optional().default(false),
 });
 
 export async function POST(req: NextRequest) {
   try {
-    await verifyRequest(req);
+    const user = await verifyRequest(req);
+    assertAdmin(user);
 
     const body = await req.json();
     const parsed = RequestBodySchema.safeParse(body);
@@ -21,28 +23,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { chapterId, classLevel } = parsed.data;
-    const result = await generateChapterLesson(chapterId, classLevel);
+    const { chapterId, classLevel, force } = parsed.data;
+    const result = await generateChapterLesson(chapterId, classLevel, { force });
 
-    if (result.status === "failed") {
-      return NextResponse.json(
-        { error: "GENERATION_FAILED", message: result.error },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json(result.lesson);
+    return NextResponse.json(result);
   } catch (err) {
     if (err instanceof UnauthorizedError) {
       return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
     }
-    console.error({
-      route: "POST /api/chapter-lesson",
-      errorName: err instanceof Error ? err.name : "Unknown",
-      errorMessage: err instanceof Error ? err.message : String(err),
-    });
     return NextResponse.json(
-      { error: "INTERNAL", retryable: true },
+      {
+        status: "failed",
+        error: err instanceof Error ? err.message : String(err),
+        lesson: null,
+        durationMs: 0,
+      },
       { status: 500 }
     );
   }

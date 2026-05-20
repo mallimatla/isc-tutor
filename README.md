@@ -62,6 +62,10 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Seeding chapter lessons
+
+After deploy, the admin (set via `ADMIN_EMAILS` env var) can visit `/admin` to pre-populate the chapter lesson cache. Click "Generate All Missing" once after deploy to make every chapter load instantly for students. Total cost: ~$3 in Claude API calls. Subsequent visits to `/admin` show cache status and allow regenerating specific chapters.
+
 ## Submission notes
 
 Built for the Build at Damco Challenge, May 2026. Track: Engineers.

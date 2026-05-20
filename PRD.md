@@ -1189,4 +1189,14 @@ isc-tutor/
 
 ---
 
+## 25. Phase 6f — Admin Seeding UI
+
+**Admin-only lesson cache management.** A protected `/admin` page (gated by `ADMIN_EMAILS` env var) lets the admin see all 29 chapters' cache status, generate individual chapter lessons, bulk-generate all missing chapters with live SSE progress, preview rendered lessons inline, and regenerate if quality is insufficient.
+
+**Bulk generation** processes chapters in parallel batches of 3 (respecting Anthropic rate limits) with real-time progress streamed to the UI via Server-Sent Events. After admin runs "Generate All Missing" once post-deploy, every student visiting any chapter loads the Learn experience instantly from Firestore cache.
+
+**Shared generation logic.** Both the student-facing `/api/chapter-lesson` and the admin `/api/admin/lessons/generate` routes call into `lib/generate-chapter-lesson.ts`, ensuring identical caching, sanitization, and fallback behavior.
+
+---
+
 *End of PRD.*
