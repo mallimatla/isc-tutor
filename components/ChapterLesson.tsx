@@ -22,9 +22,11 @@ interface CommonMistake {
 
 interface LessonData {
   narrative: {
+    syllabusCoverage?: string[];
     hook: string;
     narrativeBeats: NarrativeBeat[];
     commonMistakes: CommonMistake[];
+    quickReferenceCard?: string[];
     keyTakeaway: string;
   };
   visualization: {
@@ -32,8 +34,6 @@ interface LessonData {
     interactionHint: string;
     html: string;
   };
-  heroImageBase64?: string;
-  heroImageMimeType?: string;
 }
 
 interface ChapterLessonProps {
@@ -101,30 +101,18 @@ export default function ChapterLesson({
 
   return (
     <div className="flex flex-col gap-8">
-      {/* HERO BANNER */}
-      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradient} p-6 sm:p-8`}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
-          {lesson.heroImageBase64 ? (
-            <img
-              src={`data:${lesson.heroImageMimeType || "image/png"};base64,${lesson.heroImageBase64}`}
-              alt={label}
-              className="h-40 w-40 rounded-2xl object-cover shadow-lg sm:h-48 sm:w-48"
-            />
-          ) : (
-            <div className="flex h-40 w-40 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm sm:h-48 sm:w-48">
-              <svg viewBox="0 0 80 80" className="h-20 w-20 opacity-60">
-                <circle cx="40" cy="40" r="30" fill="none" stroke="white" strokeWidth="2" />
-                <path d="M25 55 L40 25 L55 55" fill="none" stroke="white" strokeWidth="2" />
-                <circle cx="40" cy="20" r="3" fill="white" />
-              </svg>
-            </div>
-          )}
-          <div className="flex-1">
-            <h2 className="mb-2 text-2xl font-bold text-white sm:text-3xl">{label}</h2>
-            <p className="text-base leading-relaxed text-white/90 sm:text-lg">{narrative.hook}</p>
-            <div className="mt-3">
-              <SpeakButton text={narrative.hook} label="Listen" />
-            </div>
+      {/* HERO BANNER — CSS-only with decorative shapes */}
+      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradient} p-8 sm:p-10`}>
+        {/* Decorative blurred shapes */}
+        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/15 blur-3xl" />
+        <div className="pointer-events-none absolute right-1/4 top-1/3 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+
+        <div className="relative">
+          <h2 className="mb-3 text-3xl font-bold text-white sm:text-5xl">{label}</h2>
+          <p className="max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">{narrative.hook}</p>
+          <div className="mt-4">
+            <SpeakButton text={narrative.hook} label="Listen" />
           </div>
         </div>
       </div>
@@ -190,6 +178,22 @@ export default function ChapterLesson({
           ))}
         </div>
       </div>
+
+      {/* QUICK REFERENCE CARD */}
+      {narrative.quickReferenceCard && narrative.quickReferenceCard.length > 0 && (
+        <div className={`rounded-2xl bg-gradient-to-br ${theme.gradient} p-6`}>
+          <h4 className="mb-4 text-base font-bold text-white">
+            Quick Reference Card
+          </h4>
+          <div className="flex flex-col gap-2">
+            {narrative.quickReferenceCard.map((item, idx) => (
+              <div key={idx} className="rounded-xl bg-white/20 px-4 py-2.5 text-sm text-white backdrop-blur-sm">
+                <LatexRenderer text={item} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* KEY TAKEAWAY */}
       <div className="py-4 text-center">

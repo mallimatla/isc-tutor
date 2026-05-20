@@ -42,7 +42,8 @@ This is a solo build. Honest limitations:
 - **Hallucinations on edge-case topics** — the in_syllabus prompt check catches most off-topic generations but isn't 100% reliable. The flag system lets users surface these for review.
 - **Premium visualizations exist for 6 of 29 chapters** — the other 23 use AI-generated HTML which is more variable in quality
 - **Shareable card uses html2canvas** which doesn't perfectly render all CSS (gradients sometimes look off in the PNG export)
-- **First chapter load takes 15-25 seconds** — the Learn tab generates narrative + visualization on first visit. Subsequent visits are instant via Firestore cache.
+- **First chapter load takes 30-45 seconds** — the Learn tab generates narrative + visualization on first visit. Admin can pre-seed via /admin. Subsequent visits are instant via Firestore cache.
+- **OpenAI hero image generation built but currently disabled** due to Vercel function timeout constraints. CSS-only gradient banners used instead. Re-enable after refactoring image gen to a separate background job.
 - **Streaming JSON parsing uses regex** for the tutor_message field rather than a proper incremental JSON parser. Works in practice but could be more robust.
 - **English TTS uses browser speech synthesis** — sounds robotic. A paid TTS API (ElevenLabs, OpenAI) would sound much better but wasn't worth the cost or latency for v1.
 - **Single-user-per-session** — no shared/collaborative sessions or class-mode.

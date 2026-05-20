@@ -11,10 +11,8 @@ import {
   ChapterVisualizationSchema,
 } from "@/lib/schemas/chapter-lesson";
 import { sanitizeVizHtml } from "@/lib/sanitize-viz-html";
-import { generateChapterHeroImage } from "@/lib/openai-image";
-import { getChapterTheme } from "@/lib/chapter-theme";
 
-const PROMPT_VERSION = process.env.PROMPT_VERSION_LESSON || "lesson-v1.0";
+const PROMPT_VERSION = process.env.PROMPT_VERSION_LESSON || "lesson-v2.0";
 
 function fallbackVizHtml(chapterLabel: string, keyTakeaway: string): string {
   return `<!DOCTYPE html>
@@ -33,7 +31,7 @@ p { color: #6b7280; font-size: 14px; max-width: 400px; line-height: 1.6; }
 
 /**
  * Check if a cached lesson doc has complete, usable content.
- * Does NOT check promptVersion — that's for admin invalidation only.
+ * Checks promptVersion — v1.0 docs are regenerated as v2.0.
  */
 function isCacheHit(data: Record<string, unknown>): {
   hit: boolean;
@@ -41,6 +39,12 @@ function isCacheHit(data: Record<string, unknown>): {
   hasNarrative: boolean;
   hasVisualization: boolean;
 } {
+  // Version check: v1.0 lessons are too thin, regenerate as v2.0
+  const storedVersion = data.promptVersion as string | undefined;
+  if (storedVersion && storedVersion !== PROMPT_VERSION) {
+    return { hit: false, reason: `stale version: ${storedVersion} vs ${PROMPT_VERSION}`, hasNarrative: false, hasVisualization: false };
+  }
+
   const narrative = data.narrative as Record<string, unknown> | undefined;
   const visualization = data.visualization as Record<string, unknown> | undefined;
 
@@ -169,7 +173,7 @@ export async function generateChapterLesson(
       chapter.description ||
       `ISC ${classLevel === "11" ? "Class 11" : "Class 12"} chapter: ${chapter.label}`;
 
-    // Generate narrative
+    // Generate narrative first (viz needs keyTakeaway)
     const narPrompt = buildChapterNarrativePrompt({
       chapterId,
       chapterLabel: chapter.label,
@@ -183,40 +187,14 @@ export async function generateChapterLesson(
       promptVersion: narPrompt.promptVersion,
     });
 
-    // Generate visualization + hero image in parallel
-    const theme = getChapterTheme(chapterId);
-    const [vizData, heroResult] = await Promise.allSettled([
-      generateVisualization(
-        chapterId,
-        chapter.label,
-        classLevel,
-        chapterDescription,
-        narrativeResult.data.keyTakeaway
-      ),
-      process.env.OPENAI_API_KEY
-        ? generateChapterHeroImage({
-            chapterId,
-            chapterLabel: chapter.label,
-            classLevel,
-            themeColor: theme.hex.primary,
-          })
-        : Promise.reject(new Error("OPENAI_API_KEY not set")),
-    ]);
-
-    const viz =
-      vizData.status === "fulfilled"
-        ? vizData.value
-        : {
-            title: chapter.label,
-            interactionHint: "Interactive visualization unavailable",
-            html: fallbackVizHtml(chapter.label, narrativeResult.data.keyTakeaway),
-            sanitizationWarnings: ["Visualization generation failed"],
-          };
-
-    const heroImage =
-      heroResult.status === "fulfilled"
-        ? { heroImageBase64: heroResult.value.base64, heroImageMimeType: heroResult.value.mimeType }
-        : { heroImageBase64: null, heroImageMimeType: null };
+    // Generate visualization
+    const viz = await generateVisualization(
+      chapterId,
+      chapter.label,
+      classLevel,
+      chapterDescription,
+      narrativeResult.data.keyTakeaway
+    );
 
     const lesson = {
       lessonId,
@@ -225,7 +203,6 @@ export async function generateChapterLesson(
       promptVersion: PROMPT_VERSION,
       narrative: narrativeResult.data,
       visualization: viz,
-      ...heroImage,
       generatedAt: FieldValue.serverTimestamp(),
     };
 

@@ -1211,6 +1211,8 @@ isc-tutor/
 
 **Relaxed HTML sanitization.** The sanitizer now blocks only true security risks (eval, fetch, cookies, storage APIs) and injects a CSP meta tag into AI-generated HTML. The iframe `sandbox="allow-scripts"` attribute (without `allow-same-origin`) remains the primary security boundary. This allows most AI-generated interactive visualizations to render correctly.
 
+**Phase 6h — Richer lessons (lesson-v2.0).** Prompt upgraded to cover 50%+ of each chapter's ISC syllabus subtopics: 9-11 narrative beats (was 5-6), 4-5 common mistakes (was 2-3), a new `quickReferenceCard` field (4-6 key formulas), and `syllabusCoverage` listing 8-12 subtopics. Cache check now invalidates v1.0 docs and regenerates as v2.0. OpenAI hero image generation disabled (Vercel timeout); CSS-only gradient hero banners with decorative blur shapes instead. All lesson generation routes have `maxDuration = 300` for Vercel Pro. Bulk generation uses concurrency of 4 with Firestore writes per-chapter as they complete.
+
 ---
 
 *End of PRD.*

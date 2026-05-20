@@ -3,6 +3,8 @@ import { z } from "zod";
 import { verifyRequest, UnauthorizedError } from "@/lib/verify-token";
 import { generateChapterLesson } from "@/lib/generate-chapter-lesson";
 
+export const maxDuration = 300;
+
 const RequestBodySchema = z.object({
   chapterId: z.string().min(1),
   classLevel: z.enum(["11", "12"]),

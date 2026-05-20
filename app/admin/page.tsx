@@ -68,13 +68,16 @@ function AdminContent() {
   ) => {
     setGeneratingChapter(`${classLevel}-${chapterId}`);
     try {
-      await apiFetch("/api/admin/lessons/generate", {
+      const result = await apiFetch<{ status: string }>("/api/admin/lessons/generate", {
         method: "POST",
         body: JSON.stringify({ chapterId, classLevel, force }),
       });
       await fetchInventory();
+      // Auto-open preview on success
+      if (result.status === "seeded" || result.status === "cached") {
+        setPreviewChapter({ chapterId, classLevel });
+      }
     } catch {
-      // Refresh inventory to see current state
       await fetchInventory();
     } finally {
       setGeneratingChapter(null);

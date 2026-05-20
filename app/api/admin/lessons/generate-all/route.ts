@@ -10,7 +10,9 @@ const RequestBodySchema = z.object({
   classLevel: z.enum(["11", "12"]).nullable().optional().default(null),
 });
 
-const CONCURRENCY = 3;
+export const maxDuration = 300;
+
+const CONCURRENCY = 4;
 
 export async function POST(req: NextRequest) {
   try {

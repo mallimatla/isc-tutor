@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const ChapterNarrativeSchema = z.object({
+  syllabusCoverage: z.array(z.string()).min(3),
   hook: z.string(),
   narrativeBeats: z
     .array(
@@ -10,7 +11,7 @@ export const ChapterNarrativeSchema = z.object({
         diagramHint: z.string().nullable(),
       })
     )
-    .min(3),
+    .min(4),
   commonMistakes: z
     .array(
       z.object({
@@ -19,7 +20,8 @@ export const ChapterNarrativeSchema = z.object({
         howToAvoid: z.string(),
       })
     )
-    .min(1),
+    .min(2),
+  quickReferenceCard: z.array(z.string()).min(2),
   keyTakeaway: z.string(),
 });
 
@@ -45,7 +47,7 @@ export const ChapterLessonSchema = z.object({
     html: z.string(),
     sanitizationWarnings: z.array(z.string()),
   }),
-  generatedAt: z.unknown(), // Firestore Timestamp
+  generatedAt: z.unknown(),
 });
 
 export type ChapterLesson = z.infer<typeof ChapterLessonSchema>;
