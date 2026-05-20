@@ -9,7 +9,7 @@ Sign in with any Google account.
 
 ## What's built
 
-- **AI-generated interactive chapter explanations** — each chapter has a "Learn" tab with a real-world hook, an interactive Claude-generated SVG visualization (sandboxed iframe), narrative beats building intuition, and common mistakes. Cached in Firestore after first generation.
+- **Beautiful chapter Learn mode** — each chapter has a themed hero banner (with OpenAI-generated illustration), hand-crafted interactive visualizations for 6 key chapters (draggable Venn diagrams, unit circle, limits explorer, matrix transformer, probability simulator), AI-generated interactive viz for the rest, narrative beats with glass-card design, common mistakes, and shareable summary cards (PNG export via html2canvas)
 - **Socratic Diagnosis Engine** — multi-turn dialogue (up to 5 turns) where the tutor asks targeted questions to find exactly where the student's reasoning breaks, instead of revealing solutions immediately
 - **Adaptive difficulty** — rolling 5-question window adjusts question difficulty up/down based on recent performance
 - **Concept tracking** — every wrong answer tagged with specific sub-skills (e.g., "complement-notation", "cardinality-formula") for weakness surfacing
@@ -40,7 +40,8 @@ This is a solo build. Honest limitations:
 - **No mock board paper mode** — timed 3-hour exam simulation. Easy to add.
 - **No mobile app wrapper** — web-responsive only. PWA-installable but not native.
 - **Hallucinations on edge-case topics** — the in_syllabus prompt check catches most off-topic generations but isn't 100% reliable. The flag system lets users surface these for review.
-- **Interactive visualization quality varies** — Claude generates HTML/SVG fresh per chapter, and some chapters produce more elegant visualizations than others. We sandbox aggressively but quality control is best-effort.
+- **Premium visualizations exist for 6 of 29 chapters** — the other 23 use AI-generated HTML which is more variable in quality
+- **Shareable card uses html2canvas** which doesn't perfectly render all CSS (gradients sometimes look off in the PNG export)
 - **First chapter load takes 15-25 seconds** — the Learn tab generates narrative + visualization on first visit. Subsequent visits are instant via Firestore cache.
 - **Streaming JSON parsing uses regex** for the tutor_message field rather than a proper incremental JSON parser. Works in practice but could be more robust.
 - **English TTS uses browser speech synthesis** — sounds robotic. A paid TTS API (ElevenLabs, OpenAI) would sound much better but wasn't worth the cost or latency for v1.

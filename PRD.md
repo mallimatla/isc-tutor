@@ -1199,4 +1199,18 @@ isc-tutor/
 
 ---
 
+## 26. Phase 6g — Beautiful Learn Mode
+
+**Premium hand-crafted visualizations.** Six chapters (Sets, Functions, Trigonometric Functions, Limits, Probability, Matrices) have polished React-based interactive visualizations with draggable elements, live-updating formulas, gradient glass-card UI, and touch support. These bypass AI generation entirely for reliability and quality. The remaining 23 chapters use AI-generated HTML in sandboxed iframes.
+
+**Per-chapter color theming.** Each of 29 chapters has a distinct color theme (gradient, accent, hex codes) applied to the hero banner, CTA buttons, key takeaway text, and visualization backgrounds. Themes are named (ocean, forest, sunset, etc.) for discoverability.
+
+**OpenAI hero images.** Each chapter lesson optionally generates a 1024x1024 conceptual illustration via OpenAI's image API (gpt-image-1). Stored as base64 in Firestore. Falls back to a CSS gradient placeholder with abstract SVG when the image isn't available. Cost: ~$0.04 per image.
+
+**Shareable summary cards.** Students can export a visually-designed 9:16 summary card (chapter name, key takeaway, common mistakes) as a PNG via html2canvas, with Web Share API support on mobile.
+
+**Relaxed HTML sanitization.** The sanitizer now blocks only true security risks (eval, fetch, cookies, storage APIs) and injects a CSP meta tag into AI-generated HTML. The iframe `sandbox="allow-scripts"` attribute (without `allow-same-origin`) remains the primary security boundary. This allows most AI-generated interactive visualizations to render correctly.
+
+---
+
 *End of PRD.*

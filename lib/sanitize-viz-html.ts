@@ -1,23 +1,25 @@
+/**
+ * Sanitizes AI-generated HTML for rendering in a sandboxed iframe.
+ * The iframe uses sandbox="allow-scripts" (no allow-same-origin), which is
+ * the real security boundary. This is defense-in-depth.
+ */
+
 const BLOCKED_PATTERNS = [
-  { pattern: /\beval\s*\(/gi, label: "eval()" },
-  { pattern: /\bnew\s+Function\s*\(/gi, label: "new Function()" },
-  { pattern: /\bfetch\s*\(/gi, label: "fetch()" },
-  { pattern: /\bXMLHttpRequest\b/gi, label: "XMLHttpRequest" },
-  { pattern: /\bWebSocket\b/gi, label: "WebSocket" },
+  { pattern: /\bdocument\.cookie\b/gi, label: "document.cookie" },
   { pattern: /\blocalStorage\b/gi, label: "localStorage" },
   { pattern: /\bsessionStorage\b/gi, label: "sessionStorage" },
   { pattern: /\bindexedDB\b/gi, label: "indexedDB" },
-  { pattern: /\bdocument\.cookie\b/gi, label: "document.cookie" },
-  { pattern: /<script\s+src\s*=/gi, label: "<script src=>" },
-  { pattern: /<link\s+rel\s*=/gi, label: "<link rel=>" },
-  { pattern: /<img\s+[^>]*src\s*=\s*["']https?:/gi, label: "<img src=http>" },
-  { pattern: /<iframe/gi, label: "nested <iframe>" },
-  { pattern: /\bimport\s*\(/gi, label: "dynamic import()" },
+  { pattern: /\bfetch\s*\(/gi, label: "fetch()" },
+  { pattern: /\bXMLHttpRequest\b/gi, label: "XMLHttpRequest" },
+  { pattern: /\bWebSocket\b/gi, label: "WebSocket" },
+  { pattern: /\beval\s*\(/gi, label: "eval()" },
+  { pattern: /\bnew\s+Function\s*\(/gi, label: "new Function()" },
 ];
 
-// postMessage is allowed ONLY for the ready signal pattern
 const POSTMESSAGE_BLOCKED = /postMessage\s*\(/gi;
 const POSTMESSAGE_ALLOWED = /parent\.postMessage\s*\(\s*\{\s*type\s*:\s*["']ready["']\s*\}/;
+
+const CSP_META = '<meta http-equiv="Content-Security-Policy" content="default-src \'unsafe-inline\' \'unsafe-eval\' data: blob:; img-src \'self\' data: blob:; connect-src \'none\'">';
 
 export function sanitizeVizHtml(html: string): {
   safe: string;
@@ -32,7 +34,6 @@ export function sanitizeVizHtml(html: string): {
       warnings.push(`Blocked: ${label}`);
       safe = safe.replace(pattern, `/* BLOCKED: ${label} */`);
     }
-    // Reset regex lastIndex
     pattern.lastIndex = 0;
   }
 
@@ -43,40 +44,28 @@ export function sanitizeVizHtml(html: string): {
       warnings.push("Blocked: postMessage (non-ready pattern)");
       safe = safe.replace(
         /postMessage\s*\([^)]*\)/gi,
-        '/* BLOCKED: postMessage */'
+        "/* BLOCKED: postMessage */"
       );
     }
   }
 
-  // Strip <meta http-equiv> tags
-  const metaPattern = /<meta\s+http-equiv[^>]*>/gi;
-  if (metaPattern.test(safe)) {
-    warnings.push("Stripped: <meta http-equiv>");
-    safe = safe.replace(metaPattern, "");
-  }
-
-  // Strip on* event handlers containing URLs
-  const onHandlerPattern = /\bon\w+\s*=\s*["'][^"']*https?:[^"']*["']/gi;
-  if (onHandlerPattern.test(safe)) {
-    warnings.push("Stripped: on* handler with URL");
-    safe = safe.replace(onHandlerPattern, "");
-  }
-
-  // Check for external URL patterns in script content (not in allowed HTML attributes)
-  const urlInScript =
-    /<script[^>]*>([\s\S]*?)<\/script>/gi;
-  let match;
-  while ((match = urlInScript.exec(safe)) !== null) {
-    const scriptContent = match[1];
-    if (/https?:\/\//i.test(scriptContent)) {
-      warnings.push("Warning: URL found in script content");
-    }
+  // Inject CSP meta tag into <head>
+  if (safe.includes("<head>")) {
+    safe = safe.replace("<head>", `<head>\n${CSP_META}`);
+  } else if (safe.includes("<html>")) {
+    safe = safe.replace("<html>", `<html><head>${CSP_META}</head>`);
+  } else {
+    // Wrap in full HTML structure
+    safe = `<!DOCTYPE html><html><head>${CSP_META}</head><body>${safe}</body></html>`;
   }
 
   // If too many blocked patterns, the HTML is fundamentally unsafe
   const blockedCount = warnings.filter((w) => w.startsWith("Blocked:")).length;
   if (blockedCount >= 3) {
-    return { safe: "", warnings: [...warnings, "Rejected: too many unsafe patterns"] };
+    return {
+      safe: "",
+      warnings: [...warnings, "Rejected: too many unsafe patterns"],
+    };
   }
 
   return { safe, warnings };

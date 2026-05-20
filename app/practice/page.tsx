@@ -177,6 +177,7 @@ function PracticeContent() {
           <ChapterLesson
             chapterId={chapterId}
             classLevel={classLevel}
+            chapterLabel={chapterLabel}
             onGotIt={handleGotIt}
           />
         )}

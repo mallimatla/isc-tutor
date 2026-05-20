@@ -11,6 +11,8 @@ import {
   ChapterVisualizationSchema,
 } from "@/lib/schemas/chapter-lesson";
 import { sanitizeVizHtml } from "@/lib/sanitize-viz-html";
+import { generateChapterHeroImage } from "@/lib/openai-image";
+import { getChapterTheme } from "@/lib/chapter-theme";
 
 const PROMPT_VERSION = process.env.PROMPT_VERSION_LESSON || "lesson-v1.0";
 
@@ -181,14 +183,40 @@ export async function generateChapterLesson(
       promptVersion: narPrompt.promptVersion,
     });
 
-    // Generate visualization
-    const vizData = await generateVisualization(
-      chapterId,
-      chapter.label,
-      classLevel,
-      chapterDescription,
-      narrativeResult.data.keyTakeaway
-    );
+    // Generate visualization + hero image in parallel
+    const theme = getChapterTheme(chapterId);
+    const [vizData, heroResult] = await Promise.allSettled([
+      generateVisualization(
+        chapterId,
+        chapter.label,
+        classLevel,
+        chapterDescription,
+        narrativeResult.data.keyTakeaway
+      ),
+      process.env.OPENAI_API_KEY
+        ? generateChapterHeroImage({
+            chapterId,
+            chapterLabel: chapter.label,
+            classLevel,
+            themeColor: theme.hex.primary,
+          })
+        : Promise.reject(new Error("OPENAI_API_KEY not set")),
+    ]);
+
+    const viz =
+      vizData.status === "fulfilled"
+        ? vizData.value
+        : {
+            title: chapter.label,
+            interactionHint: "Interactive visualization unavailable",
+            html: fallbackVizHtml(chapter.label, narrativeResult.data.keyTakeaway),
+            sanitizationWarnings: ["Visualization generation failed"],
+          };
+
+    const heroImage =
+      heroResult.status === "fulfilled"
+        ? { heroImageBase64: heroResult.value.base64, heroImageMimeType: heroResult.value.mimeType }
+        : { heroImageBase64: null, heroImageMimeType: null };
 
     const lesson = {
       lessonId,
@@ -196,7 +224,8 @@ export async function generateChapterLesson(
       classLevel,
       promptVersion: PROMPT_VERSION,
       narrative: narrativeResult.data,
-      visualization: vizData,
+      visualization: viz,
+      ...heroImage,
       generatedAt: FieldValue.serverTimestamp(),
     };
 
