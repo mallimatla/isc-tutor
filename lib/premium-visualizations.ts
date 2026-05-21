@@ -12,21 +12,36 @@ import StraightLinesVizPremium from "@/components/learn-visualizations/StraightL
 import ConicSectionsVizPremium from "@/components/learn-visualizations/ConicSectionsVizPremium";
 import PermutationsVizPremium from "@/components/learn-visualizations/PermutationsVizPremium";
 import BinomialVizPremium from "@/components/learn-visualizations/BinomialVizPremium";
+import DeterminantsVizPremium from "@/components/learn-visualizations/DeterminantsVizPremium";
+import IntegralsVizPremium from "@/components/learn-visualizations/IntegralsVizPremium";
+import VectorAlgebraVizPremium from "@/components/learn-visualizations/VectorAlgebraVizPremium";
+import ContinuityVizPremium from "@/components/learn-visualizations/ContinuityVizPremium";
+import ApplicationDerivativesVizPremium from "@/components/learn-visualizations/ApplicationDerivativesVizPremium";
+import LinearProgrammingVizPremium from "@/components/learn-visualizations/LinearProgrammingVizPremium";
 
 const registry: Record<string, ComponentType> = {
+  // Class 11
   sets: SetsVizPremium,
   "relations-functions": FunctionsVizPremium,
   "trigonometric-functions": TrigVizPremium,
-  "limits-derivatives": LimitsVizPremium,
-  probability: ProbabilityVizPremium,
-  "probability-12": ProbabilityVizPremium,
-  matrices: MatricesVizPremium,
   "complex-numbers-quadratic": ComplexNumbersVizPremium,
+  "permutations-combinations": PermutationsVizPremium,
+  "binomial-theorem": BinomialVizPremium,
   "sequences-series": SequencesSeriesVizPremium,
   "straight-lines": StraightLinesVizPremium,
   "conic-sections": ConicSectionsVizPremium,
-  "permutations-combinations": PermutationsVizPremium,
-  "binomial-theorem": BinomialVizPremium,
+  "limits-derivatives": LimitsVizPremium,
+  probability: ProbabilityVizPremium,
+
+  // Class 12
+  matrices: MatricesVizPremium,
+  determinants: DeterminantsVizPremium,
+  "continuity-differentiability": ContinuityVizPremium,
+  "applications-derivatives": ApplicationDerivativesVizPremium,
+  integrals: IntegralsVizPremium,
+  vectors: VectorAlgebraVizPremium,
+  "linear-programming": LinearProgrammingVizPremium,
+  "probability-12": ProbabilityVizPremium,
 };
 
 export function getPremiumViz(chapterId: string): ComponentType | null {
