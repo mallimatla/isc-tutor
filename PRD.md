@@ -1272,4 +1272,55 @@ isc-tutor/
 
 ---
 
+## 28. Phase 6j — Verified question bank with instant load
+
+**Why this change.** Every question used to go through a Claude generation at request time (5–10 s p95, plus an `in_syllabus` retry loop that could blow to 20 s when a chapter was edge-case). The student waits each time, and we pay the LLM cost every time, even though the question itself never depends on who is asking. Pre-seeding a verified pool removes both the wait and the per-question cost for the common case, while keeping the existing Claude-runtime path as a fallback so practice remains infinite.
+
+**The pipeline.**
+
+1. **Local generation** — `npm run seed:questions` runs `scripts/seed-questions.mjs` on a developer machine. The script loads env from `.env.local`, initialises the Firebase Admin SDK with the same `parsePrivateKey` conventions as the lessons seed, and walks every chapter in `data/isc-syllabus.json`. For each chapter, it targets ~22 verified questions distributed across difficulty tiers 1–5 (board → JEE Main → JEE Advanced) and a mix of types: single-correct MCQ, numerical/integer-answer (JEE Advanced style), multiple-correct, and assertion–reason.
+2. **Independent re-solve verification** — this is the load-bearing piece. For each generated question, the script makes a **second, independent** OpenAI call that sees only the question text (and options, for MCQ types) — not the proposed answer or solution — and asks the model to solve it from scratch. The proposed answer and the verifier answer are compared with a type-aware comparator: single-letter match for single-correct / assertion–reason, set equality for multiple-correct, and numeric equality with relative tolerance 1e-3 for numerical (with fraction-string parsing). Only questions where both passes agree are written to Firestore with `verified: true`. Disagreements and shape-failures are discarded and counted; the script retries each slot up to `--max-attempts` times.
+3. **Resumability** — chapters that already have ≥ target verified questions are skipped unless `--force` is passed. `--only=<chapterId>` runs a single chapter; `--target=<n>` overrides the target; `--list` prints per-chapter counts and exits.
+4. **Sub-skill tagging** — each verified question is tagged with 2–3 of the chapter's actual sub-skills from `data/isc-chapter-syllabus.json` (the same taxonomy the mastery map and the Socratic engine use). Sub-skills the model hallucinates are filtered against the chapter's whitelist.
+
+**Document shape (`${PREFIX}question_bank/{auto-id}`).**
+
+```ts
+{
+  chapterId: string,
+  classLevel: "11" | "12",
+  difficulty: 1 | 2 | 3 | 4 | 5,
+  type: "single-correct" | "numerical" | "multiple-correct" | "assertion-reason",
+  subSkills: string[],         // 2–3 from the chapter whitelist
+  questionText: string,        // LaTeX inline as $...$
+  options: string[] | null,    // 4-element ["A) …","B) …","C) …","D) …"] for MCQ types
+  correctAnswer: string,       // "A" | "A,C" | "42" | "-3.5" etc.
+  conciseSolution: string,
+  verified: true,
+  source: "seed-openai-gpt-4o",
+  createdAt: Timestamp
+}
+```
+
+**Runtime flow (bank-first, runtime fallback).** `POST /api/question` now does:
+
+1. Load (or create) the user's session doc; read `currentDifficulty` and `servedBankIds: string[]` (capped at the most recent 300).
+2. Query `question_bank` for `chapterId == ?` AND `classLevel == ?` AND `difficulty == currentDifficulty` AND `verified == true`. Filter out items in `servedBankIds`.
+3. If the exact-difficulty pool is exhausted, try difficulty ±1 before falling back. This keeps practice flowing instead of jumping straight to runtime generation for routine cases.
+4. If a candidate exists: pick one at random, build a `questionLatex` that inlines the options (so the existing `<QuestionCard>` renders MCQ options without any UI change), persist a `questions` doc (mirroring the existing shape so `/api/evaluate` and `/api/socratic` keep working untouched) plus four bank-traceability fields — `sourceQuestionBankId`, `bankQuestionType`, `bankOptions`, `bankCorrectAnswer`, `bankSubSkills` — and append the bank id to `servedBankIds`. Return immediately. p95 should be a couple of hundred milliseconds — it's one Firestore query plus two writes.
+5. If no candidate: fall back to the unchanged Claude-runtime generation path (existing `buildGenerateQuestionPrompt` + `callClaude` + `in_syllabus` retry loop). Response shape is identical; the response just has `metadata.source: "runtime"` instead of `"bank"`.
+
+**What is intentionally untouched.**
+
+- `/api/socratic` and its prompt are unchanged. When the student answers, the Socratic dialogue still runs at runtime against the `expectedSolutionSteps` field on the `questions` doc — which is now `[conciseSolution]` for bank-served items.
+- `/api/evaluate` is unchanged.
+- The adaptive-difficulty engine and the rolling-window logic are unchanged.
+- The Claude prompt at `lib/prompts/generate-question.ts` is unchanged — it's still the fallback generator.
+
+**Cost & latency.** A typical full seed is ~29 chapters × ~22 verified questions × 2 OpenAI calls each ≈ ~1,300 calls, mostly ~1k in / ~500 out. At GPT-4o pricing that's roughly $10–15 per full re-seed, including disagreement retries. Runtime question serving drops from ~5–10 s Claude generation to ~200 ms Firestore-read latency for the common case.
+
+**What's still broken.** AI-generated questions are not a substitute for real previous-year papers (ICSE / ISC / JEE Main / JEE Advanced) for serious JEE prep. The independent-resolve verification catches wrong-key bugs but does not catch a perfectly self-consistent but pedagogically-poor question. For Phase 7 the right move is to seed a small companion bank from actual PYQs (copyright-permitting) and serve those by preference.
+
+---
+
 *End of PRD.*

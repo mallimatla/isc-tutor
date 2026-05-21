@@ -9,6 +9,7 @@ Sign in with any Google account.
 
 ## What's built
 
+- **Pre-seeded verified question bank** — `npm run seed:questions` builds a pool of ~22 verified questions per chapter, spanning board → JEE Main → JEE Advanced (difficulties 1–5) and mixing single-correct MCQ, numerical, multiple-correct, and assertion–reason types. Each question is solved a SECOND independent time by the same model with no access to the proposed key — only questions where both solves agree are written to Firestore. At runtime the question API serves an unseen verified question instantly (single Firestore read, no LLM call); if the pool is exhausted at the user's current difficulty, the existing Claude-runtime generation kicks in as fallback so practice stays infinite.
 - **Local lesson seed pipeline** — `npm run seed:lessons` generates all 29 chapter lessons from a developer machine and writes them to Firestore. The Vercel app reads them back; it never generates. This permanently sidesteps the Hobby 60s function-duration limit.
 - **Three content layers per lesson** — DALL·E hero illustration (decorative background) + 2–4 Claude-authored pure-SVG diagrams interleaved into the narrative + a 9–11-beat tutor explanation with common-mistakes and quick-reference cards. Diagrams render inline via `dangerouslySetInnerHTML` of sanitized SVG strings, eliminating the iframe sandbox failures that plagued earlier phases.
 - **Beautiful chapter Learn mode** — each chapter has a themed hero banner (with DALL·E hero image when seeded), hand-crafted interactive React widgets for 6 key chapters (draggable Venn diagrams, unit circle, limits explorer, matrix transformer, probability simulator) rendered above the static SVG diagrams, narrative beats with glass-card design, common mistakes, and shareable summary cards (PNG export via html2canvas)
@@ -41,6 +42,7 @@ This is a solo build. Honest limitations:
 - **No handwritten math input** — would unlock R.D. Sharma textbook scanning via Claude vision. Phase 4 roadmap.
 - **No mock board paper mode** — timed 3-hour exam simulation. Easy to add.
 - **No mobile app wrapper** — web-responsive only. PWA-installable but not native.
+- **AI-generated question bank, not past papers** — the verified bank is solid for practice but it's still model-authored. For serious JEE prep it should supplement, not replace, real ICSE / ISC / JEE PYQs. The independent-resolve verification catches the most embarrassing wrong-answer-key bugs but isn't a substitute for human review of every item.
 - **Hallucinations on edge-case topics** — the in_syllabus prompt check catches most off-topic generations but isn't 100% reliable. The flag system lets users surface these for review.
 - **Interactive React widgets exist for 6 of 29 chapters** (Sets, Functions, Trigonometric Functions, Limits, Probability, Matrices); the rest rely on static SVG diagrams generated at seed time.
 - **Shareable card uses html2canvas** which doesn't perfectly render all CSS (gradients sometimes look off in the PNG export)
@@ -85,6 +87,26 @@ npm run seed:lessons -- --no-image            # skip the DALL·E hero
 ```
 
 The script is resumable: chapters already on `lesson-v3.0` are skipped unless `--force` is passed. Failures don't abort the run; a summary at the end lists any chapter to re-run. `/admin` is a read-only inventory of what's currently in Firestore.
+
+### Seeding the question bank
+
+```bash
+# .env.local needs:
+#   OPENAI_API_KEY
+#   OPENAI_QGEN_MODEL              (default: gpt-4o)
+#   FIREBASE_PROJECT_ID
+#   FIREBASE_CLIENT_EMAIL
+#   FIREBASE_PRIVATE_KEY
+#   FIRESTORE_COLLECTION_PREFIX    (e.g. "isctutor_")
+
+npm run seed:questions                          # ~22 verified questions per chapter
+npm run seed:questions -- --only=sets           # seed just one chapter
+npm run seed:questions -- --target=25           # raise the per-chapter target
+npm run seed:questions -- --force               # top up beyond the target
+npm run seed:questions -- --list                # show current per-chapter bank counts
+```
+
+Every question goes through a two-pass pipeline: a generator call produces the question + key + concise solution, then a second independent call solves the same question from scratch (with no access to the proposed key). Only questions where both passes agree are written to Firestore with `verified: true`. Disagreements and shape-failures are discarded and re-attempted up to `--max-attempts` times per slot. The script is resumable — chapters that already meet the per-difficulty target are skipped unless `--force` is passed.
 
 ## Submission notes
 

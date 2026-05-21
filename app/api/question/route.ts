@@ -24,6 +24,79 @@ const RequestBodySchema = z.object({
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
 
+// Cap servedBankIds array growth — keep the most recent N. A user who has
+// burned through more questions than that gets older bank items eligible again,
+// which is fine.
+const SERVED_IDS_CAP = 300;
+
+interface BankDocShape {
+  chapterId: string;
+  classLevel: string;
+  difficulty: number;
+  type: string;
+  subSkills: string[];
+  questionText: string;
+  options: string[] | null;
+  correctAnswer: string;
+  conciseSolution: string;
+  verified: boolean;
+  source: string;
+}
+
+function composeLatexWithOptions(bank: BankDocShape): string {
+  if (!bank.options || bank.options.length === 0) return bank.questionText;
+  return `${bank.questionText}\n\n${bank.options.join("\n")}`;
+}
+
+async function pickFromBank({
+  chapterId,
+  classLevel,
+  targetDifficulty,
+  servedBankIds,
+}: {
+  chapterId: string;
+  classLevel: "11" | "12";
+  targetDifficulty: number;
+  servedBankIds: string[];
+}): Promise<{ id: string; data: BankDocShape } | null> {
+  const servedSet = new Set(servedBankIds);
+
+  // Read pool at the exact target difficulty first.
+  const exactSnap = await adminDb
+    .collection(col("question_bank"))
+    .where("chapterId", "==", chapterId)
+    .where("classLevel", "==", classLevel)
+    .where("difficulty", "==", targetDifficulty)
+    .where("verified", "==", true)
+    .get();
+
+  let candidates = exactSnap.docs.filter((d) => !servedSet.has(d.id));
+
+  // If no unseen at the exact target, try adjacent difficulties (±1) before
+  // falling back to runtime generation. Keeps practice flowing.
+  if (candidates.length === 0) {
+    const adjacent: number[] = [];
+    if (targetDifficulty > 1) adjacent.push(targetDifficulty - 1);
+    if (targetDifficulty < 5) adjacent.push(targetDifficulty + 1);
+    for (const d of adjacent) {
+      const snap = await adminDb
+        .collection(col("question_bank"))
+        .where("chapterId", "==", chapterId)
+        .where("classLevel", "==", classLevel)
+        .where("difficulty", "==", d)
+        .where("verified", "==", true)
+        .get();
+      candidates = snap.docs.filter((doc) => !servedSet.has(doc.id));
+      if (candidates.length > 0) break;
+    }
+  }
+
+  if (candidates.length === 0) return null;
+
+  const picked = candidates[Math.floor(Math.random() * candidates.length)];
+  return { id: picked.id, data: picked.data() as BankDocShape };
+}
+
 export async function POST(req: NextRequest) {
   let uid = "";
   try {
@@ -53,10 +126,12 @@ export async function POST(req: NextRequest) {
     const sessionRef = adminDb.collection(col("sessions")).doc(uid);
     const sessionSnap = await sessionRef.get();
     let currentDifficulty = 2;
+    let servedBankIds: string[] = [];
 
     if (sessionSnap.exists) {
       const data = sessionSnap.data();
       currentDifficulty = data?.currentDifficulty ?? 2;
+      servedBankIds = Array.isArray(data?.servedBankIds) ? data!.servedBankIds : [];
     } else {
       await sessionRef.set({
         sessionId: uid,
@@ -67,12 +142,76 @@ export async function POST(req: NextRequest) {
         currentChapterId: chapterId,
         currentDifficulty: 2,
         rollingWindow: [],
+        servedBankIds: [],
         totalQuestionsServed: 0,
         totalAnswered: 0,
         totalCorrect: 0,
         preferences: { explanationLanguage: "en" },
       });
     }
+
+    // ---------- BANK-FIRST PATH ----------
+    const bankStart = Date.now();
+    const bankHit = await pickFromBank({
+      chapterId,
+      classLevel,
+      targetDifficulty: currentDifficulty,
+      servedBankIds,
+    });
+
+    if (bankHit) {
+      const { id: bankId, data: bank } = bankHit;
+      const questionRef = adminDb.collection(col("questions")).doc();
+      const composed = composeLatexWithOptions(bank);
+
+      await questionRef.set({
+        questionId: questionRef.id,
+        sessionId: uid,
+        generatedAt: FieldValue.serverTimestamp(),
+        subject,
+        class: classLevel,
+        chapterId,
+        difficultyRequested: currentDifficulty,
+        difficultyActual: bank.difficulty,
+        inSyllabus: true,
+        syllabusReasoning: "served from verified question bank",
+        questionLatex: composed,
+        expectedSolutionSteps: [bank.conciseSolution],
+        llmModel: bank.source,
+        promptVersion: "bank-v1",
+        generationTokens: { input: 0, output: 0 },
+        generationLatencyMs: Date.now() - bankStart,
+        // Bank-specific fields for downstream evaluators and analytics.
+        sourceQuestionBankId: bankId,
+        bankQuestionType: bank.type,
+        bankOptions: bank.options ?? null,
+        bankCorrectAnswer: bank.correctAnswer,
+        bankSubSkills: Array.isArray(bank.subSkills) ? bank.subSkills : [],
+      });
+
+      const trimmedServed = [...servedBankIds, bankId].slice(-SERVED_IDS_CAP);
+      await sessionRef.update({
+        lastActiveAt: FieldValue.serverTimestamp(),
+        currentChapterId: chapterId,
+        currentClass: classLevel,
+        totalQuestionsServed: FieldValue.increment(1),
+        servedBankIds: trimmedServed,
+      });
+
+      return NextResponse.json({
+        questionId: questionRef.id,
+        questionLatex: composed,
+        difficultyServed: bank.difficulty,
+        metadata: {
+          inSyllabus: true,
+          generationLatencyMs: Date.now() - bankStart,
+          source: "bank",
+          bankQuestionType: bank.type,
+        },
+      });
+    }
+
+    // ---------- RUNTIME FALLBACK (existing path, unchanged) ----------
 
     // Load recent question contexts for variety (optional — missing index is OK)
     let recentContexts: string[] = [];
@@ -167,6 +306,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         inSyllabus: result.data.in_syllabus,
         generationLatencyMs: result.latencyMs,
+        source: "runtime",
         ...(syllabusWarning && { syllabusWarning: true }),
       },
     });

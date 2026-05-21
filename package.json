@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:lessons": "node scripts/seed-lessons.mjs"
+    "seed:lessons": "node scripts/seed-lessons.mjs",
+    "seed:questions": "node scripts/seed-questions.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.97.0",
