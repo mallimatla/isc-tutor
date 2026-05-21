@@ -3,6 +3,8 @@ import { adminDb, col } from "@/lib/firebase-admin";
 import { verifyRequest, assertAdmin, UnauthorizedError } from "@/lib/verify-token";
 import { getAllChapters } from "@/lib/syllabus";
 
+const ACTIVE_PROMPT_VERSION = "lesson-v3.0";
+
 export async function GET(req: NextRequest) {
   try {
     const user = await verifyRequest(req);
@@ -19,7 +21,6 @@ export async function GET(req: NextRequest) {
       })),
     ];
 
-    // Load all cached lessons
     const lessonsSnap = await adminDb
       .collection(col("chapter_lessons"))
       .get();
@@ -33,20 +34,31 @@ export async function GET(req: NextRequest) {
       const lessonId = `${ch.classLevel}-${ch.id}`;
       const lesson = lessonMap.get(lessonId);
 
-      let status: "seeded" | "not-seeded" | "failed" = "not-seeded";
-      if (lesson) {
-        const hasWarnings =
-          (lesson.visualization as Record<string, unknown>)?.sanitizationWarnings;
-        const warnings = Array.isArray(hasWarnings) ? hasWarnings : [];
-        const hasFailed = warnings.some((w: string) =>
-          w.includes("Rejected") || w.includes("generation failed")
-        );
-        status = hasFailed ? "failed" : "seeded";
-      }
+      const promptVersion = (lesson?.promptVersion as string) ?? null;
+      const isCurrent = promptVersion === ACTIVE_PROMPT_VERSION;
+      const status: "current" | "stale" | "not-seeded" = !lesson
+        ? "not-seeded"
+        : isCurrent
+          ? "current"
+          : "stale";
+
+      const narrative = lesson?.narrative as
+        | { beats?: unknown[] }
+        | undefined;
+      const beatCount = Array.isArray(narrative?.beats)
+        ? (narrative!.beats as unknown[]).length
+        : 0;
+      const diagrams = lesson?.diagrams as unknown[] | undefined;
+      const diagramCount = Array.isArray(diagrams) ? diagrams.length : 0;
+      const hasHeroImage =
+        typeof lesson?.heroImageBase64 === "string" &&
+        (lesson.heroImageBase64 as string).length > 100;
 
       const generatedAt = lesson?.generatedAt;
       const genTimestamp =
-        generatedAt && typeof generatedAt === "object" && "toDate" in generatedAt
+        generatedAt &&
+        typeof generatedAt === "object" &&
+        "toDate" in (generatedAt as object)
           ? (generatedAt as { toDate: () => Date }).toDate().toISOString()
           : null;
 
@@ -54,28 +66,23 @@ export async function GET(req: NextRequest) {
         chapterId: ch.id,
         chapterLabel: ch.label,
         classLevel: ch.classLevel,
-        lessonId: `${ch.classLevel}-${ch.id}`,
+        lessonId,
         status,
+        promptVersion,
         generatedAt: genTimestamp,
-        promptVersion: (lesson?.promptVersion as string) ?? null,
-        hasSanitizationWarnings:
-          Array.isArray(
-            (lesson?.visualization as Record<string, unknown>)
-              ?.sanitizationWarnings
-          ) &&
-          (
-            (lesson?.visualization as Record<string, unknown>)
-              ?.sanitizationWarnings as string[]
-          ).length > 0,
+        beatCount,
+        diagramCount,
+        hasHeroImage,
         sizeBytes: lesson ? JSON.stringify(lesson).length : null,
       };
     });
 
     const summary = {
       total: chapters.length,
-      seeded: chapters.filter((c) => c.status === "seeded").length,
-      not_seeded: chapters.filter((c) => c.status === "not-seeded").length,
-      failed: chapters.filter((c) => c.status === "failed").length,
+      current: chapters.filter((c) => c.status === "current").length,
+      stale: chapters.filter((c) => c.status === "stale").length,
+      notSeeded: chapters.filter((c) => c.status === "not-seeded").length,
+      activeVersion: ACTIVE_PROMPT_VERSION,
     };
 
     return NextResponse.json({ chapters, summary });

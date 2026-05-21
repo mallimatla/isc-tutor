@@ -40,6 +40,36 @@ const client = new Anthropic({
 const MODEL =
   process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
 
+/**
+ * Defensively strip ```json / ``` fences and surrounding whitespace before JSON.parse.
+ * Claude sometimes wraps strict-JSON output in markdown fences even when asked not to;
+ * use this helper at every Claude-JSON parsing site.
+ */
+export function safeParseClaudeJson(raw: string): unknown {
+  let text = raw.trim();
+
+  // Strip a leading ```json or ``` fence (with optional language tag)
+  text = text.replace(/^```(?:json|JSON)?\s*\n?/, "");
+  // Strip a trailing ``` fence
+  text = text.replace(/\n?```\s*$/, "");
+
+  // Some models prepend a sentence before the JSON; grab the first {...} block as a fallback.
+  text = text.trim();
+  if (!text.startsWith("{") && !text.startsWith("[")) {
+    const firstBrace = text.indexOf("{");
+    const firstBracket = text.indexOf("[");
+    const start =
+      firstBrace === -1
+        ? firstBracket
+        : firstBracket === -1
+          ? firstBrace
+          : Math.min(firstBrace, firstBracket);
+    if (start > 0) text = text.slice(start);
+  }
+
+  return JSON.parse(text);
+}
+
 // --- Main function ---
 
 interface CallClaudeParams<TSchema extends z.ZodSchema> {
@@ -110,7 +140,7 @@ export async function callClaude<TSchema extends z.ZodSchema>(
 
     let parsed: unknown;
     try {
-      parsed = JSON.parse(textBlock.text.trim());
+      parsed = safeParseClaudeJson(textBlock.text);
     } catch {
       lastError = new ClaudeMalformedOutputError(
         `Invalid JSON from Claude: ${textBlock.text.slice(0, 200)}`
@@ -193,7 +223,7 @@ export async function callClaudeStreaming<TSchema extends z.ZodSchema>(
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(accumulated.trim());
+    parsed = safeParseClaudeJson(accumulated);
   } catch {
     // Streaming produced invalid JSON — fall back to non-streaming retry
     return callClaude(params);

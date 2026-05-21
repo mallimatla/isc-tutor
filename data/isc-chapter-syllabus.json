@@ -1,0 +1,461 @@
+{
+  "_comment": "Per-chapter ISC subtopics and suggested diagrams. Source of truth for lesson seeding and the `Learn` page subtopic pills. Consumed both by lib/isc-syllabus.ts (app) and scripts/seed-lessons.mjs (local generator).",
+  "chapters": {
+    "sets": {
+      "subtopics": [
+        "Roster vs set-builder notation",
+        "Types of sets (empty, finite, infinite, equal, equivalent)",
+        "Subsets, proper subsets, and power sets",
+        "Universal set and complement",
+        "Union, intersection, and difference of sets",
+        "Venn diagrams",
+        "Cardinality and the inclusion-exclusion principle",
+        "Intervals on the real line"
+      ],
+      "suggestedDiagrams": [
+        "Two-set Venn diagram with the union, intersection, and difference regions clearly shaded and labeled",
+        "Three-set Venn diagram illustrating inclusion-exclusion for |A∪B∪C|",
+        "Number line showing open and closed intervals with correct bracket and parenthesis notation"
+      ]
+    },
+    "relations-functions": {
+      "subtopics": [
+        "Ordered pairs and Cartesian product",
+        "Relations as subsets of A×B",
+        "Domain, codomain, and range",
+        "Types of relations (reflexive, symmetric, transitive)",
+        "Functions as a special kind of relation",
+        "Vertical line test",
+        "One-one (injective) and onto (surjective) functions",
+        "Composition of functions"
+      ],
+      "suggestedDiagrams": [
+        "Arrow diagram from set A to set B distinguishing relations from functions and marking which arrow patterns fail the vertical line test",
+        "Two function graphs side by side — one passing the horizontal line test (injective), one failing — to show one-one vs many-one",
+        "Mapping diagram showing g ∘ f as a two-stage arrow chain from A → B → C"
+      ]
+    },
+    "trigonometric-functions": {
+      "subtopics": [
+        "Degree-radian conversion",
+        "The unit circle and reference angles",
+        "Six ratios for any angle",
+        "Signs of trigonometric ratios in the four quadrants",
+        "Pythagorean and reciprocal identities",
+        "Sum and difference formulas",
+        "Double-angle and half-angle formulas",
+        "Graphs and periodicity of sin, cos, tan",
+        "General solutions of trigonometric equations"
+      ],
+      "suggestedDiagrams": [
+        "Unit circle with a 30-60-90 angle showing the sin and cos projections labeled on the axes",
+        "Graphs of y = sin x and y = cos x on the same axes from 0 to 2π with key points marked",
+        "Quadrant chart (ASTC) showing which ratios are positive in each quadrant"
+      ]
+    },
+    "principle-mathematical-induction": {
+      "subtopics": [
+        "Statement of the principle of mathematical induction",
+        "Base case verification",
+        "The inductive hypothesis P(k)",
+        "Proving the inductive step P(k) ⇒ P(k+1)",
+        "Summation formulas (e.g. 1+2+…+n = n(n+1)/2)",
+        "Divisibility statements (e.g. 7 divides 2^(3n)-1)",
+        "Inequality proofs",
+        "Common pitfalls (assuming what you must prove)"
+      ],
+      "suggestedDiagrams": [
+        "Falling-dominoes illustration showing base case (first domino) and inductive step (each pushes the next)",
+        "Stacked staircase visual of P(1), P(2), P(3), … with arrows showing the implication P(k) → P(k+1)"
+      ]
+    },
+    "complex-numbers-quadratic": {
+      "subtopics": [
+        "Definition of i and powers of i",
+        "Algebraic form a+bi, addition, subtraction, multiplication",
+        "Conjugate and division",
+        "Modulus and argument",
+        "Argand plane representation",
+        "Polar form r(cos θ + i sin θ)",
+        "Quadratic equations with real coefficients and complex roots",
+        "Discriminant and nature of roots"
+      ],
+      "suggestedDiagrams": [
+        "Argand plane plotting 3+4i with modulus shown as the line segment to the origin and argument as the angle from the positive real axis",
+        "Side-by-side: a parabola y = x² + 1 not crossing the x-axis next to the corresponding complex roots ±i plotted on the Argand plane"
+      ]
+    },
+    "linear-inequalities": {
+      "subtopics": [
+        "Linear inequalities in one variable",
+        "Number-line representation of solution sets",
+        "Linear inequalities in two variables",
+        "Half-plane interpretation and the boundary line",
+        "Systems of linear inequalities",
+        "Feasible region as an intersection of half-planes",
+        "Inequalities involving modulus"
+      ],
+      "suggestedDiagrams": [
+        "Number line shaded for the inequality 2x − 3 < 7, with the open/closed endpoint conventions explained",
+        "Coordinate plane showing two linear inequalities and their intersection as the shaded feasible region"
+      ]
+    },
+    "permutations-combinations": {
+      "subtopics": [
+        "Fundamental counting principle",
+        "Factorial notation",
+        "Permutations nPr (arrangements where order matters)",
+        "Permutations with repetition",
+        "Permutations with identical objects",
+        "Combinations nCr (selections where order does not matter)",
+        "Distinguishing permutation vs combination problems",
+        "Applications: committees, teams, words, distributions"
+      ],
+      "suggestedDiagrams": [
+        "Tree diagram enumerating the arrangements of 3 letters {A,B,C} to illustrate 3! = 6 permutations",
+        "Side-by-side: two boxes labeled 'order matters' (nPr) and 'order doesn't' (nCr), each picking 2 from 4 colored balls"
+      ]
+    },
+    "binomial-theorem": {
+      "subtopics": [
+        "Statement of binomial theorem for positive integral index",
+        "Pascal's triangle and binomial coefficients",
+        "General term T_(r+1)",
+        "Middle term(s)",
+        "Coefficient of a specific power of x",
+        "Properties of binomial coefficients (sum, alternating sum)",
+        "Applications to approximation"
+      ],
+      "suggestedDiagrams": [
+        "Pascal's triangle (first 6 rows) with the row n=4 expansion of (a+b)^4 highlighted underneath",
+        "Annotated expansion of (x+y)^5 showing where the general term T_(r+1) comes from and how to find the coefficient of x²y³"
+      ]
+    },
+    "sequences-series": {
+      "subtopics": [
+        "Arithmetic progression: nth term and sum",
+        "Geometric progression: nth term and sum",
+        "Arithmetic and geometric means",
+        "Sum of an infinite geometric series",
+        "Special series: Σn, Σn², Σn³",
+        "Recognising AP vs GP from a sequence",
+        "Applications: compound interest, savings, depreciation"
+      ],
+      "suggestedDiagrams": [
+        "Two number lines stacked: top showing an AP with constant difference d, bottom showing a GP with constant ratio r",
+        "Bar chart of the first 6 terms of the GP 2, 4, 8, 16, 32, 64 showing exponential growth"
+      ]
+    },
+    "straight-lines": {
+      "subtopics": [
+        "Slope of a line and angle of inclination",
+        "Slope-intercept form y = mx + c",
+        "Point-slope form",
+        "Two-point form",
+        "Intercept form x/a + y/b = 1",
+        "Normal form",
+        "Angle between two lines",
+        "Distance of a point from a line",
+        "Parallel and perpendicular lines (slope conditions)"
+      ],
+      "suggestedDiagrams": [
+        "Coordinate plane with one line drawn, its slope triangle marked, and its y-intercept clearly labeled",
+        "Two intersecting lines with the acute and obtuse angles between them and the formula tan θ = |(m₁−m₂)/(1+m₁m₂)| annotated"
+      ]
+    },
+    "conic-sections": {
+      "subtopics": [
+        "Circle: standard equation and general form",
+        "Parabola: standard forms y² = 4ax, x² = 4ay; focus, directrix, vertex",
+        "Ellipse: standard equation x²/a² + y²/b² = 1; foci, eccentricity, latus rectum",
+        "Hyperbola: standard equation x²/a² − y²/b² = 1; foci, asymptotes",
+        "Eccentricity as a unifying parameter",
+        "Latus rectum",
+        "Identifying conics from general second-degree equations"
+      ],
+      "suggestedDiagrams": [
+        "Side-by-side standard sketches of a circle, parabola, ellipse and hyperbola with foci and key parameters labeled",
+        "An ellipse with both foci marked and a point P on the curve, showing the defining property PF₁ + PF₂ = 2a"
+      ]
+    },
+    "intro-3d-geometry": {
+      "subtopics": [
+        "Coordinate axes and octants in 3D",
+        "Coordinates of a point in space",
+        "Distance formula in 3D",
+        "Section formula (internal and external)",
+        "Midpoint formula",
+        "Coordinates of centroid of a triangle in 3D"
+      ],
+      "suggestedDiagrams": [
+        "3D axes with a point P(2,3,4) shown, dropping a perpendicular to the xy-plane, illustrating how the three coordinates locate the point",
+        "Line segment AB in 3D with point P dividing it in ratio m:n, illustrating the section formula visually"
+      ]
+    },
+    "limits-derivatives": {
+      "subtopics": [
+        "Intuitive idea of a limit",
+        "Left-hand and right-hand limits",
+        "Limit laws (sum, product, quotient)",
+        "Standard limits: lim (sin x)/x, lim (1 − cos x)/x²",
+        "Indeterminate forms 0/0 and ∞/∞",
+        "Limits of polynomials and rational functions",
+        "Derivative as a limit",
+        "Geometrical meaning: derivative as slope of tangent",
+        "Differentiation rules: sum, product, quotient, chain (informal)"
+      ],
+      "suggestedDiagrams": [
+        "Curve y = f(x) with a point approached from both sides on the x-axis, showing the limit value on the y-axis",
+        "Tangent line touching a curve at a single point, with the secant lines whose slopes converge to it as Δx → 0"
+      ]
+    },
+    "mathematical-reasoning": {
+      "subtopics": [
+        "Mathematical statements vs sentences",
+        "Logical connectives: and, or, not",
+        "Conditional p ⇒ q and biconditional p ⇔ q",
+        "Negation of compound statements",
+        "Quantifiers: ∀ and ∃",
+        "Contrapositive and converse",
+        "Validity of arguments",
+        "Methods of proof: direct, contradiction, contrapositive"
+      ],
+      "suggestedDiagrams": [
+        "Truth table for p ∧ q, p ∨ q, and ¬p drawn as a clean grid",
+        "Flow diagram showing p ⇒ q with its contrapositive ¬q ⇒ ¬p and converse q ⇒ p arranged on a small directed graph"
+      ]
+    },
+    "statistics": {
+      "subtopics": [
+        "Range",
+        "Mean deviation about mean and median",
+        "Variance and standard deviation (ungrouped)",
+        "Variance and standard deviation (grouped data)",
+        "Coefficient of variation",
+        "Effect of change of origin and scale",
+        "Comparing two datasets using dispersion"
+      ],
+      "suggestedDiagrams": [
+        "Two dot-plot datasets with the same mean but different spreads, side by side, illustrating variance",
+        "Bell-shaped curve with the mean marked and ±1σ, ±2σ regions shaded to illustrate standard deviation"
+      ]
+    },
+    "probability": {
+      "subtopics": [
+        "Random experiments and sample space",
+        "Events: simple, compound, mutually exclusive, exhaustive",
+        "Classical (equally likely) probability",
+        "Axiomatic probability",
+        "Addition theorem P(A∪B) = P(A) + P(B) − P(A∩B)",
+        "Complementary events",
+        "Probability of 'at least one'"
+      ],
+      "suggestedDiagrams": [
+        "Sample space tree for two coin tosses with each outcome labeled and its probability",
+        "Two overlapping events A and B drawn as a Venn diagram with the addition theorem regions shaded and labeled"
+      ]
+    },
+    "relations-functions-12": {
+      "subtopics": [
+        "Reflexive, symmetric, transitive relations",
+        "Equivalence relations and equivalence classes",
+        "Types of functions: one-one, onto, bijective",
+        "Composition of functions and associativity",
+        "Invertible functions and inverse",
+        "Binary operations on a set",
+        "Commutativity, associativity, identity, inverse for binary operations"
+      ],
+      "suggestedDiagrams": [
+        "Set partition diagram showing equivalence classes from the relation 'a ≡ b (mod 3)' on {0,…,8}",
+        "Function f : A → B drawn as an arrow diagram with its inverse f⁻¹ shown reversing every arrow"
+      ]
+    },
+    "inverse-trigonometric-functions": {
+      "subtopics": [
+        "Need for principal value branches",
+        "Domain and range of sin⁻¹, cos⁻¹, tan⁻¹",
+        "Graphs of inverse trig functions",
+        "Principal value computation",
+        "Identities like sin⁻¹ x + cos⁻¹ x = π/2",
+        "Sum and difference formulas for inverse trig",
+        "Simplification of expressions involving inverse trig"
+      ],
+      "suggestedDiagrams": [
+        "Graph of y = sin x with the restricted domain [−π/2, π/2] highlighted, alongside the graph of y = sin⁻¹ x obtained by reflecting in y = x",
+        "Right triangle with sides labeled so that θ = sin⁻¹(3/5) and cos θ = 4/5 can be read off directly"
+      ]
+    },
+    "matrices": {
+      "subtopics": [
+        "Order of a matrix and types (row, column, square, diagonal, scalar, identity)",
+        "Equality of matrices",
+        "Addition and scalar multiplication",
+        "Matrix multiplication (when defined, non-commutative)",
+        "Transpose and its properties",
+        "Symmetric and skew-symmetric matrices",
+        "Elementary row and column operations",
+        "Inverse of a matrix by elementary operations"
+      ],
+      "suggestedDiagrams": [
+        "Visual of a 2×3 matrix multiplied with a 3×2 matrix, with the row-times-column dot product drawn for one entry of the result",
+        "A symmetric 3×3 matrix with the diagonal as a mirror line and matching entries A_ij = A_ji highlighted in colour"
+      ]
+    },
+    "determinants": {
+      "subtopics": [
+        "Determinant of a 2×2 and 3×3 matrix",
+        "Properties of determinants",
+        "Area of a triangle using determinants",
+        "Minors and cofactors",
+        "Adjoint of a matrix",
+        "Inverse of a matrix using adjoint",
+        "Consistency of a system of linear equations",
+        "Cramer's rule"
+      ],
+      "suggestedDiagrams": [
+        "2×2 matrix [[a,b],[c,d]] with the determinant drawn as the signed area of the parallelogram spanned by the column vectors (a,c) and (b,d)",
+        "A 3×3 matrix with one cofactor C_23 highlighted: the row and column crossed out and the resulting 2×2 minor shown to the side"
+      ]
+    },
+    "continuity-differentiability": {
+      "subtopics": [
+        "Continuity at a point and on an interval",
+        "Algebra of continuous functions",
+        "Differentiability implies continuity",
+        "Chain rule",
+        "Derivatives of implicit functions",
+        "Derivatives of exponential and logarithmic functions",
+        "Logarithmic differentiation",
+        "Derivatives of inverse trig functions",
+        "Rolle's theorem and Lagrange's mean value theorem"
+      ],
+      "suggestedDiagrams": [
+        "A function graph showing three failure modes side by side: a removable hole, a jump, and a vertical asymptote — each labeled with the kind of discontinuity",
+        "A smooth curve on [a, b] with the chord AB drawn, a tangent line parallel to AB at some c in (a,b), illustrating Lagrange's MVT"
+      ]
+    },
+    "applications-derivatives": {
+      "subtopics": [
+        "Rate of change of quantities",
+        "Increasing and decreasing functions",
+        "Tangents and normals to a curve",
+        "Approximations using derivatives",
+        "Maxima and minima — first derivative test",
+        "Maxima and minima — second derivative test",
+        "Absolute maximum and minimum on a closed interval",
+        "Applied optimisation problems"
+      ],
+      "suggestedDiagrams": [
+        "A smooth curve with local maximum, local minimum, and a point of inflection labeled; tangent lines drawn at each showing slope = 0 and the sign-change pattern",
+        "An open-top box optimisation: rectangle with corners cut as squares of side x, folded to form a box, with the volume function V(x) plotted alongside showing its maximum"
+      ]
+    },
+    "integrals": {
+      "subtopics": [
+        "Indefinite integral as antiderivative",
+        "Standard integrals (power, trig, exponential, log)",
+        "Integration by substitution",
+        "Integration by partial fractions",
+        "Integration by parts (LIATE rule)",
+        "Definite integrals as limit of a sum",
+        "Fundamental theorem of calculus",
+        "Properties of definite integrals"
+      ],
+      "suggestedDiagrams": [
+        "Curve y = f(x) on [a, b] with a Riemann sum of vertical rectangles approximating the area under the curve, fading into a smooth shaded region",
+        "Two stacked panels: top shows the curve y = f(x); bottom shows F(x) = ∫f(t)dt with the geometric link between the slope of F and the height of f highlighted"
+      ]
+    },
+    "applications-integrals": {
+      "subtopics": [
+        "Area under a curve y = f(x) over [a, b]",
+        "Area bounded by a curve and the x-axis",
+        "Area between two curves",
+        "Areas using horizontal strips (integration with respect to y)",
+        "Using symmetry to simplify area calculations"
+      ],
+      "suggestedDiagrams": [
+        "Two curves y = x² and y = x crossing at x = 0 and x = 1, with the area between them shaded and labeled as ∫₀¹ (x − x²) dx",
+        "Region bounded by x² + y² = 4 in the first quadrant with the area expressed as ∫₀² √(4−x²) dx and the corresponding angle swept on the circle"
+      ]
+    },
+    "differential-equations": {
+      "subtopics": [
+        "Order and degree of a differential equation",
+        "Formation of a DE from a family of curves",
+        "Solution: general and particular",
+        "Variable separable form",
+        "Homogeneous differential equations",
+        "Linear first-order DE and the integrating factor",
+        "Applications: growth, decay, mixing problems"
+      ],
+      "suggestedDiagrams": [
+        "Direction field (slope field) for dy/dx = x − y with a couple of solution curves traced through it",
+        "Exponential decay curve N(t) = N₀ e^(−kt) with the half-life T marked horizontally and the corresponding value N₀/2 marked vertically"
+      ]
+    },
+    "vectors": {
+      "subtopics": [
+        "Scalars vs vectors",
+        "Magnitude, direction, position vector",
+        "Vector addition (triangle and parallelogram laws)",
+        "Scalar (dot) product and projection",
+        "Vector (cross) product and area",
+        "Angle between vectors",
+        "Scalar triple product and volume of parallelepiped",
+        "Direction cosines and direction ratios"
+      ],
+      "suggestedDiagrams": [
+        "Two vectors a and b in the plane with their sum a + b drawn by the parallelogram law and the projection of a onto b shown as a shadow",
+        "Three vectors a, b, c forming a parallelepiped, with the scalar triple product [a b c] highlighted as its signed volume"
+      ]
+    },
+    "3d-geometry": {
+      "subtopics": [
+        "Direction cosines and direction ratios of a line",
+        "Vector and Cartesian equation of a line",
+        "Angle between two lines",
+        "Shortest distance between two skew lines",
+        "Equation of a plane (vector, Cartesian, normal forms)",
+        "Angle between two planes",
+        "Distance of a point from a plane",
+        "Intersection of a line and a plane"
+      ],
+      "suggestedDiagrams": [
+        "A line in 3D passing through point A with direction vector d, drawn against the x-, y-, z-axes with direction cosines (l, m, n) labeled as projection angles",
+        "Two skew lines in 3D with their common perpendicular drawn, illustrating the shortest distance formula"
+      ]
+    },
+    "linear-programming": {
+      "subtopics": [
+        "Formulation of a linear programming problem",
+        "Decision variables, objective function, constraints",
+        "Feasible and infeasible regions",
+        "Graphical method of solution",
+        "Corner-point method",
+        "Bounded vs unbounded feasible regions",
+        "Multiple optimal solutions"
+      ],
+      "suggestedDiagrams": [
+        "Coordinate plane with three constraint lines and the resulting bounded feasible region shaded, corner points labeled with their coordinates",
+        "Same feasible region with parallel level lines of the objective function Z = c₁x + c₂y drawn, showing the optimal level line passing through the optimum corner"
+      ]
+    },
+    "probability-12": {
+      "subtopics": [
+        "Conditional probability P(A|B)",
+        "Multiplication theorem P(A∩B) = P(A) P(B|A)",
+        "Independent events",
+        "Total probability theorem",
+        "Bayes' theorem",
+        "Random variables and probability distributions",
+        "Mean and variance of a random variable",
+        "Bernoulli trials and binomial distribution"
+      ],
+      "suggestedDiagrams": [
+        "Two-stage tree diagram for drawing two balls without replacement, with conditional probabilities written on the second-stage branches",
+        "Bar chart of the binomial distribution Bin(n=10, p=0.4) with each bar's height equal to P(X=k) and the mean np marked"
+      ]
+    }
+  }
+}

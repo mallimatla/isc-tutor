@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { verifyRequest, UnauthorizedError } from "@/lib/verify-token";
-import { generateChapterLesson } from "@/lib/generate-chapter-lesson";
+import { adminDb, col } from "@/lib/firebase-admin";
 
-export const maxDuration = 300;
+// Read-only Firestore fetch. Lessons are seeded locally via
+// `npm run seed:lessons`; the Vercel runtime never generates them. This route
+// stays well under any function-duration ceiling.
+export const maxDuration = 30;
 
 const RequestBodySchema = z.object({
   chapterId: z.string().min(1),
@@ -24,16 +27,19 @@ export async function POST(req: NextRequest) {
     }
 
     const { chapterId, classLevel } = parsed.data;
-    const result = await generateChapterLesson(chapterId, classLevel);
+    const lessonId = `${classLevel}-${chapterId}`;
 
-    if (result.status === "failed") {
-      return NextResponse.json(
-        { error: "GENERATION_FAILED", message: result.error },
-        { status: 500 }
-      );
+    const snap = await adminDb
+      .collection(col("chapter_lessons"))
+      .doc(lessonId)
+      .get();
+
+    if (!snap.exists) {
+      return NextResponse.json({ lesson: null, status: "not_generated" });
     }
 
-    return NextResponse.json(result.lesson);
+    const data = snap.data()!;
+    return NextResponse.json({ lesson: data, status: "ok" });
   } catch (err) {
     if (err instanceof UnauthorizedError) {
       return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });

@@ -1215,4 +1215,61 @@ isc-tutor/
 
 ---
 
+## 27. Phase 6i — Lesson content pipeline: local seed → Firestore → read-only app (lesson-v3.0)
+
+**Why this change.** Vercel Hobby caps function duration at 60 seconds. The combined cost of (a) a long-form narrative call, (b) 2–4 per-diagram SVG calls, and (c) a DALL·E hero image was reliably blowing past that ceiling, leaving incomplete documents in Firestore and a sea of timeouts in the UI. The fix moves generation off the runtime entirely. Lesson content is static, identical for every student, and changes only when we tune prompts — exactly the workload pattern where a local seed step beats request-time generation.
+
+**The pipeline.**
+
+1. **Local generation** — `npm run seed:lessons` runs `scripts/seed-lessons.mjs` on a developer machine. The script loads env from `.env.local`, initializes the Firebase Admin SDK using the same `parsePrivateKey` conventions as `lib/firebase-admin.ts`, walks every chapter in `data/isc-syllabus.json`, and for each chapter:
+   - Calls Claude with the narrative prompt (`lib/prompts/lesson.ts`, `lesson-v3.0`). Output is a single JSON object containing `syllabusCoverage`, `hook`, `narrative.{beats, commonMistakes, quickReferenceCard, keyTakeaway}`, and a `diagramPlan` that says which diagrams to draw and which beat each one belongs after.
+   - Calls Claude once per diagram in `diagramPlan` with the SVG prompt — output is a single `<svg>…</svg>` element with `viewBox="0 0 600 400"`. The script sanitizes the SVG (strips `<script>`, `<foreignObject>`, `on*` handlers, `javascript:` URLs) before storage even though the source is trusted.
+   - Calls OpenAI (gpt-image-1, 1024×1024, `b64_json`) for a hero illustration. Failure is non-fatal — the script logs a warning, sets `heroImageBase64: null`, and continues.
+   - Writes `isctutor_chapter_lessons/{lessonId}` to Firestore with `promptVersion: "lesson-v3.0"`.
+2. **CLI flags.** `--only=<chapterId>` regenerates one chapter; `--force` regenerates even if `v3.0` already exists; `--no-image` skips the hero image (useful when iterating prompts). Default behaviour is resumable: chapters already at `v3.0` are skipped.
+3. **Resilience.** Each chapter is wrapped in `try/catch`. One failure does not stop the rest. At the end, the script prints `N/29 succeeded` and the failed chapter IDs; re-running the command retries only the failures.
+
+**Document shape (Firestore).**
+
+```ts
+{
+  chapterId, classLevel, lessonId,
+  promptVersion: "lesson-v3.0",
+  generatedAt: Timestamp,
+  syllabusCoverage: string[],
+  hook: string,
+  heroImageBase64: string | null,
+  heroImageMimeType: string | null,   // "image/png" when present
+  diagrams: Array<{
+    id: string,
+    title: string,
+    svg: string,        // pure SVG, sanitized at seed time
+    caption: string,
+    afterBeat: number   // 0-based index into narrative.beats
+  }>,
+  narrative: {
+    beats: Array<{ title: string, content: string }>,        // 9–11
+    commonMistakes: Array<{ mistake, why, fix }>,            // 4–5
+    quickReferenceCard: string[],                            // 4–6
+    keyTakeaway: string
+  }
+}
+```
+
+**Three content layers.** Every lesson is now layered: (1) a DALL·E hero illustration set as a faded background behind the gradient banner; (2) 2–4 Claude-authored pure-SVG diagrams interleaved into the narrative at the beats they support; (3) the narrative itself — hook, beats with LaTeX, common-mistakes card, quick reference card, key takeaway. For the six chapters that have a hand-crafted premium React widget (Sets, Functions, Trig, Limits, Probability, Matrices), the widget renders as the headline "Try it" element *above* the static diagrams; the diagrams still appear interleaved in the narrative for visual continuity.
+
+**Pure SVG, no iframe.** The previous design rendered AI-generated full HTML pages in a sandboxed iframe. That repeatedly broke on rendering quirks and required a heavy `sanitize-viz-html` pipeline plus CSP injection. Phase 6i replaces all of that with `<svg>…</svg>` strings injected via `dangerouslySetInnerHTML` inside a styled card. There is no JavaScript to sandbox — the SVG primitives the prompt allows (`<rect>`, `<circle>`, `<line>`, `<path>`, `<text>`, gradients, filters) are pure declarative drawing. Sanitization at seed time defensively strips anything else.
+
+**The app is now read-only for lessons.** `app/api/chapter-lesson/route.ts` no longer imports anything from `lib/generate-chapter-lesson.ts` — that file is deleted. The route is a single Firestore document fetch with `maxDuration = 30`. Missing documents return `{ lesson: null, status: "not_generated" }` with a 200 OK; `components/ChapterLesson.tsx` renders a friendly "lesson is on its way" card with a "Start practicing" button instead of an error.
+
+**Admin page reflects the new world.** `/admin` is now a read-only inventory: per-chapter status (current / stale / not-seeded), beat count, diagram count, hero-image flag, last generated timestamp, document size. The generate buttons are gone; a prominent banner instructs admins to run `npm run seed:lessons` locally. Preview still works (it reads from Firestore via the same client component). The legacy `POST /api/admin/lessons/generate` and `POST /api/admin/lessons/generate-all` endpoints return `410 Gone` so any cached client calls fail loudly.
+
+**Shared `safeParseClaudeJson` helper.** Some Claude responses came back wrapped in <code>\`\`\`json</code> fences even when explicitly told not to — this surfaced as `ClaudeMalformedOutputError` in the greeting route in production. `lib/anthropic.ts` now exports `safeParseClaudeJson(raw)` which strips fences, trims, and locates the first `{`/`[` before parsing. Both `callClaude` and `callClaudeStreaming` use it. The seed script inlines an identical copy.
+
+**Dependencies.** `dotenv` is added as a devDependency. `openai` was already installed but unused by the runtime (the dead `lib/openai-image.ts` was deleted); it is now a devDependency only, since only the seed script imports it. Neither package is bundled into the Vercel app.
+
+**Cost (one-off, run from a laptop).** ~29 chapters × (1 narrative call + 2–4 diagram calls + 1 image call) ≈ ~$5–8 in API spend per full regeneration. Steady-state Vercel cost for lessons drops to essentially zero (Firestore reads only).
+
+---
+
 *End of PRD.*

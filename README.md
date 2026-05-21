@@ -9,7 +9,9 @@ Sign in with any Google account.
 
 ## What's built
 
-- **Beautiful chapter Learn mode** — each chapter has a themed hero banner (with OpenAI-generated illustration), hand-crafted interactive visualizations for 6 key chapters (draggable Venn diagrams, unit circle, limits explorer, matrix transformer, probability simulator), AI-generated interactive viz for the rest, narrative beats with glass-card design, common mistakes, and shareable summary cards (PNG export via html2canvas)
+- **Local lesson seed pipeline** — `npm run seed:lessons` generates all 29 chapter lessons from a developer machine and writes them to Firestore. The Vercel app reads them back; it never generates. This permanently sidesteps the Hobby 60s function-duration limit.
+- **Three content layers per lesson** — DALL·E hero illustration (decorative background) + 2–4 Claude-authored pure-SVG diagrams interleaved into the narrative + a 9–11-beat tutor explanation with common-mistakes and quick-reference cards. Diagrams render inline via `dangerouslySetInnerHTML` of sanitized SVG strings, eliminating the iframe sandbox failures that plagued earlier phases.
+- **Beautiful chapter Learn mode** — each chapter has a themed hero banner (with DALL·E hero image when seeded), hand-crafted interactive React widgets for 6 key chapters (draggable Venn diagrams, unit circle, limits explorer, matrix transformer, probability simulator) rendered above the static SVG diagrams, narrative beats with glass-card design, common mistakes, and shareable summary cards (PNG export via html2canvas)
 - **Socratic Diagnosis Engine** — multi-turn dialogue (up to 5 turns) where the tutor asks targeted questions to find exactly where the student's reasoning breaks, instead of revealing solutions immediately
 - **Adaptive difficulty** — rolling 5-question window adjusts question difficulty up/down based on recent performance
 - **Concept tracking** — every wrong answer tagged with specific sub-skills (e.g., "complement-notation", "cardinality-formula") for weakness surfacing
@@ -40,10 +42,9 @@ This is a solo build. Honest limitations:
 - **No mock board paper mode** — timed 3-hour exam simulation. Easy to add.
 - **No mobile app wrapper** — web-responsive only. PWA-installable but not native.
 - **Hallucinations on edge-case topics** — the in_syllabus prompt check catches most off-topic generations but isn't 100% reliable. The flag system lets users surface these for review.
-- **Premium visualizations exist for 6 of 29 chapters** — the other 23 use AI-generated HTML which is more variable in quality
+- **Interactive React widgets exist for 6 of 29 chapters** (Sets, Functions, Trigonometric Functions, Limits, Probability, Matrices); the rest rely on static SVG diagrams generated at seed time.
 - **Shareable card uses html2canvas** which doesn't perfectly render all CSS (gradients sometimes look off in the PNG export)
-- **First chapter load takes 30-45 seconds** — the Learn tab generates narrative + visualization on first visit. Admin can pre-seed via /admin. Subsequent visits are instant via Firestore cache.
-- **OpenAI hero image generation built but currently disabled** due to Vercel function timeout constraints. CSS-only gradient banners used instead. Re-enable after refactoring image gen to a separate background job.
+- **Seed script must run locally (by design)** — no in-app generation. Chapters that haven't been seeded yet render a friendly "lesson is on its way" card with a button to skip straight to Practice; they don't error.
 - **Streaming JSON parsing uses regex** for the tutor_message field rather than a proper incremental JSON parser. Works in practice but could be more robust.
 - **English TTS uses browser speech synthesis** — sounds robotic. A paid TTS API (ElevenLabs, OpenAI) would sound much better but wasn't worth the cost or latency for v1.
 - **Single-user-per-session** — no shared/collaborative sessions or class-mode.
@@ -66,7 +67,24 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Seeding chapter lessons
 
-After deploy, the admin (set via `ADMIN_EMAILS` env var) can visit `/admin` to pre-populate the chapter lesson cache. Click "Generate All Missing" once after deploy to make every chapter load instantly for students. Total cost: ~$3 in Claude API calls. Subsequent visits to `/admin` show cache status and allow regenerating specific chapters.
+Lessons are generated **locally** via a one-off seed script, then written to Firestore — the Vercel app reads but never generates them.
+
+```bash
+# .env.local needs:
+#   ANTHROPIC_API_KEY
+#   OPENAI_API_KEY                (for hero images; omit with --no-image)
+#   FIREBASE_PROJECT_ID
+#   FIREBASE_CLIENT_EMAIL
+#   FIREBASE_PRIVATE_KEY
+#   FIRESTORE_COLLECTION_PREFIX   (e.g. "isctutor_")
+
+npm run seed:lessons                          # seed every missing chapter (lesson-v3.0)
+npm run seed:lessons -- --only=sets           # seed one chapter
+npm run seed:lessons -- --force               # regenerate everything
+npm run seed:lessons -- --no-image            # skip the DALL·E hero
+```
+
+The script is resumable: chapters already on `lesson-v3.0` are skipped unless `--force` is passed. Failures don't abort the run; a summary at the end lists any chapter to re-run. `/admin` is a read-only inventory of what's currently in Firestore.
 
 ## Submission notes
 

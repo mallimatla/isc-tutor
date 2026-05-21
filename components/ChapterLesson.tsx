@@ -10,30 +10,44 @@ import { getChapterTheme } from "@/lib/chapter-theme";
 
 interface NarrativeBeat {
   title: string;
-  body: string;
-  diagramHint: string | null;
+  content: string;
 }
 
 interface CommonMistake {
   mistake: string;
-  whyItHappens: string;
-  howToAvoid: string;
+  why: string;
+  fix: string;
+}
+
+interface Diagram {
+  id: string;
+  title: string;
+  svg: string;
+  caption: string;
+  afterBeat: number;
 }
 
 interface LessonData {
+  chapterId: string;
+  classLevel: string;
+  lessonId: string;
+  promptVersion: string;
+  syllabusCoverage: string[];
+  hook: string;
+  heroImageBase64: string | null;
+  heroImageMimeType: string | null;
+  diagrams: Diagram[];
   narrative: {
-    syllabusCoverage?: string[];
-    hook: string;
-    narrativeBeats: NarrativeBeat[];
+    beats: NarrativeBeat[];
     commonMistakes: CommonMistake[];
-    quickReferenceCard?: string[];
+    quickReferenceCard: string[];
     keyTakeaway: string;
   };
-  visualization: {
-    title: string;
-    interactionHint: string;
-    html: string;
-  };
+}
+
+interface LessonResponse {
+  lesson: LessonData | null;
+  status: "ok" | "not_generated";
 }
 
 interface ChapterLessonProps {
@@ -43,7 +57,7 @@ interface ChapterLessonProps {
   onGotIt: () => void;
 }
 
-const BEAT_ICONS = ["💡", "🎯", "📐", "⚡", "🧠", "🔑"];
+const BEAT_ICONS = ["💡", "🎯", "📐", "⚡", "🧠", "🔑", "✨", "🚀", "🎓", "🔭", "🧮"];
 
 export default function ChapterLesson({
   chapterId,
@@ -51,7 +65,7 @@ export default function ChapterLesson({
   chapterLabel,
   onGotIt,
 }: ChapterLessonProps) {
-  const [lesson, setLesson] = useState<LessonData | null>(null);
+  const [response, setResponse] = useState<LessonResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,11 +75,11 @@ export default function ChapterLesson({
   useEffect(() => {
     setLoading(true);
     setError(null);
-    apiFetch<LessonData>("/api/chapter-lesson", {
+    apiFetch<LessonResponse>("/api/chapter-lesson", {
       method: "POST",
       body: JSON.stringify({ chapterId, classLevel }),
     })
-      .then(setLesson)
+      .then(setResponse)
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Failed to load lesson.")
       )
@@ -80,7 +94,7 @@ export default function ChapterLesson({
           <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-blue-400" style={{ animationDelay: "0.15s" }} />
           <span className="inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-blue-400" style={{ animationDelay: "0.3s" }} />
         </div>
-        <p className="text-sm text-zinc-500">Preparing your visual lesson...</p>
+        <p className="text-sm text-zinc-500">Loading your lesson...</p>
       </div>
     );
   }
@@ -94,73 +108,147 @@ export default function ChapterLesson({
     );
   }
 
-  if (!lesson) return null;
-
-  const { narrative, visualization } = lesson;
   const label = chapterLabel || chapterId;
+
+  // Friendly "not generated yet" state — never an error.
+  if (!response || !response.lesson || response.status === "not_generated") {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradient} p-8 sm:p-10`}>
+          <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/15 blur-3xl" />
+          <div className="relative">
+            <h2 className="mb-3 text-3xl font-bold text-white sm:text-4xl">{label}</h2>
+            <p className="max-w-lg text-base leading-relaxed text-white/90">
+              The illustrated lesson for this chapter is on its way. In the meantime, you can jump straight into practice — the AI tutor will guide you through the concepts as you go.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-3">
+          <button
+            onClick={onGotIt}
+            className={`rounded-full bg-gradient-to-r ${theme.gradient} px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:shadow-xl`}
+          >
+            Start practicing
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const lesson = response.lesson;
+  const { narrative, diagrams, hook, syllabusCoverage, heroImageBase64, heroImageMimeType } = lesson;
+
+  // Group diagrams by afterBeat for interleaved rendering.
+  const diagramsByBeat = new Map<number, Diagram[]>();
+  for (const d of diagrams) {
+    const list = diagramsByBeat.get(d.afterBeat) ?? [];
+    list.push(d);
+    diagramsByBeat.set(d.afterBeat, list);
+  }
+
+  const heroSrc =
+    heroImageBase64 && heroImageMimeType
+      ? `data:${heroImageMimeType};base64,${heroImageBase64}`
+      : null;
 
   return (
     <div className="flex flex-col gap-8">
-      {/* HERO BANNER — CSS-only with decorative shapes */}
+      {/* HERO BANNER */}
       <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradient} p-8 sm:p-10`}>
-        {/* Decorative blurred shapes */}
-        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/15 blur-3xl" />
-        <div className="pointer-events-none absolute right-1/4 top-1/3 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+        {heroSrc ? (
+          <>
+            <div
+              className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-40"
+              style={{ backgroundImage: `url(${heroSrc})` }}
+            />
+            <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${theme.gradient} opacity-70`} />
+          </>
+        ) : (
+          <>
+            <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/15 blur-3xl" />
+            <div className="pointer-events-none absolute right-1/4 top-1/3 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+          </>
+        )}
 
         <div className="relative">
           <h2 className="mb-3 text-3xl font-bold text-white sm:text-5xl">{label}</h2>
-          <p className="max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">{narrative.hook}</p>
+          <p className="max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
+            <LatexRenderer text={hook} />
+          </p>
           <div className="mt-4">
-            <SpeakButton text={narrative.hook} label="Listen" />
+            <SpeakButton text={hook} label="Listen" />
           </div>
-        </div>
-      </div>
-
-      {/* VISUALIZATION */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Try it</h3>
-          {visualization.interactionHint && visualization.interactionHint !== "Interactive visualization unavailable" && (
-            <span className="text-xs text-slate-500">{visualization.interactionHint}</span>
+          {syllabusCoverage && syllabusCoverage.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-1.5">
+              {syllabusCoverage.map((s, i) => (
+                <span
+                  key={i}
+                  className="rounded-full bg-white/20 px-3 py-1 text-xs text-white backdrop-blur-sm"
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
           )}
         </div>
-        {PremiumViz ? (
-          <PremiumViz />
-        ) : visualization.html && visualization.html.length > 100 ? (
-          <iframe
-            sandbox="allow-scripts"
-            srcDoc={visualization.html}
-            className="w-full rounded-2xl border border-zinc-200 dark:border-zinc-700"
-            style={{ minHeight: 400 }}
-            title={visualization.title}
-          />
-        ) : (
-          <div className={`flex items-center justify-center rounded-3xl bg-gradient-to-br ${theme.gradient} p-12`}>
-            <div className="text-center">
-              <div className="mb-3 text-4xl opacity-30">📐</div>
-              <p className="text-sm text-white/70">Interactive demo coming soon</p>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* NARRATIVE BEATS */}
-      <div className="flex flex-col gap-5">
-        {narrative.narrativeBeats.map((beat, idx) => (
-          <div key={idx} className={`rounded-2xl border border-${theme.accent} bg-white/70 p-5 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/70`}>
-            <div className="mb-2 flex items-start justify-between gap-2">
-              <h4 className="text-sm font-semibold text-slate-800 dark:text-zinc-100">
-                <span className="mr-2">{BEAT_ICONS[idx % BEAT_ICONS.length]}</span>
-                {beat.title}
-              </h4>
-              <SpeakButton text={beat.body} />
-            </div>
-            <div className="text-sm leading-relaxed text-slate-700 dark:text-zinc-300">
-              <LatexRenderer text={beat.body} />
-            </div>
+      {/* PREMIUM INTERACTIVE WIDGET (if registered) */}
+      {PremiumViz && (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Try it</h3>
+            <span className="text-xs text-slate-500">Interactive demo</span>
           </div>
-        ))}
+          <PremiumViz />
+        </div>
+      )}
+
+      {/* NARRATIVE BEATS with INTERLEAVED DIAGRAMS */}
+      <div className="flex flex-col gap-5">
+        {narrative.beats.map((beat, idx) => {
+          const diagramsHere = diagramsByBeat.get(idx) ?? [];
+          return (
+            <div key={idx} className="flex flex-col gap-4">
+              <div className={`rounded-2xl border border-${theme.accent} bg-white/70 p-5 shadow-sm backdrop-blur-sm dark:border-zinc-800 dark:bg-zinc-950/70`}>
+                <div className="mb-2 flex items-start justify-between gap-2">
+                  <h4 className="text-sm font-semibold text-slate-800 dark:text-zinc-100">
+                    <span className="mr-2">{BEAT_ICONS[idx % BEAT_ICONS.length]}</span>
+                    {beat.title}
+                  </h4>
+                  <SpeakButton text={beat.content} />
+                </div>
+                <div className="text-sm leading-relaxed text-slate-700 dark:text-zinc-300">
+                  <LatexRenderer text={beat.content} />
+                </div>
+              </div>
+
+              {diagramsHere.map((d) => (
+                <div
+                  key={d.id}
+                  className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+                >
+                  <div className="border-b border-zinc-100 px-5 py-3 dark:border-zinc-800">
+                    <h5 className="text-sm font-semibold text-slate-800 dark:text-zinc-100">
+                      {d.title}
+                    </h5>
+                  </div>
+                  <div
+                    className="flex w-full items-center justify-center bg-white p-4 dark:bg-zinc-900"
+                    dangerouslySetInnerHTML={{ __html: d.svg }}
+                  />
+                  {d.caption && (
+                    <div className="border-t border-zinc-100 px-5 py-3 text-xs leading-relaxed text-slate-500 dark:border-zinc-800 dark:text-zinc-400">
+                      {d.caption}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          );
+        })}
       </div>
 
       {/* COMMON MISTAKES */}
@@ -172,8 +260,8 @@ export default function ChapterLesson({
           {narrative.commonMistakes.map((m, idx) => (
             <div key={idx} className="flex flex-col gap-1">
               <p className="text-sm font-medium text-amber-900 dark:text-amber-200">❌ {m.mistake}</p>
-              <p className="text-xs text-amber-700 dark:text-amber-400">{m.whyItHappens}</p>
-              <p className="text-xs text-emerald-700 dark:text-emerald-400">✅ {m.howToAvoid}</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400">Why: {m.why}</p>
+              <p className="text-xs text-emerald-700 dark:text-emerald-400">✅ {m.fix}</p>
             </div>
           ))}
         </div>
@@ -187,7 +275,10 @@ export default function ChapterLesson({
           </h4>
           <div className="flex flex-col gap-2">
             {narrative.quickReferenceCard.map((item, idx) => (
-              <div key={idx} className="rounded-xl bg-white/20 px-4 py-2.5 text-sm text-white backdrop-blur-sm">
+              <div
+                key={idx}
+                className="rounded-xl bg-white/20 px-4 py-2.5 font-mono text-sm text-white backdrop-blur-sm"
+              >
                 <LatexRenderer text={item} />
               </div>
             ))}
