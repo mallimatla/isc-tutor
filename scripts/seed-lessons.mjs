@@ -23,7 +23,8 @@
  *     FIRESTORE_COLLECTION_PREFIX   (e.g. isctutor_)
  */
 
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
