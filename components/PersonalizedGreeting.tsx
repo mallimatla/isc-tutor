@@ -24,7 +24,6 @@ export default function PersonalizedGreeting() {
     apiFetch<GreetingData>("/api/greeting", { method: "POST" })
       .then(setData)
       .catch(() => {
-        // Fallback: show picker directly
         setShowPicker(true);
       })
       .finally(() => setLoading(false));
@@ -42,10 +41,10 @@ export default function PersonalizedGreeting() {
 
   if (loading) {
     return (
-      <div className="flex flex-col gap-3">
-        <div className="h-6 w-3/4 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
-        <div className="h-6 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
-        <div className="h-6 w-1/2 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+      <div className="space-y-4">
+        <div className="skeleton-shimmer h-10 w-2/3 rounded-lg" />
+        <div className="skeleton-shimmer h-5 w-full rounded" />
+        <div className="skeleton-shimmer h-5 w-3/4 rounded" />
       </div>
     );
   }
@@ -64,33 +63,39 @@ export default function PersonalizedGreeting() {
           : "Pick a chapter";
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="space-y-8">
       {data && (
-        <p className="text-xl leading-relaxed text-zinc-800 dark:text-zinc-200">
-          {data.greeting}
-        </p>
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+            Today
+          </p>
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">
+            {data.greeting}
+          </h1>
+        </div>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center">
         {data?.recommendedAction.chapterId && (
           <button
             onClick={handleRecommendedAction}
-            className="rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition active:scale-95 hover:bg-indigo-500 hover:shadow"
           >
             {ctaLabel}
+            <span aria-hidden className="ml-2">→</span>
           </button>
         )}
 
         <button
-          onClick={() => setShowPicker(!showPicker)}
-          className="text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+          onClick={() => setShowPicker((s) => !s)}
+          className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition active:scale-95 hover:border-slate-300 hover:bg-slate-50"
         >
-          {showPicker ? "Hide chapter picker" : "Pick a different chapter"}
+          {showPicker ? "Hide chapters" : "Browse all chapters"}
         </button>
       </div>
 
       {showPicker && (
-        <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+        <div className="animate-fade-up border-t border-slate-100 pt-8">
           <TopicPicker />
         </div>
       )}

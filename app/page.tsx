@@ -7,12 +7,14 @@ import MasteryMap from "@/components/MasteryMap";
 export default function HomePage() {
   return (
     <AuthGate>
-      <div className="flex flex-1 flex-col items-center px-4 py-12">
-        <div className="w-full max-w-2xl">
-          <div className="mb-10">
+      <div className="flex flex-1 flex-col px-4 py-10 sm:py-14">
+        <div className="mx-auto w-full max-w-3xl space-y-12">
+          <section className="animate-fade-up">
             <PersonalizedGreeting />
-          </div>
-          <MasteryMap />
+          </section>
+          <section className="animate-fade-up-delay-1">
+            <MasteryMap />
+          </section>
         </div>
       </div>
     </AuthGate>

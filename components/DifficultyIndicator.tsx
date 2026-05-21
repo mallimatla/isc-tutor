@@ -13,15 +13,15 @@ export default function DifficultyIndicator({
         {[1, 2, 3, 4, 5].map((n) => (
           <span
             key={n}
-            className={`inline-block h-2.5 w-2.5 rounded-full ${
-              n <= level
-                ? "bg-blue-600 dark:bg-blue-400"
-                : "bg-zinc-200 dark:bg-zinc-700"
+            className={`inline-block h-1.5 w-4 rounded-full transition ${
+              n <= level ? "bg-indigo-500" : "bg-slate-200"
             }`}
           />
         ))}
       </div>
-      <span className="text-xs text-zinc-500">Level {level}/5</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        L{level}
+      </span>
     </div>
   );
 }

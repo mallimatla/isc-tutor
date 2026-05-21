@@ -7,40 +7,35 @@ interface SkeletonLoaderProps {
 export default function SkeletonLoader({ variant }: SkeletonLoaderProps) {
   if (variant === "question") {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-        {/* Header strip: chapter + difficulty */}
-        <div className="mb-4 flex items-center justify-between">
-          <div className="h-4 w-40 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm sm:p-7">
+        <div className="mb-5 flex items-center justify-between">
+          <div className="skeleton-shimmer h-3 w-32 rounded-full" />
           <div className="flex gap-1">
             {[1, 2, 3, 4, 5].map((n) => (
-              <div
-                key={n}
-                className="h-2.5 w-2.5 animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-700"
-              />
+              <span key={n} className="skeleton-shimmer h-1.5 w-4 rounded-full" />
             ))}
           </div>
         </div>
-        {/* Question body lines */}
-        <div className="flex flex-col gap-3">
-          <div className="h-4 w-full animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
-          <div className="h-4 w-[85%] animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
-          <div className="h-4 w-[60%] animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="space-y-3">
+          <div className="skeleton-shimmer h-4 w-full rounded" />
+          <div className="skeleton-shimmer h-4 w-[88%] rounded" />
+          <div className="skeleton-shimmer h-4 w-[64%] rounded" />
         </div>
       </div>
     );
   }
 
-  // tutor-message: three pulsing dots
+  // tutor-thinking: three pulsing dots inside a bubble
   return (
-    <div className="flex justify-start">
-      <div className="flex items-center gap-1.5 rounded-lg bg-zinc-100 px-4 py-3 dark:bg-zinc-800">
-        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-zinc-400 dark:bg-zinc-500" />
+    <div className="rounded-2xl rounded-tl-md border border-slate-100 bg-white px-4 py-3 shadow-sm">
+      <div className="flex items-center gap-1.5">
+        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-slate-300" />
         <span
-          className="inline-block h-2 w-2 animate-pulse rounded-full bg-zinc-400 dark:bg-zinc-500"
+          className="inline-block h-2 w-2 animate-pulse rounded-full bg-slate-300"
           style={{ animationDelay: "0.15s" }}
         />
         <span
-          className="inline-block h-2 w-2 animate-pulse rounded-full bg-zinc-400 dark:bg-zinc-500"
+          className="inline-block h-2 w-2 animate-pulse rounded-full bg-slate-300"
           style={{ animationDelay: "0.3s" }}
         />
       </div>

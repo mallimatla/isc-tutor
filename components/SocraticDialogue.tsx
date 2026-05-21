@@ -33,6 +33,17 @@ interface SocraticDialogueProps {
   onNext: () => void;
 }
 
+function TutorAvatar() {
+  return (
+    <span
+      aria-hidden
+      className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-[10px] font-bold text-white shadow-sm"
+    >
+      AI
+    </span>
+  );
+}
+
 export default function SocraticDialogue({
   questionId,
   question,
@@ -90,7 +101,6 @@ export default function SocraticDialogue({
           );
         }
 
-        // Read SSE stream
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
@@ -103,7 +113,6 @@ export default function SocraticDialogue({
 
           buffer += decoder.decode(value, { stream: true });
 
-          // Parse SSE events from buffer
           const lines = buffer.split("\n");
           buffer = lines.pop() ?? "";
 
@@ -130,7 +139,6 @@ export default function SocraticDialogue({
                     },
                   ]);
                 } else {
-                  // Update last turn in place
                   setTurns((prev) => {
                     const updated = [...prev];
                     updated[updated.length - 1] = {
@@ -144,7 +152,6 @@ export default function SocraticDialogue({
               } else if (eventType === "done") {
                 const payload = JSON.parse(data) as SocraticDonePayload;
 
-                // Finalize the tutor message (remove streaming flag)
                 setTurns((prev) => {
                   const updated = [...prev];
                   if (
@@ -181,7 +188,6 @@ export default function SocraticDialogue({
           }
         }
       } catch (err) {
-        // Remove the student turn we optimistically added (and any partial tutor turn)
         setTurns((prev) => {
           const lastStudentIdx = prev.findLastIndex(
             (t) => t.role === "student"
@@ -218,37 +224,40 @@ export default function SocraticDialogue({
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {/* Dialogue thread */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         {turns.length === 0 && !isWaiting && (
-          <p className="py-4 text-center text-sm text-zinc-400">
-            Type your first attempt below
-          </p>
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-6 text-center">
+            <p className="text-sm text-slate-500">
+              Type your first attempt below — the tutor responds when you do.
+            </p>
+          </div>
         )}
 
         {turns.map((turn, idx) => (
           <div
             key={idx}
-            className={`flex ${
+            className={`flex w-full animate-fade-up gap-2 ${
               turn.role === "student" ? "justify-end" : "justify-start"
             }`}
           >
+            {turn.role === "tutor" && <TutorAvatar />}
             <div
-              className={`max-w-[85%] rounded-lg px-4 py-3 text-sm leading-relaxed ${
+              className={`max-w-[88%] px-4 py-3 text-[15px] leading-relaxed shadow-sm transition ${
                 turn.role === "student"
-                  ? "bg-blue-50 text-zinc-900 dark:bg-blue-950 dark:text-zinc-100"
-                  : "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                  ? "rounded-2xl rounded-tr-md bg-indigo-600 text-white"
+                  : "rounded-2xl rounded-tl-md border border-slate-100 bg-white text-slate-800"
               }`}
             >
               {turn.role === "tutor" ? (
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-2">
                   <StreamingMessage
                     text={turn.message}
                     isStreaming={!!turn.isStreaming}
                   />
                   {!turn.isStreaming && turn.message && (
-                    <div className="mt-1">
+                    <div className="-mb-1">
                       <SpeakButton text={turn.message} />
                     </div>
                   )}
@@ -262,7 +271,10 @@ export default function SocraticDialogue({
 
         {/* Skeleton: only before first token arrives */}
         {isWaiting && !hasFirstToken && (
-          <SkeletonLoader variant="tutor-thinking" />
+          <div className="flex animate-fade-up gap-2">
+            <TutorAvatar />
+            <SkeletonLoader variant="tutor-thinking" />
+          </div>
         )}
 
         <div ref={threadEndRef} />
@@ -270,11 +282,11 @@ export default function SocraticDialogue({
 
       {/* Error */}
       {error && (
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-center">
+          <p className="text-sm text-rose-700">{error}</p>
           <button
             onClick={() => setError(null)}
-            className="text-sm text-zinc-500 underline hover:text-zinc-700"
+            className="mt-1 text-xs font-medium text-rose-600 underline-offset-2 hover:underline"
           >
             Dismiss
           </button>
@@ -283,7 +295,7 @@ export default function SocraticDialogue({
 
       {/* Input area */}
       {!isFinal && !isWaiting && (
-        <div className="flex flex-col gap-2">
+        <div className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -292,23 +304,23 @@ export default function SocraticDialogue({
             rows={3}
             placeholder={
               turnNumber === 1
-                ? "Type your answer..."
-                : "Reply to the tutor..."
+                ? "Type your answer…"
+                : "Reply to the tutor…"
             }
-            className="resize-y rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            className="block w-full resize-y rounded-xl border-0 bg-transparent px-2 py-2 text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0"
           />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-400">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2">
+            <span className="text-xs text-slate-400">
               {input.length} / 5000
               {turnNumber > 1 && (
                 <span className="ml-2">Turn {turnNumber} of 5</span>
               )}
             </span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {turnNumber >= 2 && (
                 <button
                   onClick={handleShowAnswer}
-                  className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-500 hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 transition active:scale-95 hover:border-slate-300 hover:bg-slate-50"
                 >
                   Just show me the answer
                 </button>
@@ -316,9 +328,10 @@ export default function SocraticDialogue({
               <button
                 onClick={handleSubmit}
                 disabled={!input.trim()}
-                className="rounded-md bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-95 hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none disabled:active:scale-100"
               >
                 Submit
+                <span aria-hidden>↵</span>
               </button>
             </div>
           </div>
@@ -327,45 +340,61 @@ export default function SocraticDialogue({
 
       {/* Final solution + reflection */}
       {isFinal && fullSolutionSteps && (
-        <div className="mt-2 flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-950">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Full solution
-            </h3>
+        <div className="animate-fade-up rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm"
+              >
+                <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                  <path fillRule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.5 7.5a1 1 0 01-1.42 0l-3.5-3.5a1 1 0 011.42-1.42L8.5 12.08l6.79-6.79a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </span>
+              <h3 className="text-base font-semibold text-slate-900">
+                Full solution
+              </h3>
+            </div>
             <SpeakButton
               text={fullSolutionSteps.join(". ")}
-              label="Listen to solution"
+              label="Listen"
             />
           </div>
-          <ol className="flex flex-col gap-2 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
+          <ol className="flex flex-col gap-3 pl-1 text-[15px] text-slate-700">
             {fullSolutionSteps.map((step, idx) => (
-              <li key={idx} className="list-decimal leading-relaxed">
-                <LatexRenderer text={step} />
+              <li key={idx} className="flex gap-3 leading-relaxed">
+                <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[11px] font-bold text-indigo-700">
+                  {idx + 1}
+                </span>
+                <span className="flex-1">
+                  <LatexRenderer text={step} />
+                </span>
               </li>
             ))}
           </ol>
 
           {reflectionQuestion && (
-            <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                  Reflection
+            <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-3">
+              <div className="mb-1.5 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Reflect
                 </p>
                 <SpeakButton text={reflectionQuestion} />
               </div>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <p className="text-sm leading-relaxed text-slate-700">
                 <LatexRenderer text={reflectionQuestion} />
               </p>
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="mt-6 flex items-center justify-between border-t border-slate-100 pt-4">
             <FlagButton questionId={questionId} evaluationId={null} />
             <button
               onClick={onNext}
-              className="rounded-md bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+              className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition active:scale-95 hover:bg-indigo-500"
             >
-              Next Question
+              Next question
+              <span aria-hidden>→</span>
             </button>
           </div>
         </div>

@@ -17,20 +17,20 @@ export default function QuestionCard({
   chapterLabel,
 }: QuestionCardProps) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="mb-4 flex items-center justify-between">
+    <article className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm sm:p-7">
+      <header className="mb-5 flex items-center justify-between gap-3">
         {chapterLabel && (
-          <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          <span className="truncate text-xs font-semibold uppercase tracking-wider text-slate-400">
             {chapterLabel}
           </span>
         )}
         <DifficultyIndicator
           level={question.difficultyServed as 1 | 2 | 3 | 4 | 5}
         />
-      </div>
-      <div className="text-base leading-relaxed text-zinc-900 dark:text-zinc-100">
+      </header>
+      <div className="prose-question text-[15px] leading-relaxed text-slate-800 sm:text-base">
         <LatexRenderer text={question.questionLatex} />
       </div>
-    </div>
+    </article>
   );
 }

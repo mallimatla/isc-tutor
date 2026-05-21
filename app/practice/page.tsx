@@ -11,6 +11,7 @@ import SkeletonLoader from "@/components/SkeletonLoader";
 import ChapterLesson from "@/components/ChapterLesson";
 import { apiFetch } from "@/lib/api-client";
 import { useAuth } from "@/lib/use-auth";
+import { getChapterTheme } from "@/lib/chapter-theme";
 
 interface QuestionResponse {
   questionId: string;
@@ -31,32 +32,23 @@ function PracticeContent() {
   const chapterId = searchParams.get("chapterId") || "";
   const chapterLabel = searchParams.get("chapterLabel") || chapterId;
   const skipToMode = searchParams.get("mode");
+  const theme = getChapterTheme(chapterId);
 
-  // Check sessionStorage for prior learn completion
   const storageKey = `isctutor:hasLearnedChapter:${classLevel}-${chapterId}`;
   const [mode, setMode] = useState<"learn" | "practice">(() => {
     if (skipToMode === "practice") return "practice";
     if (typeof window !== "undefined" && sessionStorage.getItem(storageKey) === "true") return "practice";
     return "learn";
   });
-  const [practiceUnlocked, setPracticeUnlocked] = useState(() => {
-    if (skipToMode === "practice") return true;
-    if (typeof window !== "undefined" && sessionStorage.getItem(storageKey) === "true") return true;
-    return false;
-  });
-  const [learnStartTime] = useState(Date.now());
-
-  // Unlock practice after 30 seconds on Learn tab
-  useEffect(() => {
-    if (practiceUnlocked) return;
-    const timer = setTimeout(() => {
-      setPracticeUnlocked(true);
-    }, 30_000);
-    return () => clearTimeout(timer);
-  }, [practiceUnlocked]);
 
   const handleGotIt = useCallback(() => {
-    setPracticeUnlocked(true);
+    setMode("practice");
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(storageKey, "true");
+    }
+  }, [storageKey]);
+
+  const handleSwitchToPractice = useCallback(() => {
     setMode("practice");
     if (typeof window !== "undefined") {
       sessionStorage.setItem(storageKey, "true");
@@ -94,7 +86,6 @@ function PracticeContent() {
     }
   }, [subject, classLevel, chapterId]);
 
-  // Fetch first question when switching to practice mode
   useEffect(() => {
     if (mode === "practice" && chapterId && !authLoading && user && !question) {
       fetchQuestion();
@@ -104,68 +95,72 @@ function PracticeContent() {
   if (authLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-zinc-500">Loading...</p>
+        <p className="text-sm text-slate-500">Loading…</p>
       </div>
     );
   }
 
   if (!chapterId) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-zinc-500">
-          No chapter selected.{" "}
-          <Link href="/" className="underline">
+      <div className="flex flex-1 items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-sm text-slate-500">No chapter selected.</p>
+          <Link
+            href="/"
+            className="mt-3 inline-flex rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-semibold text-slate-700 shadow-sm transition active:scale-95 hover:border-slate-300"
+          >
             Go back
           </Link>
-        </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-1 flex-col px-4 py-6">
+    <div className="flex flex-1 flex-col px-4 py-8 sm:py-10">
       <div className="mx-auto w-full max-w-2xl">
-        {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {chapterLabel}
-          </span>
+        {/* Top context bar */}
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <span
+              aria-hidden
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm"
+              style={{
+                background: `linear-gradient(135deg, ${theme.hex.primary}, ${theme.hex.secondary})`,
+              }}
+            >
+              {chapterLabel.charAt(0)}
+            </span>
+            <h1 className="truncate text-base font-semibold text-slate-900 sm:text-lg">
+              {chapterLabel}
+            </h1>
+          </div>
           <Link
             href="/"
-            className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
+            className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
           >
-            Change Chapter
+            Change
           </Link>
         </div>
 
-        {/* Learn / Practice tabs */}
-        <div className="mb-6 flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
+        {/* Segmented control — both tabs always clickable */}
+        <div className="mb-8 inline-flex w-full items-center gap-1 rounded-full border border-slate-200 bg-white p-1 shadow-sm sm:w-auto">
           <button
             onClick={() => setMode("learn")}
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            className={`flex-1 rounded-full px-6 py-2 text-sm font-semibold transition sm:flex-initial ${
               mode === "learn"
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
-                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Learn
           </button>
           <button
-            onClick={() => {
-              if (practiceUnlocked) {
-                setMode("practice");
-                if (typeof window !== "undefined") {
-                  sessionStorage.setItem(storageKey, "true");
-                }
-              }
-            }}
-            disabled={!practiceUnlocked}
-            className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+            onClick={handleSwitchToPractice}
+            className={`flex-1 rounded-full px-6 py-2 text-sm font-semibold transition sm:flex-initial ${
               mode === "practice"
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
-                : practiceUnlocked
-                  ? "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                  : "cursor-not-allowed text-zinc-300 dark:text-zinc-600"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Practice
@@ -174,66 +169,51 @@ function PracticeContent() {
 
         {/* Learn mode */}
         {mode === "learn" && (
-          <ChapterLesson
-            chapterId={chapterId}
-            classLevel={classLevel}
-            chapterLabel={chapterLabel}
-            onGotIt={handleGotIt}
-          />
+          <div className="animate-fade-up">
+            <ChapterLesson
+              chapterId={chapterId}
+              classLevel={classLevel}
+              chapterLabel={chapterLabel}
+              onGotIt={handleGotIt}
+            />
+          </div>
         )}
 
         {/* Practice mode */}
         {mode === "practice" && (
-          <>
-            {/* Question counter */}
+          <div className="flex flex-col gap-6 animate-fade-up">
             {questionCount > 0 && (
-              <div className="mb-4 text-sm text-zinc-500">
-                Question {questionCount} of session
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-medium uppercase tracking-wider text-slate-400">
+                  Question {questionCount}
+                </span>
+                {question && <DifficultyIndicator level={question.difficultyServed as 1 | 2 | 3 | 4 | 5} />}
               </div>
             )}
 
-            {/* Syllabus warning */}
             {syllabusWarning && (
-              <div className="mb-4 rounded-md border border-yellow-200 bg-yellow-50 px-4 py-2 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 This question may be slightly off-syllabus.
               </div>
             )}
 
-            {/* Loading question */}
-            {isLoadingQuestion && (
-              <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium text-zinc-600 dark:text-zinc-400">
-                    {chapterLabel}
-                  </span>
-                  <DifficultyIndicator level={2} />
-                </div>
-                <SkeletonLoader variant="question" />
-              </div>
-            )}
+            {isLoadingQuestion && <SkeletonLoader variant="question" />}
 
-            {/* Error */}
             {error && !isLoadingQuestion && (
-              <div className="flex flex-col items-center gap-3 py-16">
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  {error}
-                </p>
+              <div className="rounded-2xl border border-rose-100 bg-white p-6 text-center shadow-sm">
+                <p className="text-sm text-rose-600">{error}</p>
                 <button
                   onClick={fetchQuestion}
-                  className="rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  className="mt-3 inline-flex rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition active:scale-95 hover:bg-indigo-500"
                 >
                   Retry
                 </button>
               </div>
             )}
 
-            {/* Question + Socratic Dialogue */}
             {question && !isLoadingQuestion && (
               <div className="flex flex-col gap-6">
-                <QuestionCard
-                  question={question}
-                  chapterLabel={chapterLabel}
-                />
+                <QuestionCard question={question} chapterLabel={chapterLabel} />
                 <SocraticDialogue
                   key={dialogueKey}
                   questionId={question.questionId}
@@ -242,7 +222,7 @@ function PracticeContent() {
                 />
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getChapterTheme } from "@/lib/chapter-theme";
 
 interface Chapter {
   id: string;
@@ -28,19 +29,13 @@ export default function TopicPicker() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [subject] = useState("mathematics");
+  const subject = "mathematics";
   const [classLevel, setClassLevel] = useState<"11" | "12">("11");
-  const [chapterId, setChapterId] = useState("");
 
   useEffect(() => {
     fetch("/api/syllabus")
       .then((res) => res.json())
-      .then((data: SyllabusResponse) => {
-        setSyllabus(data);
-        const chapters =
-          data.subjects?.mathematics?.classes?.["11"]?.chapters ?? [];
-        if (chapters.length > 0) setChapterId(chapters[0].id);
-      })
+      .then((data: SyllabusResponse) => setSyllabus(data))
       .catch(() => setError("Failed to load syllabus."))
       .finally(() => setLoading(false));
   }, []);
@@ -48,14 +43,7 @@ export default function TopicPicker() {
   const chapters =
     syllabus?.subjects?.[subject]?.classes?.[classLevel]?.chapters ?? [];
 
-  // Update chapterId when class changes
-  useEffect(() => {
-    if (chapters.length > 0 && !chapters.find((c) => c.id === chapterId)) {
-      setChapterId(chapters[0].id);
-    }
-  }, [classLevel, chapters, chapterId]);
-
-  const handleStart = () => {
+  const handlePick = (chapterId: string) => {
     router.push(
       `/practice?subject=${subject}&class=${classLevel}&chapterId=${chapterId}`
     );
@@ -63,88 +51,88 @@ export default function TopicPicker() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-sm text-zinc-500">Loading syllabus...</p>
+      <div className="space-y-4">
+        <div className="skeleton-shimmer h-8 w-32 rounded-full" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="skeleton-shimmer h-20 rounded-2xl" />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-sm text-red-600">{error}</p>
-      </div>
+      <p className="text-sm text-rose-600">{error}</p>
     );
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Subject */}
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Subject
-        </span>
-        <select
-          value={subject}
-          disabled
-          className="rounded-md border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-        >
-          <option value="mathematics">Mathematics</option>
-        </select>
-      </label>
-
-      {/* Class toggle */}
-      <fieldset className="flex flex-col gap-1.5">
-        <legend className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Class
-        </legend>
-        <div className="flex gap-2">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          Pick a chapter
+        </h2>
+        <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
           {(["11", "12"] as const).map((cls) => (
             <button
               key={cls}
               onClick={() => setClassLevel(cls)}
-              className={`rounded-md px-5 py-2 text-sm font-medium transition-colors ${
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
                 classLevel === cls
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "border border-zinc-300 text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              {cls}
+              Class {cls}
             </button>
           ))}
         </div>
-      </fieldset>
+      </div>
 
-      {/* Chapter */}
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          Chapter
-        </span>
-        <select
-          value={chapterId}
-          onChange={(e) => setChapterId(e.target.value)}
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
-        >
-          {chapters.map((ch) => (
-            <option key={ch.id} value={ch.id}>
-              {ch.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {chapters.map((ch, idx) => {
+          const theme = getChapterTheme(ch.id);
+          return (
+            <button
+              key={ch.id}
+              onClick={() => handlePick(ch.id)}
+              className="group relative flex items-center gap-4 overflow-hidden rounded-2xl border border-slate-100 bg-white p-5 text-left shadow-sm transition active:scale-[0.98] hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md"
+              style={{ animationDelay: `${idx * 18}ms` }}
+            >
+              <span
+                aria-hidden
+                className="absolute left-0 top-0 h-full w-1 transition-all group-hover:w-1.5"
+                style={{
+                  background: `linear-gradient(180deg, ${theme.hex.primary}, ${theme.hex.secondary})`,
+                }}
+              />
+              <span
+                aria-hidden
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-base font-bold text-white shadow-sm"
+                style={{
+                  background: `linear-gradient(135deg, ${theme.hex.primary}, ${theme.hex.secondary})`,
+                }}
+              >
+                {ch.label.charAt(0)}
+              </span>
+              <span className="flex-1 text-sm font-semibold text-slate-900 group-hover:text-slate-950">
+                {ch.label}
+              </span>
+              <span
+                aria-hidden
+                className="text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-slate-500"
+              >
+                →
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-      {/* Start */}
-      <button
-        onClick={handleStart}
-        disabled={!chapterId}
-        className="rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-      >
-        Start Practice
-      </button>
-
-      {/* Phase 2 note */}
-      <p className="text-xs text-zinc-400 dark:text-zinc-500">
-        Computer Science is in development — coming Phase 2
+      <p className="text-xs text-slate-400">
+        Computer Science is in development — coming Phase 2.
       </p>
     </div>
   );

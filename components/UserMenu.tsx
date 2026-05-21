@@ -19,34 +19,40 @@ export default function UserMenu() {
   };
 
   return (
-    <div className="flex items-center gap-3">
-      {user.photoURL && (
-        <Image
-          src={user.photoURL}
-          alt=""
-          width={32}
-          height={32}
-          className="rounded-full"
-          referrerPolicy="no-referrer"
-        />
-      )}
-      <span className="text-sm text-zinc-700 dark:text-zinc-300">
-        {user.displayName}
-      </span>
+    <div className="flex items-center gap-3 sm:gap-4">
       {isAdminUser && (
         <Link
           href="/admin"
-          className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+          className="hidden text-sm font-medium text-slate-500 transition hover:text-slate-900 sm:inline"
         >
           Admin
         </Link>
       )}
       <button
         onClick={handleSignOut}
-        className="text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+        className="hidden text-sm font-medium text-slate-500 transition hover:text-slate-900 sm:inline"
       >
         Sign out
       </button>
+      <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-1 py-1 shadow-sm">
+        {user.photoURL ? (
+          <Image
+            src={user.photoURL}
+            alt=""
+            width={28}
+            height={28}
+            className="rounded-full"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+            {(user.displayName ?? "U").slice(0, 1).toUpperCase()}
+          </span>
+        )}
+        <span className="pr-2 text-sm font-medium text-slate-700">
+          {(user.displayName ?? "").split(" ")[0]}
+        </span>
+      </div>
     </div>
   );
 }
