@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 540" width="680" height="540" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="680" height="540" fill="#ffffff"/>
+  <defs>
+    <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#6B7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <text x="40" y="34" fill="#322a78" font-size="14" font-weight="600">Build time (offline)</text>
+  <text x="400" y="34" fill="#16335C" font-size="14" font-weight="600">Runtime (per request)</text>
+  <rect x="40" y="50" width="200" height="58" rx="8" fill="#ECE9FB" stroke="#5B4FC0"/>
+  <text x="140" y="74" text-anchor="middle" fill="#322a78" font-size="14" font-weight="600">Seed pipeline</text>
+  <text x="140" y="92" text-anchor="middle" fill="#5247ad" font-size="12">lessons · questions</text>
+  <rect x="360" y="50" width="280" height="58" rx="8" fill="#E8F0FB" stroke="#2E5C9A"/>
+  <text x="500" y="74" text-anchor="middle" fill="#16335C" font-size="14" font-weight="600">Student browser</text>
+  <text x="500" y="92" text-anchor="middle" fill="#2E5C9A" font-size="12">Next.js 15 UI · KaTeX</text>
+  <rect x="355" y="140" width="285" height="100" rx="12" fill="#fbfcfe" stroke="#c4ccd8"/>
+  <text x="367" y="160" fill="#374151" font-size="14" font-weight="600">Vercel · serverless (60s)</text>
+  <rect x="367" y="176" width="120" height="52" rx="8" fill="#E8F0FB" stroke="#2E5C9A"/>
+  <text x="427" y="196" text-anchor="middle" fill="#16335C" font-size="14" font-weight="600">App pages</text>
+  <text x="427" y="212" text-anchor="middle" fill="#2E5C9A" font-size="12">cached reads</text>
+  <rect x="500" y="176" width="130" height="52" rx="8" fill="#FBF0DC" stroke="#B5790F"/>
+  <text x="565" y="196" text-anchor="middle" fill="#6B4708" font-size="14" font-weight="600">API routes</text>
+  <text x="565" y="212" text-anchor="middle" fill="#8a5d08" font-size="12">live calls</text>
+  <rect x="40" y="300" width="190" height="58" rx="8" fill="#FBF0DC" stroke="#B5790F"/>
+  <text x="135" y="324" text-anchor="middle" fill="#6B4708" font-size="14" font-weight="600">Claude API (Sonnet)</text>
+  <text x="135" y="342" text-anchor="middle" fill="#8a5d08" font-size="12">generate + tutor</text>
+  <rect x="250" y="300" width="190" height="58" rx="8" fill="#E2F4EE" stroke="#1A8A6B"/>
+  <text x="345" y="324" text-anchor="middle" fill="#0C4A39" font-size="14" font-weight="600">Firestore</text>
+  <text x="345" y="342" text-anchor="middle" fill="#13745a" font-size="12">isctutor_ collections</text>
+  <rect x="460" y="300" width="180" height="58" rx="8" fill="#E2F4EE" stroke="#1A8A6B"/>
+  <text x="550" y="324" text-anchor="middle" fill="#0C4A39" font-size="14" font-weight="600">Firebase Auth</text>
+  <text x="550" y="342" text-anchor="middle" fill="#13745a" font-size="12">Google sign-in</text>
+  <line x1="140" y1="108" x2="140" y2="299" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <text x="152" y="205" fill="#888" font-size="12">generate</text>
+  <line x1="230" y1="329" x2="248" y2="329" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <text x="240" y="380" text-anchor="middle" fill="#888" font-size="12">writes once</text>
+  <line x1="500" y1="108" x2="500" y2="138" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <line x1="390" y1="240" x2="390" y2="299" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <text x="400" y="272" fill="#888" font-size="12">read</text>
+  <path d="M365 240 L365 270 L190 270 L190 299" fill="none" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <text x="258" y="262" text-anchor="middle" fill="#888" font-size="12">live tutor</text>
+  <line x1="550" y1="240" x2="550" y2="299" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <text x="560" y="272" fill="#888" font-size="12">verify</text>
+  <text x="40" y="424" fill="#888" font-size="12">CI/CD deployment</text>
+  <rect x="40" y="440" width="240" height="58" rx="8" fill="#F0F1F3" stroke="#6B7280"/>
+  <text x="160" y="464" text-anchor="middle" fill="#374151" font-size="14" font-weight="600">GitHub</text>
+  <text x="160" y="482" text-anchor="middle" fill="#555" font-size="12">mallimatla/isc-tutor</text>
+  <rect x="360" y="440" width="280" height="58" rx="8" fill="#F0F1F3" stroke="#6B7280"/>
+  <text x="500" y="464" text-anchor="middle" fill="#374151" font-size="14" font-weight="600">Vercel CI/CD</text>
+  <text x="500" y="482" text-anchor="middle" fill="#555" font-size="12">auto-deploy on push</text>
+  <line x1="280" y1="469" x2="358" y2="469" stroke="#6B7280" stroke-width="1.5" marker-end="url(#ar2)"/>
+  <text x="319" y="461" text-anchor="middle" fill="#888" font-size="12">git push</text>
+</svg>
