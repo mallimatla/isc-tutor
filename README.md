@@ -1,117 +1,67 @@
 # ISC Tutor
 
-> AI math tutor that thinks like an expert teacher — diagnoses where reasoning breaks instead of just grading. Built for my son, currently in ISC Class 11 Science.
+> A Socratic AI maths tutor for ISC Class 11 & 12 students. It diagnoses where a student's reasoning breaks down instead of just marking the answer right or wrong. Built solo for my son, who is currently in ISC Class 11 Science.
 
 ## Try it
 
 **Live URL:** https://isc-tutor.vercel.app
-Sign in with any Google account.
+Sign in with any Google account — the app uses Firebase anonymous-style auth scoped to your Google identity, no separate password.
+
+## The problem
+
+ISC Class 11 and 12 Maths students don't have a patient tutor available at 10 PM when they're stuck on a problem the night before the test. Their parents — even technical ones — usually can't help at that level: I'm a Director of Engineering and I cannot fluently solve my son's harder trigonometry problems on demand. The existing apps (Khan Academy, BYJU's, ChatGPT, generic doubt-solving) all hand back an *answer* in seconds, which is precisely what a learning student doesn't need — the student needs to be walked through where their own attempt broke down. That's the gap this product fills.
 
 ## What's built
 
-- **Pre-seeded verified question bank** — `npm run seed:questions` builds a pool of ~22 verified questions per chapter, spanning board → JEE Main → JEE Advanced (difficulties 1–5) and mixing single-correct MCQ, numerical, multiple-correct, and assertion–reason types. Each question is solved a SECOND independent time by the same model with no access to the proposed key — only questions where both solves agree are written to Firestore. At runtime the question API serves an unseen verified question instantly (single Firestore read, no LLM call); if the pool is exhausted at the user's current difficulty, the existing Claude-runtime generation kicks in as fallback so practice stays infinite.
-- **Local lesson seed pipeline** — `npm run seed:lessons` generates all 29 chapter lessons from a developer machine and writes them to Firestore. The Vercel app reads them back; it never generates. This permanently sidesteps the Hobby 60s function-duration limit.
-- **Three content layers per lesson** — DALL·E hero illustration (decorative background) + 2–4 Claude-authored pure-SVG diagrams interleaved into the narrative + a 9–11-beat tutor explanation with common-mistakes and quick-reference cards. Diagrams render inline via `dangerouslySetInnerHTML` of sanitized SVG strings, eliminating the iframe sandbox failures that plagued earlier phases.
-- **Beautiful chapter Learn mode** — each chapter has a themed hero banner (with DALL·E hero image when seeded), hand-crafted interactive React widgets for 6 key chapters (draggable Venn diagrams, unit circle, limits explorer, matrix transformer, probability simulator) rendered above the static SVG diagrams, narrative beats with glass-card design, common mistakes, and shareable summary cards (PNG export via html2canvas)
-- **Socratic Diagnosis Engine** — multi-turn dialogue (up to 5 turns) where the tutor asks targeted questions to find exactly where the student's reasoning breaks, instead of revealing solutions immediately
-- **Adaptive difficulty** — rolling 5-question window adjusts question difficulty up/down based on recent performance
-- **Concept tracking** — every wrong answer tagged with specific sub-skills (e.g., "complement-notation", "cardinality-formula") for weakness surfacing
-- **Real-world question grounding** — easy-medium questions framed in contexts a 16-year-old cares about (Instagram, FIFA, Spotify Wrapped, JEE) instead of "100 students" textbook scenarios. Board-exam-level questions stay formal.
-- **Personalized greeting** — Claude reads session history and recommends the next chapter based on weaknesses
-- **Mastery map** — visual grid of progress per chapter across Class 11 and 12
-- **Streaming responses** — tutor messages stream word-by-word via Server-Sent Events; skeleton loaders before content arrives
-- **English TTS** — browser-native speech synthesis (en-IN preferred) reads tutor messages aloud, with LaTeX-to-verbal translation
-- **Google Sign-In auth** — Firebase Auth with per-user data isolation via prefixed Firestore collections (`isctutor_*`) inside a shared Firebase project
+- **Socratic dialogue engine** — `/api/socratic` is a multi-turn SSE-streaming Claude conversation (up to 5 turns) that asks the student targeted diagnostic questions before ever revealing a solution. Each student turn is classified against a chapter-level sub-skill taxonomy, so we know not just "got it wrong" but "got it wrong on the `cardinality-formula` skill in Sets."
+- **Adaptive difficulty** — a 5-question rolling window decides whether to push the next question up a tier (board → JEE Main → JEE Advanced) or step it back; the engine lives in `lib/difficulty.ts`, runs server-side, and exposes a difficulty 1–5 to the question pipeline.
+- **AI-generated illustrated lessons** — every chapter has a `lesson-v3.0` document in Firestore with a 9–11-beat narrative, common-mistakes card, quick-reference card, key-takeaway, and 2–4 chapter-themed diagrams. Diagrams are pure SVG strings authored by Claude and sanitized at seed time, rendered inline via `dangerouslySetInnerHTML` — no iframe, no JavaScript runs in them.
+- **Interactive premium visualizations** — ~11 of 29 chapters have hand-crafted React widgets (draggable Venn diagrams for Sets, unit circle for Trig, eccentricity slider that morphs circle → ellipse → parabola → hyperbola for Conic Sections, Riemann-sum slider for Integrals, parallelogram-area determinant, tangent-line slider for Applications of Derivatives, draggable Argand plane for Complex Numbers, and others). Each uses its chapter theme, runs at 60 fps, and supports mouse + touch.
+- **Living mastery map** — per-chapter status (mastered / practicing / learning / not-started), each tile in the chapter's own theme gradient, progress bars filled with the same colour. "Learning" is a lightweight engagement state that fires when a student opens a Learn lesson, layered *on top of* the practice-based mastery so a real practice score is never overwritten by it.
+- **Local seed pipelines, runtime stays read-only** — `npm run seed:lessons` and `npm run seed:questions` run on a developer machine and write directly to Firestore via the Admin SDK. The Vercel runtime never generates static content, which permanently sidesteps the Hobby 60-second function-duration limit. Questions also include a two-pass independent re-solve verification: the verifier sees only the question (not the proposed key) and a type-aware comparator (letter / set / numeric tolerance) only writes a question when both agree.
+- **Single-accent design system** (`lib/design-tokens.ts`) — indigo as the only "loud" colour, per-chapter gradients reserved for chapter identity, rounded-2xl white cards, motion via a couple of CSS keyframes with a full `prefers-reduced-motion` override.
 
 ## Architecture
 
-Stack: Next.js 16 + TypeScript + Tailwind v4 + Claude Sonnet 4 + Firebase (Auth + Firestore) + Vercel + KaTeX. See [PRD.md](./PRD.md) for full system design (24 sections), [DESIGN.md](./DESIGN.md) for architecture summary.
+**Stack:** Next.js 16 (App Router) + TypeScript + Tailwind v4 + Claude (Sonnet) for reasoning + OpenAI gpt-4o for the question seed + Firebase Auth + Firestore + Vercel. KaTeX renders the maths.
 
-Key design decisions: lazy-init for Firebase Admin (defers credential parsing past `next build`); collection prefix (`FIRESTORE_COLLECTION_PREFIX`) for safe coexistence with other apps inside the shared Firebase project; SSE-based streaming for the Socratic dialogue route; version-controlled LLM prompts in `lib/prompts/` (qgen-v1.3, eval-v1.1, socratic-v1.0, greeting-v1.0).
+The most important design decision is the split between **static, identical-for-everyone content** and **runtime, per-student reasoning**:
 
-A debug endpoint exists at `/api/debug-firebase` for operational diagnostics — requires `DEBUG_ENDPOINT_KEY` env var to be set and `?key=` query param to access.
+- The Socratic dialogue, the question evaluation, the adaptive difficulty engine, and the personalised greeting all *must* run at request time — they depend on the specific student's session history and the specific turn they just typed.
+- Everything else — the 29 illustrated chapter lessons, the chapter-themed pure-SVG diagrams, the verified question bank — is identical for every student. So it's generated **once, locally, on my laptop**, written to Firestore via the Admin SDK, and read back from there. The app routes that fetch this content do a single Firestore read with `maxDuration = 30`. This trade is what makes the Hobby tier viable without sacrificing any of the AI features.
 
-## What's broken / what I'd do with more time
+A few other decisions worth calling out:
 
-This is a solo build. Honest limitations:
+- **Pure SVG over sandboxed HTML for diagrams.** Earlier phases rendered AI-authored HTML in a sandboxed iframe with a CSP + sanitiser pipeline. It broke constantly. Replacing it with constrained `<svg>...</svg>` strings (a fixed primitive vocabulary, sanitised at seed time, no `<script>` / `<foreignObject>` / `on*` handlers) eliminated that whole class of failures.
+- **Shared sub-skill taxonomy.** `data/isc-chapter-syllabus.json` is the single source of truth for each chapter's subtopics. The lesson seed reads it, the question seed tags each question against it, and the Socratic engine classifies student turns against the same list — so "weak on `cardinality-formula`" means the same thing in Sets-the-lesson, Sets-the-questions, and Sets-the-mastery-map.
+- **Lazy Firebase Admin init.** `lib/firebase-admin.ts` returns Proxy stubs at build time when env vars aren't present, then real `cert()` instances at runtime — so `next build` doesn't need credentials and Vercel can do a clean preview deploy.
+- **Collection prefix everywhere.** `FIRESTORE_COLLECTION_PREFIX` (`isctutor_`) wraps every collection name via `col()`, so this project safely coexists with other apps inside the same Firebase project.
 
-- **Computer Science track not built** — code-execution sandboxing (Java) and SQL evaluation are separate engineering problems. Roadmapped as Phase 2.
-- **Occasional false negatives on creative methods** — the evaluator sometimes marks a mathematically-valid alternate method as incorrect on the first pass. Mitigated by the Socratic engine giving the student room to defend their reasoning, but not eliminated.
-- **No persistent week-over-week trends** — the mastery map shows current state but doesn't surface "you've improved 30% on Sets this week"
-- **No parent dashboard** — kept out of scope intentionally (student privacy + scope discipline)
-- **No handwritten math input** — would unlock R.D. Sharma textbook scanning via Claude vision. Phase 4 roadmap.
-- **No mock board paper mode** — timed 3-hour exam simulation. Easy to add.
-- **No mobile app wrapper** — web-responsive only. PWA-installable but not native.
-- **AI-generated question bank, not past papers** — the verified bank is solid for practice but it's still model-authored. For serious JEE prep it should supplement, not replace, real ICSE / ISC / JEE PYQs. The independent-resolve verification catches the most embarrassing wrong-answer-key bugs but isn't a substitute for human review of every item.
-- **Hallucinations on edge-case topics** — the in_syllabus prompt check catches most off-topic generations but isn't 100% reliable. The flag system lets users surface these for review.
-- **Interactive React widgets exist for 6 of 29 chapters** (Sets, Functions, Trigonometric Functions, Limits, Probability, Matrices); the rest rely on static SVG diagrams generated at seed time.
-- **Shareable card uses html2canvas** which doesn't perfectly render all CSS (gradients sometimes look off in the PNG export)
-- **Seed script must run locally (by design)** — no in-app generation. Chapters that haven't been seeded yet render a friendly "lesson is on its way" card with a button to skip straight to Practice; they don't error.
-- **Streaming JSON parsing uses regex** for the tutor_message field rather than a proper incremental JSON parser. Works in practice but could be more robust.
-- **English TTS uses browser speech synthesis** — sounds robotic. A paid TTS API (ElevenLabs, OpenAI) would sound much better but wasn't worth the cost or latency for v1.
-- **Single-user-per-session** — no shared/collaborative sessions or class-mode.
+See [PRD.md](./PRD.md) for the full system design, data model, and phased build log; [DESIGN.md](./DESIGN.md) for the shorter architecture summary.
+
+## What's broken / what I'd do next
+
+Honest list:
+
+1. **Practice questions still partly runtime-generated.** When the verified question bank is exhausted at a user's current difficulty for a chapter, the API falls back to Claude question generation at request time — that's ~20 s p95 which is painfully long. Fix: complete the seed by running `npm run seed:questions` over all chapters; the path itself is in place.
+2. **OpenAI hero images are currently disabled in production.** The `seed:lessons --no-image` flag is what I'm running, because the OpenAI project key tied to my Firebase project has billing issues I haven't resolved. Hero banners fall back to a CSS gradient + decorative blur shapes, which looks fine but isn't what the lesson document is designed to show.
+3. **Interactive React widgets exist for ~11 of 29 chapters.** The other 18 rely entirely on the static SVG diagrams. The widget framework is in `components/learn-visualizations/`; adding more is mechanical but I haven't done them yet.
+4. **`ANTHROPIC_MODEL` defaults to a deprecated model string.** `claude-sonnet-4-20250514` works today but will be rotated; the prompt-version log in Firestore captures which model authored which content, which means the rotation is fixable without losing history.
+5. **LaTeX rendering gap on some chapters.** The Quick Reference Card on a few chapters uses plain-text formulae where it should use `$...$`. Cosmetic but visible.
+6. **No automated tests.** I have a `tests/` folder pencilled in the file structure but never wrote anything. Things I *would* test first: difficulty-window update logic (`lib/difficulty.ts`), `safeParseClaudeJson()` against fenced/un-fenced/garbage inputs, the bank vs runtime branching in `/api/question`.
+7. **AI-authored questions are not real past papers.** The verified-on-second-solve bank catches wrong-answer-key bugs but doesn't replace ICSE/ISC/JEE PYQs. For serious JEE prep this should supplement, not substitute, real previous-year papers.
+8. **The evaluator occasionally false-negatives on creative methods.** Mitigated by the Socratic engine letting the student defend their reasoning across multiple turns, but not eliminated. The flag system lets students surface these for review.
+9. **Streaming JSON parsing uses regex.** The Socratic SSE delta path extracts `tutor_message` with a regex against partial JSON. It works in practice but a proper incremental parser would be more robust.
+10. **English TTS uses browser speech synthesis.** Sounds robotic; an ElevenLabs / OpenAI TTS would sound human, but neither was worth the additional latency + cost for v1.
+11. **No week-over-week trend view.** The mastery map shows current state; it doesn't show "you went from 40% → 75% on Sets in two weeks", which would be the actual motivational artifact.
+12. **No parent dashboard, no class mode, no mock-exam timer.** All deliberately out of scope for v1 — privacy, scope discipline, and the simple fact that they're not why a student stuck at 10 PM opens this app.
+13. **No mobile app wrapper.** Web-responsive, PWA-installable, but not Capacitor-packaged.
+14. **Computer Science track not built.** Java code-execution sandbox + SQL evaluation are separate engineering problems; roadmapped as Phase 2.
 
 ## Built with Claude Code
 
-Every commit in this repo was authored in tandem with Claude (via Claude Code CLI). The commit history shows the human + AI authorship pattern explicitly. I treated Claude as a senior collaborator, not autocomplete. The decisions that mattered — what to build, what NOT to build, when to scope down vs. ship — those were mine. The implementation velocity came from Claude.
-
-## Local development
-
-```bash
-git clone https://github.com/mallimatla/isc-tutor
-cd isc-tutor
-npm install
-cp .env.example .env.local  # fill in API keys and Firebase credentials
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-### Seeding chapter lessons
-
-Lessons are generated **locally** via a one-off seed script, then written to Firestore — the Vercel app reads but never generates them.
-
-```bash
-# .env.local needs:
-#   ANTHROPIC_API_KEY
-#   OPENAI_API_KEY                (for hero images; omit with --no-image)
-#   FIREBASE_PROJECT_ID
-#   FIREBASE_CLIENT_EMAIL
-#   FIREBASE_PRIVATE_KEY
-#   FIRESTORE_COLLECTION_PREFIX   (e.g. "isctutor_")
-
-npm run seed:lessons                          # seed every missing chapter (lesson-v3.0)
-npm run seed:lessons -- --only=sets           # seed one chapter
-npm run seed:lessons -- --force               # regenerate everything
-npm run seed:lessons -- --no-image            # skip the DALL·E hero
-```
-
-The script is resumable: chapters already on `lesson-v3.0` are skipped unless `--force` is passed. Failures don't abort the run; a summary at the end lists any chapter to re-run. `/admin` is a read-only inventory of what's currently in Firestore.
-
-### Seeding the question bank
-
-```bash
-# .env.local needs:
-#   OPENAI_API_KEY
-#   OPENAI_QGEN_MODEL              (default: gpt-4o)
-#   FIREBASE_PROJECT_ID
-#   FIREBASE_CLIENT_EMAIL
-#   FIREBASE_PRIVATE_KEY
-#   FIRESTORE_COLLECTION_PREFIX    (e.g. "isctutor_")
-
-npm run seed:questions                          # ~22 verified questions per chapter
-npm run seed:questions -- --only=sets           # seed just one chapter
-npm run seed:questions -- --target=25           # raise the per-chapter target
-npm run seed:questions -- --force               # top up beyond the target
-npm run seed:questions -- --list                # show current per-chapter bank counts
-```
-
-Every question goes through a two-pass pipeline: a generator call produces the question + key + concise solution, then a second independent call solves the same question from scratch (with no access to the proposed key). Only questions where both passes agree are written to Firestore with `verified: true`. Disagreements and shape-failures are discarded and re-attempted up to `--max-attempts` times per slot. The script is resumable — chapters that already meet the per-difficulty target are skipped unless `--force` is passed.
-
-## Submission notes
-
-Built for the Build at Damco Challenge, May 2026. Track: Engineers.
+The entire codebase was built solo, with Claude (via the Claude Code CLI) as engineering + strategy partner — not autocomplete. The judgments that mattered — what to build, what to cut, what tradeoffs to accept, what to call honestly broken — were mine. The implementation velocity came from Claude. Every commit is co-authored with the model and the history shows that pattern explicitly.
 
 ---
 
-*— Nag (mallimatla@gmail.com)*
+*Built by Nag Matla (mallimatla@gmail.com) for the Build at Damco Challenge — Engineers track. See [docs/DEMO-VIDEO-SCRIPT.md](./docs/DEMO-VIDEO-SCRIPT.md) for the submission walkthrough.*
