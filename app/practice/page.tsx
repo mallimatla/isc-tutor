@@ -138,9 +138,21 @@ function PracticeContent() {
   return (
     <div className="flex flex-1 flex-col px-4 py-8 sm:py-10">
       <div className="mx-auto w-full max-w-2xl">
-        {/* Top context bar */}
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0">
+        {/* Always-visible "back to dashboard" link */}
+        <div className="mb-3">
+          <Link
+            href="/"
+            aria-label="Back to all chapters"
+            className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 -ml-2 text-xs font-semibold uppercase tracking-wider text-slate-500 transition active:scale-95 hover:bg-slate-100 hover:text-slate-900"
+          >
+            <span aria-hidden>←</span>
+            All chapters
+          </Link>
+        </div>
+
+        {/* Chapter context bar */}
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <span
               aria-hidden
               className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm"
@@ -154,12 +166,6 @@ function PracticeContent() {
               {chapterLabel}
             </h1>
           </div>
-          <Link
-            href="/"
-            className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
-          >
-            Change
-          </Link>
         </div>
 
         {/* Segmented control — both tabs always clickable */}

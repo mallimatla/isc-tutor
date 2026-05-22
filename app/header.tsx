@@ -14,7 +14,9 @@ export default function Header() {
       <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-3 sm:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-full px-1 py-0.5 transition hover:opacity-80"
+          aria-label="ISC Tutor — back to dashboard"
+          title="Back to dashboard"
+          className="-mx-2 flex cursor-pointer items-center gap-2 rounded-full px-2 py-1 transition hover:bg-slate-100 active:scale-[0.98]"
         >
           <Logo size={26} />
         </Link>

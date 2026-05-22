@@ -220,11 +220,34 @@ function ChapterTile({
   );
 }
 
-function StatChip({ label, value }: { label: string; value: number }) {
+function ProgressSummary({
+  learning,
+  practicing,
+  mastered,
+}: {
+  learning: number;
+  practicing: number;
+  mastered: number;
+}) {
   return (
-    <div className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm">
-      <span className="font-bold text-slate-900">{value}</span>{" "}
-      <span className="text-slate-500">{label}</span>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm">
+      <span className="inline-flex items-center gap-1.5">
+        <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-indigo-500" />
+        <span className="font-semibold text-slate-900">{learning}</span>
+        <span className="text-slate-500">learning</span>
+      </span>
+      <span aria-hidden className="text-slate-300">·</span>
+      <span className="inline-flex items-center gap-1.5">
+        <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-violet-500" />
+        <span className="font-semibold text-slate-900">{practicing}</span>
+        <span className="text-slate-500">practicing</span>
+      </span>
+      <span aria-hidden className="text-slate-300">·</span>
+      <span className="inline-flex items-center gap-1.5">
+        <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+        <span className="font-semibold text-slate-900">{mastered}</span>
+        <span className="text-slate-500">mastered</span>
+      </span>
     </div>
   );
 }
@@ -280,16 +303,12 @@ export default function MasteryMap() {
   const learningOpened = data.learningOpened ?? {};
   const class11 = data.chapters.filter((c) => c.classLevel === "11");
   const class12 = data.chapters.filter((c) => c.classLevel === "12");
-  const started =
-    data.totalMastered +
-    data.totalPracticing +
-    // Chapters with a lesson-opened ping but no practice yet.
-    Object.keys(learningOpened).filter((k) => {
-      const ch = data.chapters.find(
-        (c) => `${c.classLevel}-${c.chapterId}` === k
-      );
-      return ch && ch.status === "untouched";
-    }).length;
+  const learningCount = Object.keys(learningOpened).filter((k) => {
+    const ch = data.chapters.find(
+      (c) => `${c.classLevel}-${c.chapterId}` === k
+    );
+    return ch && ch.status === "untouched";
+  }).length;
 
   const handleClick = (ch: ChapterMastery) => {
     router.push(
@@ -299,19 +318,15 @@ export default function MasteryMap() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-            Your progress
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Tap a chapter to jump in.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <StatChip label="started" value={started} />
-          <StatChip label="mastered" value={data.totalMastered} />
-        </div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+          Your progress
+        </h2>
+        <ProgressSummary
+          learning={learningCount}
+          practicing={data.totalPracticing}
+          mastered={data.totalMastered}
+        />
       </div>
 
       <div className="space-y-8">

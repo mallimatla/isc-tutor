@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
-import TopicPicker from "@/components/TopicPicker";
 
 interface GreetingData {
   greeting: string;
@@ -14,90 +13,90 @@ interface GreetingData {
   };
 }
 
+/**
+ * Trim a long greeting to a single short sentence for the compact header line.
+ * The full greeting is still available via the underlying `title` attribute,
+ * so screen readers and curious users can hover/inspect it.
+ */
+function firstSentence(text: string, maxChars = 140): string {
+  if (!text) return "";
+  const trimmed = text.trim();
+  // Split on the first sentence-end (., !, ?). If none found, fall back to a
+  // soft length cap.
+  const match = trimmed.match(/^[\s\S]+?[.!?](?=\s|$)/);
+  let out = match ? match[0] : trimmed;
+  if (out.length > maxChars) {
+    out = out.slice(0, maxChars).trimEnd() + "…";
+  }
+  return out;
+}
+
 export default function PersonalizedGreeting() {
   const router = useRouter();
   const [data, setData] = useState<GreetingData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     apiFetch<GreetingData>("/api/greeting", { method: "POST" })
       .then(setData)
       .catch(() => {
-        setShowPicker(true);
+        // Silent: the chapter grid below the greeting is the real entry point.
+        // A failed greeting just means we render nothing here.
       })
       .finally(() => setLoading(false));
   }, []);
 
-  const handleRecommendedAction = () => {
-    if (!data?.recommendedAction.chapterId) {
-      setShowPicker(true);
-      return;
-    }
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="skeleton-shimmer h-6 w-16 rounded-full" />
+        <div className="skeleton-shimmer h-5 flex-1 max-w-xl rounded" />
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const handleResume = () => {
+    if (!data.recommendedAction.chapterId) return;
     router.push(
       `/practice?subject=mathematics&class=11&chapterId=${data.recommendedAction.chapterId}`
     );
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="skeleton-shimmer h-10 w-2/3 rounded-lg" />
-        <div className="skeleton-shimmer h-5 w-full rounded" />
-        <div className="skeleton-shimmer h-5 w-3/4 rounded" />
-      </div>
-    );
-  }
-
-  if (showPicker && !data) {
-    return <TopicPicker />;
-  }
-
+  const compactGreeting = firstSentence(data.greeting);
   const ctaLabel =
-    data?.recommendedAction.type === "revisit_weakness"
-      ? "Revisit this topic"
-      : data?.recommendedAction.type === "continue_chapter"
-        ? "Continue practicing"
-        : data?.recommendedAction.type === "new_chapter"
-          ? "Try this chapter"
-          : "Pick a chapter";
+    data.recommendedAction.type === "revisit_weakness"
+      ? "Revisit"
+      : data.recommendedAction.type === "continue_chapter"
+        ? "Continue"
+        : data.recommendedAction.type === "new_chapter"
+          ? "Open"
+          : "Pick";
 
   return (
-    <div className="space-y-8">
-      {data && (
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
-            Today
-          </p>
-          <h1 className="text-2xl font-bold leading-tight tracking-tight text-slate-900 sm:text-3xl">
-            {data.greeting}
-          </h1>
-        </div>
-      )}
-
-      <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center">
-        {data?.recommendedAction.chapterId && (
-          <button
-            onClick={handleRecommendedAction}
-            className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition active:scale-95 hover:bg-indigo-500 hover:shadow"
-          >
-            {ctaLabel}
-            <span aria-hidden className="ml-2">→</span>
-          </button>
-        )}
-
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <span
+        aria-hidden
+        className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-indigo-700"
+      >
+        <span className="text-sm leading-none">👋</span>
+        Today
+      </span>
+      <p
+        title={data.greeting}
+        className="line-clamp-1 flex-1 min-w-0 text-sm text-slate-600 sm:text-base"
+      >
+        {compactGreeting}
+      </p>
+      {data.recommendedAction.chapterId && (
         <button
-          onClick={() => setShowPicker((s) => !s)}
-          className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition active:scale-95 hover:border-slate-300 hover:bg-slate-50"
+          onClick={handleResume}
+          className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-indigo-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 hover:bg-indigo-500 hover:shadow"
         >
-          {showPicker ? "Hide chapters" : "Browse all chapters"}
+          {ctaLabel}
+          <span aria-hidden>→</span>
         </button>
-      </div>
-
-      {showPicker && (
-        <div className="animate-fade-up border-t border-slate-100 pt-8">
-          <TopicPicker />
-        </div>
       )}
     </div>
   );
