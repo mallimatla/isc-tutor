@@ -92,6 +92,25 @@ function PracticeContent() {
     }
   }, [mode, chapterId, authLoading, user, question, fetchQuestion]);
 
+  // Fire-and-forget engagement signal: when the student lands on the Learn
+  // tab for a chapter, record it once per session. Server-side this becomes
+  // sessions/{uid}.learningOpened.{lessonKey} = serverTimestamp.
+  useEffect(() => {
+    if (mode !== "learn" || !chapterId || authLoading || !user) return;
+    const pingKey = `isctutor:learnOpenedPinged:${classLevel}-${chapterId}`;
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem(pingKey) === "true") return;
+    sessionStorage.setItem(pingKey, "true");
+    apiFetch("/api/progress/lesson-opened", {
+      method: "POST",
+      body: JSON.stringify({ chapterId, classLevel }),
+    }).catch(() => {
+      // Engagement signal is best-effort. Clear the guard so a future load
+      // can retry, then otherwise silently drop the error.
+      sessionStorage.removeItem(pingKey);
+    });
+  }, [mode, chapterId, classLevel, authLoading, user]);
+
   if (authLoading) {
     return (
       <div className="flex flex-1 items-center justify-center">

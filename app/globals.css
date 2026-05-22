@@ -68,6 +68,14 @@ body {
   animation: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
 }
 
+/* Stagger: set --i to the item's index. We cap the multiplier at ~10 items
+   worth of delay (≈ 0.32 s total) so a long grid still finishes quickly. */
+.animate-stagger {
+  --i: 0;
+  animation: fade-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(min(var(--i), 12) * 32ms);
+}
+
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
