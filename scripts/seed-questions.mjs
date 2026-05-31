@@ -43,11 +43,13 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const MODEL = process.env.OPENAI_QGEN_MODEL || "gpt-4o";
 const SOURCE_TAG = `seed-openai-${MODEL}`;
-const TARGET_DEFAULT = 22;
+const TARGET_DEFAULT = 35;
 
-// Difficulty distribution: 4 + 5 + 5 + 4 + 4 = 22 (sums to TARGET_DEFAULT).
+// Difficulty distribution: 7 + 8 + 8 + 7 + 5 = 35 (sums to TARGET_DEFAULT).
 // We scale proportionally if user passes --target.
-const DIFFICULTY_BASE = { 1: 4, 2: 5, 3: 5, 4: 4, 5: 4 };
+// Weighted toward d1-d3 because that's where most board-exam practice sits;
+// d4-d5 (JEE Main/Advanced) is the stretch range for top students.
+const DIFFICULTY_BASE = { 1: 7, 2: 8, 3: 8, 4: 7, 5: 5 };
 
 // Type weights by difficulty tier. Each entry is { type: weight }.
 const TYPE_MIX = {
@@ -161,11 +163,11 @@ function safeParseJSON(raw) {
 }
 
 const DIFFICULTY_LABELS = {
-  1: "Difficulty 1 — direct formula, single step, easiest board-textbook style.",
-  2: "Difficulty 2 — two-step board question, recognise the right formula.",
-  3: "Difficulty 3 — full board-exam Section A / B question, 3–4 marks.",
-  4: "Difficulty 4 — JEE Main level. Multi-concept, often numerical-answer.",
-  5: "Difficulty 5 — JEE Advanced level. Non-obvious approach; multi-correct or assertion-reason are common.",
+  1: "Difficulty 1 (SIMPLE) — direct formula, single step. The kind of warm-up question that opens an ISC/CBSE board paper. Must be the type of question that's appeared (with variations) on past board papers. 1-2 marks.",
+  2: "Difficulty 2 (MEDIUM) — two-step board question, recognise the right formula, then apply. Standard mid-paper board question. The kind that shows up in Section A / B of ISC and CBSE Maths papers. 3 marks.",
+  3: "Difficulty 3 (COMPLEX) — full board-exam Section B / C question that an above-average student should solve. Multi-step but each step is standard. The hardest board question a typical student will see. 4-6 marks.",
+  4: "Difficulty 4 (MORE COMPLEX) — JEE Main level. Multi-concept, requires connecting two ideas from this chapter or a small twist on a standard technique. Often numerical-answer type. Above board difficulty but below IIT.",
+  5: "Difficulty 5 (IIT RANGE) — JEE Advanced level. Non-obvious approach; rewards a student who really understands the chapter. Multi-correct or assertion-reason format is common. Reserved for the top-tier student.",
 };
 
 const TYPE_INSTRUCTIONS = {
@@ -196,7 +198,13 @@ function buildGenerationPrompt({ chapter, classLevel, difficulty, type, subtopic
     ? `\nRecent question stems already generated for this chapter (avoid duplicating their idea):\n${recentStems.slice(-8).map((s, i) => `  ${i + 1}. ${s}`).join("\n")}\n`
     : "";
 
-  const system = `You are an expert ISC + JEE Mathematics question writer for Class 11 and 12 students in India. You write ORIGINAL practice questions that span board-textbook style (difficulty 1–3) through JEE Main (4) and JEE Advanced (5). Every question must be MATHEMATICALLY CORRECT and unambiguously phrased.
+  const system = `You are an expert question writer for ISC (Class ${classLevel}) Mathematics — and you also write JEE Main / Advanced practice for the same students. Your job is to produce ORIGINAL questions that are HIGH-YIELD for the BOARD EXAM first, with JEE-tier stretch material at the upper end.
+
+CRITICAL: Difficulty 1, 2, and 3 are BOARD EXAM TARGETED. Mirror the style, vocabulary, and step-pattern of actual ISC ${classLevel} Mathematics papers (and CBSE Class ${classLevel} papers where they overlap). These should be the questions a student MUST be able to solve to score well on their board.
+
+Difficulty 4 is stretch — JEE Main level. Difficulty 5 is the top — JEE Advanced level for IIT aspirants.
+
+Every question must be MATHEMATICALLY CORRECT and unambiguously phrased.
 
 Output ONLY a single JSON object. No markdown fences, no prose around it. Schema:
 
@@ -213,9 +221,11 @@ ${TYPE_INSTRUCTIONS[type]}
 
 Style rules:
 - Difficulty meaning: ${DIFFICULTY_LABELS[difficulty]}
-- For difficulty 1–3 the question may be grounded in a real-world context a 16-year-old Indian Science student finds engaging (Instagram, FIFA, IPL, JEE rank, Spotify, ChatGPT, UPI) — but DON'T sacrifice rigor. For difficulty 4–5 keep the formal mathematical phrasing (JEE-paper style).
+- For difficulty 1–3 (board-exam range), the question must read like a real ISC/CBSE paper question. Plain mathematical phrasing. No gimmicks. Optionally use a brief real-world setup if it appears in the textbook (population growth, compound interest, dice/coin probability, geometry of buildings). At difficulty 1 lean on the direct application of one formula. At difficulty 2 require one substitution + one formula. At difficulty 3, two-three steps that all use chapter ideas.
+- For difficulty 4–5 use the formal JEE-paper phrasing (concise, abstract, no real-world frame). At difficulty 5 require a non-obvious manipulation or two-chapter connection that an exceptional student would spot.
 - All formulas as LaTeX inside the question.
 - The question MUST stay inside the chapter's ISC + JEE scope (use only the listed subtopics).
+- Numbers in the answer should be clean (integers or small fractions) wherever possible — the kind of answer a board examiner would accept.
 - Output ONLY the JSON object.`;
 
   const user = `Chapter: ${chapter.label} (ISC Class ${classLevel})

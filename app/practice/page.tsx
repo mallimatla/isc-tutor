@@ -55,42 +55,76 @@ function PracticeContent() {
     }
   }, [storageKey]);
 
-  // Practice mode state
+  // Practice mode state. We pair the prefetched question with the chapter
+  // it was fetched for, so we never serve a stale prefetch after the user
+  // switches chapters.
   const [question, setQuestion] = useState<QuestionResponse | null>(null);
+  const [nextQuestion, setNextQuestion] = useState<{ q: QuestionResponse; forChapter: string } | null>(null);
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [syllabusWarning, setSyllabusWarning] = useState(false);
   const [questionCount, setQuestionCount] = useState(0);
   const [dialogueKey, setDialogueKey] = useState(0);
 
+  const chapterKey = `${classLevel}:${chapterId}`;
+  const validPrefetch = nextQuestion && nextQuestion.forChapter === chapterKey ? nextQuestion.q : null;
+
+  // Low-level fetch — returns the raw response. No state mutation.
+  const fetchOneQuestion = useCallback(async () => {
+    return await apiFetch<QuestionResponse>("/api/question", {
+      method: "POST",
+      body: JSON.stringify({ subject, class: classLevel, chapterId }),
+    });
+  }, [subject, classLevel, chapterId]);
+
+  // Called when we need a fresh question on screen — either the very first
+  // one, or after the user clicks Next. If we have a valid pre-fetched
+  // question for the current chapter, swap it in instantly.
   const fetchQuestion = useCallback(async () => {
-    setIsLoadingQuestion(true);
     setError(null);
     setSyllabusWarning(false);
 
+    if (validPrefetch) {
+      setQuestion(validPrefetch);
+      setNextQuestion(null);
+      setQuestionCount((c) => c + 1);
+      setDialogueKey((k) => k + 1);
+      if (validPrefetch.metadata.syllabusWarning) setSyllabusWarning(true);
+      return;
+    }
+
+    setIsLoadingQuestion(true);
     try {
-      const res = await apiFetch<QuestionResponse>("/api/question", {
-        method: "POST",
-        body: JSON.stringify({ subject, class: classLevel, chapterId }),
-      });
+      const res = await fetchOneQuestion();
       setQuestion(res);
       setQuestionCount((c) => c + 1);
       setDialogueKey((k) => k + 1);
       if (res.metadata.syllabusWarning) setSyllabusWarning(true);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load question."
-      );
+      setError(err instanceof Error ? err.message : "Failed to load question.");
     } finally {
       setIsLoadingQuestion(false);
     }
-  }, [subject, classLevel, chapterId]);
+  }, [fetchOneQuestion, validPrefetch]);
 
+  // First question on entry to Practice
   useEffect(() => {
     if (mode === "practice" && chapterId && !authLoading && user && !question) {
       fetchQuestion();
     }
   }, [mode, chapterId, authLoading, user, question, fetchQuestion]);
+
+  // Pre-fetch the NEXT question as soon as the current one is on screen.
+  // This is what makes the "Next" click feel instant.
+  useEffect(() => {
+    if (mode !== "practice" || !chapterId || !user || authLoading) return;
+    if (!question || validPrefetch || isLoadingQuestion) return;
+    let cancelled = false;
+    fetchOneQuestion()
+      .then((res) => { if (!cancelled) setNextQuestion({ q: res, forChapter: chapterKey }); })
+      .catch(() => { /* silent — Next button will fall back to normal fetch */ });
+    return () => { cancelled = true; };
+  }, [mode, chapterId, user, authLoading, question, validPrefetch, isLoadingQuestion, fetchOneQuestion, chapterKey]);
 
   // Fire-and-forget engagement signal: when the student lands on the Learn
   // tab for a chapter, record it once per session. Server-side this becomes

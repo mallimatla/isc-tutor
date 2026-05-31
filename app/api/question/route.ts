@@ -48,6 +48,10 @@ function composeLatexWithOptions(bank: BankDocShape): string {
   return `${bank.questionText}\n\n${bank.options.join("\n")}`;
 }
 
+// Cap how many docs we transfer per query. A chapter can have hundreds of
+// questions; we only need enough to randomize over unseen ones.
+const BANK_QUERY_LIMIT = 30;
+
 async function pickFromBank({
   chapterId,
   classLevel,
@@ -68,6 +72,7 @@ async function pickFromBank({
     .where("classLevel", "==", classLevel)
     .where("difficulty", "==", targetDifficulty)
     .where("verified", "==", true)
+    .limit(BANK_QUERY_LIMIT)
     .get();
 
   let candidates = exactSnap.docs.filter((d) => !servedSet.has(d.id));
@@ -85,6 +90,7 @@ async function pickFromBank({
         .where("classLevel", "==", classLevel)
         .where("difficulty", "==", d)
         .where("verified", "==", true)
+        .limit(BANK_QUERY_LIMIT)
         .get();
       candidates = snap.docs.filter((doc) => !servedSet.has(doc.id));
       if (candidates.length > 0) break;
