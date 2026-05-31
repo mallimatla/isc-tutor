@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import LatexRenderer from "@/components/LatexRenderer";
 import SpeakButton from "@/components/SpeakButton";
 import ShareableCard from "@/components/ShareableCard";
+import ChapterHero from "@/components/ChapterHero";
 import { apiFetch } from "@/lib/api-client";
 import { getPremiumViz } from "@/lib/premium-visualizations";
 import { getChapterTheme } from "@/lib/chapter-theme";
@@ -147,53 +148,18 @@ export default function ChapterLesson({
     diagramsByBeat.set(d.afterBeat, list);
   }
 
-  const heroSrc =
-    heroImageBase64 && heroImageMimeType
-      ? `data:${heroImageMimeType};base64,${heroImageBase64}`
-      : null;
-
   return (
     <div className="flex flex-col gap-8">
-      {/* HERO BANNER */}
-      <div className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradient} p-8 sm:p-10`}>
-        {heroSrc ? (
-          <>
-            <div
-              className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-40"
-              style={{ backgroundImage: `url(${heroSrc})` }}
-            />
-            <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${theme.gradient} opacity-70`} />
-          </>
-        ) : (
-          <>
-            <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-white/15 blur-3xl" />
-            <div className="pointer-events-none absolute right-1/4 top-1/3 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-          </>
-        )}
-
-        <div className="relative">
-          <h2 className="mb-3 text-3xl font-bold text-white sm:text-5xl">{label}</h2>
-          <p className="max-w-lg text-base leading-relaxed text-white/90 sm:text-lg">
-            <LatexRenderer text={hook} />
-          </p>
-          <div className="mt-4">
-            <SpeakButton text={hook} label="Listen" />
-          </div>
-          {syllabusCoverage && syllabusCoverage.length > 0 && (
-            <div className="mt-5 flex flex-wrap gap-1.5">
-              {syllabusCoverage.map((s, i) => (
-                <span
-                  key={i}
-                  className="rounded-full bg-white/20 px-3 py-1 text-xs text-white backdrop-blur-sm"
-                >
-                  {s}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* HERO — multi-layer attention-grab */}
+      <ChapterHero
+        chapterId={chapterId}
+        label={label}
+        hookText={hook}
+        syllabusCoverage={syllabusCoverage}
+        themeGradient={theme.gradient}
+        heroImageBase64={heroImageBase64}
+        heroImageMimeType={heroImageMimeType}
+      />
 
       {/* PREMIUM INTERACTIVE WIDGET (if registered) */}
       {PremiumViz && (
