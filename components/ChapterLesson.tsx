@@ -150,6 +150,17 @@ export default function ChapterLesson({
 
   return (
     <div className="flex flex-col gap-8">
+      {/* PREMIUM INTERACTIVE WIDGET (if registered) — leads the chapter */}
+      {PremiumViz && (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Try it</h3>
+            <span className="text-xs text-slate-500">Interactive demo</span>
+          </div>
+          <PremiumViz />
+        </div>
+      )}
+
       {/* HERO — multi-layer attention-grab */}
       <ChapterHero
         chapterId={chapterId}
@@ -160,17 +171,6 @@ export default function ChapterLesson({
         heroImageBase64={heroImageBase64}
         heroImageMimeType={heroImageMimeType}
       />
-
-      {/* PREMIUM INTERACTIVE WIDGET (if registered) */}
-      {PremiumViz && (
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Try it</h3>
-            <span className="text-xs text-slate-500">Interactive demo</span>
-          </div>
-          <PremiumViz />
-        </div>
-      )}
 
       {/* NARRATIVE BEATS with INTERLEAVED DIAGRAMS */}
       <div className="flex flex-col gap-5">
