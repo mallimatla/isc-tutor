@@ -8,18 +8,28 @@ export interface ChapterHookData {
   storyStrip: { emoji: string; title: string; text: string }[];
 }
 
-// Tiny reusable animated motifs (no external CSS — all inline)
-const A = ({ className = "" }: { className?: string }) => (
-  <style>{`
-    @keyframes hk-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    @keyframes hk-pulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
-    @keyframes hk-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-    @keyframes hk-orbit { from { transform: rotate(0deg) translateX(18px) rotate(0deg); } to { transform: rotate(360deg) translateX(18px) rotate(-360deg); } }
-    @keyframes hk-wave { 0% { d: path('M0,40 Q25,20 50,40 T100,40'); } 50% { d: path('M0,40 Q25,60 50,40 T100,40'); } 100% { d: path('M0,40 Q25,20 50,40 T100,40'); } }
-    @keyframes hk-grow { from { transform: scaleY(0.4); } to { transform: scaleY(1); } }
-    @keyframes hk-slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-    @keyframes hk-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-  `}{className && ""}</style>
+// Shared keyframe injector — placed inside each SVG so animations are guaranteed available
+const KF = () => (
+  <defs>
+    <style>{`
+      @keyframes hk-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      @keyframes hk-pulse { 0%,100% { opacity: 0.7; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.15); } }
+      @keyframes hk-float { 0%,100% { transform: translate(0,0); } 50% { transform: translate(0,-8px); } }
+      @keyframes hk-grow { from { transform: scaleY(0.2); opacity: 0.3; } to { transform: scaleY(1); opacity: 1; } }
+      @keyframes hk-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+      @keyframes hk-shimmer { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 60; } }
+      @keyframes hk-fade { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+      @keyframes hk-slide { 0%,100% { transform: translateX(0); } 50% { transform: translateX(12px); } }
+      @keyframes hk-fall { 0% { transform: rotate(0); } 60% { transform: rotate(-72deg); } 100% { transform: rotate(-72deg); } }
+    `}</style>
+  </defs>
+);
+
+const SVG = ({ children }: { children: ReactNode }) => (
+  <svg viewBox="0 0 200 120" className="h-full w-full" preserveAspectRatio="xMidYMid meet">
+    <KF />
+    {children}
+  </svg>
 );
 
 // === Class 11 ===
@@ -27,12 +37,13 @@ const A = ({ className = "" }: { className?: string }) => (
 const setsHook: ChapterHookData = {
   icon: "🎯",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <circle cx="80" cy="60" r="40" fill="#60a5fa" fillOpacity="0.55" style={{ animation: "hk-float 3s ease-in-out infinite" }} />
-      <circle cx="120" cy="60" r="40" fill="#c084fc" fillOpacity="0.55" style={{ animation: "hk-float 3s ease-in-out infinite 1.5s" }} />
-      <circle cx="100" cy="60" r="6" fill="#fff" style={{ animation: "hk-pulse 1.8s ease-in-out infinite" }} />
-    </svg>
+    <SVG>
+      <circle cx="80" cy="60" r="36" fill="#3b82f6" fillOpacity="0.55" stroke="#1d4ed8" strokeWidth="2.5" style={{ animation: "hk-float 2.5s ease-in-out infinite", transformOrigin: "80px 60px" }} />
+      <circle cx="120" cy="60" r="36" fill="#a855f7" fillOpacity="0.55" stroke="#7c3aed" strokeWidth="2.5" style={{ animation: "hk-float 2.5s ease-in-out infinite 1.25s", transformOrigin: "120px 60px" }} />
+      <text x="60" y="65" textAnchor="middle" fontSize="14" fontWeight="800" fill="#1e3a8a">A</text>
+      <text x="140" y="65" textAnchor="middle" fontSize="14" fontWeight="800" fill="#581c87">B</text>
+      <circle cx="100" cy="60" r="5" fill="#fbbf24" stroke="#92400e" strokeWidth="1.5" style={{ animation: "hk-pulse 1.4s ease-in-out infinite", transformOrigin: "100px 60px" }} />
+    </SVG>
   ),
   mindBlow: { stat: "260M+", label: "Netflix accounts where set intersections decide what you watch tonight" },
   realWorld: [
@@ -52,17 +63,19 @@ const setsHook: ChapterHookData = {
 const functionsHook: ChapterHookData = {
   icon: "⚙️",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <rect x="20" y="50" width="40" height="20" rx="6" fill="#34d399" />
-      <text x="40" y="64" textAnchor="middle" fontSize="11" fontWeight="700" fill="white">x</text>
-      <rect x="80" y="35" width="40" height="50" rx="8" fill="#10b981" style={{ animation: "hk-pulse 2s ease-in-out infinite" }} />
-      <text x="100" y="65" textAnchor="middle" fontSize="11" fontWeight="700" fill="white">f</text>
-      <rect x="140" y="50" width="40" height="20" rx="6" fill="#34d399" />
-      <text x="160" y="64" textAnchor="middle" fontSize="11" fontWeight="700" fill="white">y</text>
-      <line x1="60" y1="60" x2="80" y2="60" stroke="#059669" strokeWidth="3" />
-      <line x1="120" y1="60" x2="140" y2="60" stroke="#059669" strokeWidth="3" />
-    </svg>
+    <SVG>
+      <rect x="14" y="48" width="40" height="28" rx="8" fill="#10b981" stroke="#047857" strokeWidth="2" />
+      <text x="34" y="68" textAnchor="middle" fontSize="14" fontWeight="800" fill="white">x</text>
+      <line x1="54" y1="62" x2="78" y2="62" stroke="#047857" strokeWidth="3" markerEnd="url(#fnArr)" />
+      <rect x="78" y="32" width="44" height="60" rx="10" fill="#059669" stroke="#064e3b" strokeWidth="2.5" style={{ animation: "hk-pulse 1.8s ease-in-out infinite", transformOrigin: "100px 62px" }} />
+      <text x="100" y="68" textAnchor="middle" fontSize="18" fontWeight="800" fill="white">f</text>
+      <line x1="122" y1="62" x2="146" y2="62" stroke="#047857" strokeWidth="3" markerEnd="url(#fnArr)" />
+      <rect x="146" y="48" width="40" height="28" rx="8" fill="#10b981" stroke="#047857" strokeWidth="2" />
+      <text x="166" y="68" textAnchor="middle" fontSize="14" fontWeight="800" fill="white">y</text>
+      <defs>
+        <marker id="fnArr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#047857" /></marker>
+      </defs>
+    </SVG>
   ),
   mindBlow: { stat: "∞", label: "Every Instagram filter is a function: input pixels → output pixels" },
   realWorld: [
@@ -82,14 +95,15 @@ const functionsHook: ChapterHookData = {
 const trigHook: ChapterHookData = {
   icon: "🎡",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <circle cx="100" cy="60" r="40" fill="none" stroke="#fbbf24" strokeWidth="2" strokeDasharray="3 3" />
-      <g style={{ animation: "hk-spin 5s linear infinite", transformOrigin: "100px 60px" }}>
-        <line x1="100" y1="60" x2="140" y2="60" stroke="#f59e0b" strokeWidth="3" />
-        <circle cx="140" cy="60" r="6" fill="#f59e0b" />
+    <SVG>
+      <circle cx="100" cy="60" r="42" fill="#fef3c7" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="4 3" />
+      <line x1="56" y1="60" x2="144" y2="60" stroke="#fde68a" strokeWidth="1.5" />
+      <line x1="100" y1="16" x2="100" y2="104" stroke="#fde68a" strokeWidth="1.5" />
+      <g style={{ animation: "hk-spin 4s linear infinite", transformOrigin: "100px 60px" }}>
+        <line x1="100" y1="60" x2="142" y2="60" stroke="#d97706" strokeWidth="3.5" strokeLinecap="round" />
+        <circle cx="142" cy="60" r="8" fill="#f59e0b" stroke="#92400e" strokeWidth="2" />
       </g>
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "440 Hz", label: "An A note = sine wave hitting your ear 440 times a second" },
   realWorld: [
@@ -109,14 +123,26 @@ const trigHook: ChapterHookData = {
 const inductionHook: ChapterHookData = {
   icon: "🁢",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      {Array.from({ length: 8 }, (_, i) => (
-        <rect key={i} x={20 + i * 20} y="40" width="6" height="50"
-          fill={`hsl(${260 + i * 5}, 70%, 55%)`}
-          style={{ transformOrigin: `${26 + i * 20}px 90px`, animation: `hk-bounce 2s ease-in-out infinite ${i * 0.15}s` }} />
+    <SVG>
+      <line x1="10" y1="98" x2="190" y2="98" stroke="#475569" strokeWidth="2" />
+      {Array.from({ length: 9 }, (_, i) => (
+        <rect
+          key={i}
+          x={20 + i * 19}
+          y={42}
+          width="9"
+          height="56"
+          rx="2"
+          fill={`hsl(${320 + i * 5}, 75%, ${55 - i * 1.5}%)`}
+          stroke="#9d174d"
+          strokeWidth="1.2"
+          style={{
+            transformOrigin: `${29 + i * 19}px 98px`,
+            animation: `hk-fall 2.5s ease-out infinite ${i * 0.18}s`,
+          }}
+        />
       ))}
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "1 → ∞", label: "Prove ONE step, prove ALL steps — induction is climbing infinite stairs" },
   realWorld: [
@@ -136,15 +162,17 @@ const inductionHook: ChapterHookData = {
 const complexHook: ChapterHookData = {
   icon: "🌀",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <line x1="20" y1="60" x2="180" y2="60" stroke="#6366f1" strokeWidth="1" />
-      <line x1="100" y1="10" x2="100" y2="110" stroke="#6366f1" strokeWidth="1" />
-      <g style={{ animation: "hk-spin 6s linear infinite", transformOrigin: "100px 60px" }}>
-        <line x1="100" y1="60" x2="140" y2="30" stroke="#3b82f6" strokeWidth="3" />
-        <circle cx="140" cy="30" r="7" fill="#3b82f6" />
+    <SVG>
+      <line x1="14" y1="60" x2="186" y2="60" stroke="#94a3b8" strokeWidth="1.5" />
+      <line x1="100" y1="10" x2="100" y2="110" stroke="#94a3b8" strokeWidth="1.5" />
+      <text x="182" y="74" fontSize="9" fill="#475569" fontWeight="700">Re</text>
+      <text x="104" y="16" fontSize="9" fill="#475569" fontWeight="700">Im</text>
+      <g style={{ animation: "hk-spin 5s linear infinite", transformOrigin: "100px 60px" }}>
+        <line x1="100" y1="60" x2="140" y2="30" stroke="#4f46e5" strokeWidth="3.5" strokeLinecap="round" />
+        <circle cx="140" cy="30" r="9" fill="#6366f1" stroke="#312e81" strokeWidth="2" />
+        <text x="148" y="24" fontSize="13" fontWeight="800" fill="#312e81">z</text>
       </g>
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "√−1 = i", label: "Mathematicians invented a new number to solve x² = −1 — and built quantum physics on it" },
   realWorld: [
@@ -164,16 +192,20 @@ const complexHook: ChapterHookData = {
 const inequalitiesHook: ChapterHookData = {
   icon: "⚖️",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <line x1="20" y1="60" x2="180" y2="60" stroke="#cbd5e1" strokeWidth="2" />
-      <rect x="60" y="55" width="120" height="10" fill="#f43f5e" style={{ animation: "hk-pulse 2s ease-in-out infinite" }} />
-      <circle cx="60" cy="60" r="8" fill="white" stroke="#f43f5e" strokeWidth="3" />
-      <text x="60" y="85" textAnchor="middle" fontSize="11" fill="#9f1239">a</text>
-      <polygon points="180,60 170,55 170,65" fill="#f43f5e" />
-    </svg>
+    <SVG>
+      <line x1="14" y1="60" x2="186" y2="60" stroke="#475569" strokeWidth="2" />
+      {[-3, -2, -1, 0, 1, 2, 3].map((n) => (
+        <g key={n}>
+          <line x1={100 + n * 22} y1="54" x2={100 + n * 22} y2="66" stroke="#64748b" strokeWidth="1.5" />
+          <text x={100 + n * 22} y="86" textAnchor="middle" fontSize="9" fill="#475569">{n}</text>
+        </g>
+      ))}
+      <rect x="56" y="56" width="130" height="8" fill="#ef4444" rx="2" style={{ animation: "hk-fade 1.8s ease-in-out infinite" }} />
+      <circle cx="56" cy="60" r="9" fill="white" stroke="#dc2626" strokeWidth="3" />
+      <polygon points="186,60 174,52 174,68" fill="#dc2626" />
+    </SVG>
   ),
-  mindBlow: { stat: "₹ 0 ≤ Cost ≤ Budget", label: "Every business decision is solving inequalities — under the hood" },
+  mindBlow: { stat: "0 ≤ Cost ≤ Budget", label: "Every business decision is solving inequalities — under the hood" },
   realWorld: [
     { emoji: "🛒", label: "Shopping budget" },
     { emoji: "🚦", label: "Speed limits" },
@@ -191,15 +223,14 @@ const inequalitiesHook: ChapterHookData = {
 const permsHook: ChapterHookData = {
   icon: "🎴",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
+    <SVG>
       {["A", "B", "C", "D"].map((c, i) => (
-        <g key={i} style={{ animation: `hk-float 2.5s ease-in-out infinite ${i * 0.3}s` }}>
-          <rect x={30 + i * 35} y="40" width="28" height="40" rx="4" fill="#a855f7" />
-          <text x={44 + i * 35} y="65" textAnchor="middle" fontSize="14" fontWeight="700" fill="white">{c}</text>
+        <g key={i} style={{ animation: `hk-float 2.5s ease-in-out infinite ${i * 0.3}s`, transformOrigin: `${44 + i * 36}px 62px` }}>
+          <rect x={26 + i * 36} y="36" width="32" height="50" rx="5" fill="#a855f7" stroke="#581c87" strokeWidth="2.5" />
+          <text x={42 + i * 36} y="66" textAnchor="middle" fontSize="18" fontWeight="800" fill="white">{c}</text>
         </g>
       ))}
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "52! ≈ 8 × 10⁶⁷", label: "Shuffle a deck — odds are NO ONE in history has ever seen that exact order" },
   realWorld: [
@@ -219,14 +250,17 @@ const permsHook: ChapterHookData = {
 const binomialHook: ChapterHookData = {
   icon: "🔺",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
+    <SVG>
       {[0, 1, 2, 3].map((row) => Array.from({ length: row + 1 }, (_, k) => {
-        const x = 100 + (k - row / 2) * 26;
-        const y = 25 + row * 22;
-        return <circle key={`${row}-${k}`} cx={x} cy={y} r="9" fill="#3b82f6" style={{ animation: `hk-pulse 2s ease-in-out infinite ${(row + k) * 0.1}s` }} />;
+        const x = 100 + (k - row / 2) * 28;
+        const y = 24 + row * 24;
+        return (
+          <g key={`${row}-${k}`} style={{ animation: `hk-pulse 2s ease-in-out infinite ${(row + k) * 0.12}s`, transformOrigin: `${x}px ${y}px` }}>
+            <circle cx={x} cy={y} r="11" fill="#0ea5e9" stroke="#075985" strokeWidth="2" />
+          </g>
+        );
       }))}
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "(a+b)¹⁰⁰", label: "Has 101 terms. Pascal's triangle gives them all instantly — no FOIL needed" },
   realWorld: [
@@ -246,15 +280,25 @@ const binomialHook: ChapterHookData = {
 const sequencesHook: ChapterHookData = {
   icon: "📈",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      {[15, 30, 45, 60, 75, 90].map((h, i) => (
-        <rect key={i} x={20 + i * 28} y={110 - h} width="20" height={h} rx="3" fill="#22c55e"
-          style={{ transformOrigin: "bottom", animation: `hk-grow 1s ease-out ${i * 0.2}s both` }} />
+    <SVG>
+      <line x1="14" y1="104" x2="186" y2="104" stroke="#475569" strokeWidth="2" />
+      {[16, 28, 44, 60, 76, 92].map((h, i) => (
+        <rect
+          key={i}
+          x={22 + i * 28}
+          y={104 - h}
+          width="20"
+          height={h}
+          rx="3"
+          fill="#22c55e"
+          stroke="#15803d"
+          strokeWidth="2"
+          style={{ transformOrigin: `${32 + i * 28}px 104px`, animation: `hk-grow 1.6s ease-out infinite ${i * 0.25}s` }}
+        />
       ))}
-    </svg>
+    </SVG>
   ),
-  mindBlow: { stat: "₹1 → ₹1 cr", label: "Double a rupee every day for 27 days → ₹1.3 crore. GPs are scary fast" },
+  mindBlow: { stat: "₹1 → ₹1.3 cr", label: "Double a rupee every day for 27 days → ₹1.3 crore. GPs are scary fast" },
   realWorld: [
     { emoji: "💰", label: "Compound interest" },
     { emoji: "📈", label: "Stock returns" },
@@ -272,13 +316,14 @@ const sequencesHook: ChapterHookData = {
 const linesHook: ChapterHookData = {
   icon: "📏",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <line x1="20" y1="100" x2="180" y2="20" stroke="#475569" strokeWidth="3" style={{ animation: "hk-pulse 2.5s ease-in-out infinite" }} />
-      <line x1="20" y1="60" x2="180" y2="60" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
-      <line x1="100" y1="10" x2="100" y2="110" stroke="#94a3b8" strokeWidth="1" strokeDasharray="3 3" />
-      <circle cx="100" cy="60" r="5" fill="#475569" />
-    </svg>
+    <SVG>
+      <line x1="14" y1="100" x2="186" y2="100" stroke="#94a3b8" strokeWidth="1.5" />
+      <line x1="100" y1="14" x2="100" y2="110" stroke="#94a3b8" strokeWidth="1.5" />
+      <line x1="20" y1="100" x2="180" y2="20" stroke="#0f172a" strokeWidth="4" strokeLinecap="round" style={{ animation: "hk-fade 2s ease-in-out infinite" }} />
+      <circle cx="100" cy="60" r="8" fill="#f59e0b" stroke="#78350f" strokeWidth="2.5" />
+      <line x1="100" y1="60" x2="140" y2="60" stroke="#475569" strokeWidth="1.5" strokeDasharray="3 3" />
+      <line x1="140" y1="60" x2="140" y2="40" stroke="#475569" strokeWidth="1.5" strokeDasharray="3 3" />
+    </SVG>
   ),
   mindBlow: { stat: "y = mx + c", label: "Six characters that describe every Uber fare, every electric bill, every linear pattern" },
   realWorld: [
@@ -286,7 +331,7 @@ const linesHook: ChapterHookData = {
     { emoji: "⚡", label: "Electricity bills" },
     { emoji: "📞", label: "Phone plans" },
     { emoji: "🏃", label: "Walking pace" },
-    { emoji: "🌡️", label: "Temperature conversion" },
+    { emoji: "🌡️", label: "Temperature convert" },
   ],
   storyStrip: [
     { emoji: "↗️", title: "Straight, simple, everywhere", text: "Any constant-rate change traces a straight line — that's most of life." },
@@ -298,14 +343,15 @@ const linesHook: ChapterHookData = {
 const conicsHook: ChapterHookData = {
   icon: "🥚",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <ellipse cx="100" cy="60" rx="60" ry="30" fill="none" stroke="#f97316" strokeWidth="3" style={{ animation: "hk-pulse 2s ease-in-out infinite" }} />
-      <circle cx="60" cy="60" r="4" fill="#ef4444" />
-      <circle cx="140" cy="60" r="4" fill="#ef4444" />
-    </svg>
+    <SVG>
+      <ellipse cx="100" cy="60" rx="64" ry="32" fill="#ffedd5" stroke="#ea580c" strokeWidth="3.5" style={{ animation: "hk-pulse 2.5s ease-in-out infinite", transformOrigin: "100px 60px" }} />
+      <circle cx="60" cy="60" r="6" fill="#dc2626" stroke="#7f1d1d" strokeWidth="2" />
+      <circle cx="140" cy="60" r="6" fill="#dc2626" stroke="#7f1d1d" strokeWidth="2" />
+      <text x="60" y="84" textAnchor="middle" fontSize="10" fontWeight="700" fill="#7f1d1d">F₁</text>
+      <text x="140" y="84" textAnchor="middle" fontSize="10" fontWeight="700" fill="#7f1d1d">F₂</text>
+    </SVG>
   ),
-  mindBlow: { stat: "🌍", label: "Earth orbits the Sun in an ellipse. Every planet, every comet — conic sections" },
+  mindBlow: { stat: "🌍 → ☀️", label: "Earth orbits the Sun in an ellipse. Every planet, every comet — conic sections" },
   realWorld: [
     { emoji: "🛰️", label: "Satellite orbits" },
     { emoji: "📡", label: "Dish antennas" },
@@ -323,16 +369,15 @@ const conicsHook: ChapterHookData = {
 const threeDHook: ChapterHookData = {
   icon: "🧊",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <g style={{ animation: "hk-float 3s ease-in-out infinite" }}>
-        <polygon points="80,40 120,30 140,55 100,65" fill="#a78bfa" />
-        <polygon points="80,40 100,65 100,100 80,75" fill="#7c3aed" />
-        <polygon points="140,55 100,65 100,100 140,90" fill="#6d28d9" />
+    <SVG>
+      <g style={{ animation: "hk-float 3s ease-in-out infinite", transformOrigin: "100px 65px" }}>
+        <polygon points="70,40 130,28 156,52 96,64" fill="#c4b5fd" stroke="#5b21b6" strokeWidth="2.5" />
+        <polygon points="70,40 96,64 96,104 70,80" fill="#8b5cf6" stroke="#5b21b6" strokeWidth="2.5" />
+        <polygon points="156,52 96,64 96,104 156,92" fill="#7c3aed" stroke="#5b21b6" strokeWidth="2.5" />
       </g>
-    </svg>
+    </SVG>
   ),
-  mindBlow: { stat: "x, y, z", label: "GPS uses 3D coordinates to pin you within a metre — anywhere on Earth" },
+  mindBlow: { stat: "(x, y, z)", label: "GPS uses 3D coordinates to pin you within a metre — anywhere on Earth" },
   realWorld: [
     { emoji: "🗺️", label: "GPS location" },
     { emoji: "🎮", label: "3D games" },
@@ -350,13 +395,13 @@ const threeDHook: ChapterHookData = {
 const limitsHook: ChapterHookData = {
   icon: "🎯",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <circle cx="100" cy="60" r="40" fill="none" stroke="#ec4899" strokeWidth="1" strokeDasharray="3 3" />
-      <circle cx="100" cy="60" r="25" fill="none" stroke="#ec4899" strokeWidth="1" strokeDasharray="3 3" />
-      <circle cx="100" cy="60" r="12" fill="none" stroke="#ec4899" strokeWidth="1" />
-      <circle cx="100" cy="60" r="4" fill="#ec4899" style={{ animation: "hk-pulse 1.5s ease-in-out infinite" }} />
-    </svg>
+    <SVG>
+      <circle cx="100" cy="60" r="44" fill="none" stroke="#fce7f3" strokeWidth="2" />
+      <circle cx="100" cy="60" r="32" fill="none" stroke="#f9a8d4" strokeWidth="2" />
+      <circle cx="100" cy="60" r="20" fill="none" stroke="#ec4899" strokeWidth="2.5" />
+      <circle cx="100" cy="60" r="10" fill="none" stroke="#be185d" strokeWidth="2.5" style={{ animation: "hk-pulse 1.4s ease-in-out infinite", transformOrigin: "100px 60px" }} />
+      <circle cx="100" cy="60" r="4" fill="#be185d" style={{ animation: "hk-pulse 1.4s ease-in-out infinite", transformOrigin: "100px 60px" }} />
+    </SVG>
   ),
   mindBlow: { stat: "h → 0", label: "Calculus rests on getting infinitely close — without ever arriving" },
   realWorld: [
@@ -376,16 +421,13 @@ const limitsHook: ChapterHookData = {
 const reasoningHook: ChapterHookData = {
   icon: "🧠",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <rect x="40" y="40" width="30" height="40" rx="6" fill="#14b8a6" />
-      <text x="55" y="65" textAnchor="middle" fontSize="14" fontWeight="700" fill="white">T</text>
-      <line x1="70" y1="60" x2="90" y2="60" stroke="#0d9488" strokeWidth="2" />
-      <text x="100" y="64" textAnchor="middle" fontSize="14" fontWeight="700" fill="#0f766e">∧</text>
-      <line x1="110" y1="60" x2="130" y2="60" stroke="#0d9488" strokeWidth="2" />
-      <rect x="130" y="40" width="30" height="40" rx="6" fill="#14b8a6" style={{ animation: "hk-pulse 2s ease-in-out infinite" }} />
-      <text x="145" y="65" textAnchor="middle" fontSize="14" fontWeight="700" fill="white">F</text>
-    </svg>
+    <SVG>
+      <rect x="22" y="40" width="44" height="44" rx="8" fill="#06b6d4" stroke="#155e75" strokeWidth="2.5" style={{ animation: "hk-pulse 1.8s ease-in-out infinite", transformOrigin: "44px 62px" }} />
+      <text x="44" y="70" textAnchor="middle" fontSize="22" fontWeight="800" fill="white">T</text>
+      <text x="100" y="68" textAnchor="middle" fontSize="22" fontWeight="800" fill="#0e7490">∧</text>
+      <rect x="134" y="40" width="44" height="44" rx="8" fill="#14b8a6" stroke="#134e4a" strokeWidth="2.5" style={{ animation: "hk-pulse 1.8s ease-in-out infinite 0.9s", transformOrigin: "156px 62px" }} />
+      <text x="156" y="70" textAnchor="middle" fontSize="22" fontWeight="800" fill="white">F</text>
+    </SVG>
   ),
   mindBlow: { stat: "0 & 1", label: "Every computer chip is logic gates: AND, OR, NOT — the same connectives you'll study" },
   realWorld: [
@@ -405,13 +447,23 @@ const reasoningHook: ChapterHookData = {
 const statsHook: ChapterHookData = {
   icon: "📊",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      {[40, 70, 90, 60, 30].map((h, i) => (
-        <rect key={i} x={20 + i * 35} y={110 - h} width="25" height={h} rx="3" fill="#06b6d4"
-          style={{ transformOrigin: "bottom", animation: `hk-grow 0.8s ease-out ${i * 0.15}s both` }} />
+    <SVG>
+      <line x1="14" y1="100" x2="186" y2="100" stroke="#475569" strokeWidth="2" />
+      {[34, 60, 84, 56, 28].map((h, i) => (
+        <rect
+          key={i}
+          x={24 + i * 32}
+          y={100 - h}
+          width="24"
+          height={h}
+          rx="3"
+          fill="#0284c7"
+          stroke="#075985"
+          strokeWidth="2"
+          style={{ transformOrigin: `${36 + i * 32}px 100px`, animation: `hk-grow 1.5s ease-out infinite ${i * 0.18}s` }}
+        />
       ))}
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "2.5 quintillion", label: "Bytes of data generated every day. Statistics is how we make sense of any of it" },
   realWorld: [
@@ -431,15 +483,18 @@ const statsHook: ChapterHookData = {
 const probabilityHook: ChapterHookData = {
   icon: "🎲",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      {[1, 2, 3].map((i) => (
-        <g key={i} style={{ animation: `hk-bounce 2s ease-in-out infinite ${i * 0.4}s` }}>
-          <rect x={20 + i * 50} y="40" width="40" height="40" rx="8" fill="#0891b2" />
-          <text x={40 + i * 50} y="65" textAnchor="middle" fontSize="20" fill="white">⚀</text>
+    <SVG>
+      {[0, 1, 2].map((i) => (
+        <g key={i} style={{ animation: `hk-bounce 1.8s ease-in-out infinite ${i * 0.35}s`, transformOrigin: `${52 + i * 48}px 62px` }}>
+          <rect x={28 + i * 48} y="34" width="48" height="56" rx="10" fill="#0891b2" stroke="#155e75" strokeWidth="2.5" />
+          <circle cx={42 + i * 48} cy="48" r="3.5" fill="white" />
+          <circle cx={62 + i * 48} cy="48" r="3.5" fill="white" />
+          <circle cx={52 + i * 48} cy="62" r="3.5" fill="white" />
+          <circle cx={42 + i * 48} cy="76" r="3.5" fill="white" />
+          <circle cx={62 + i * 48} cy="76" r="3.5" fill="white" />
         </g>
       ))}
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "1 in 13M", label: "Chance of winning Powerball. Probability is the maths of luck, weather, AI, everything" },
   realWorld: [
@@ -461,16 +516,18 @@ const probabilityHook: ChapterHookData = {
 const relations12Hook: ChapterHookData = {
   icon: "🔗",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      {[1, 2, 3].map((n, i) => (
-        <g key={n}>
-          <circle cx="50" cy={30 + i * 30} r="12" fill="#10b981" />
-          <circle cx="150" cy={30 + i * 30} r="12" fill="#34d399" />
-          <line x1="62" y1={30 + i * 30} x2="138" y2={30 + i * 30} stroke="#059669" strokeWidth="2" style={{ animation: `hk-pulse 2s ease-in-out infinite ${i * 0.3}s` }} />
+    <SVG>
+      {[0, 1, 2].map((i) => (
+        <g key={i} style={{ animation: `hk-slide 2s ease-in-out infinite ${i * 0.3}s` }}>
+          <circle cx="50" cy={32 + i * 26} r="13" fill="#10b981" stroke="#065f46" strokeWidth="2.5" />
+          <circle cx="150" cy={32 + i * 26} r="13" fill="#34d399" stroke="#065f46" strokeWidth="2.5" />
+          <line x1="63" y1={32 + i * 26} x2="137" y2={32 + i * 26} stroke="#047857" strokeWidth="3" markerEnd="url(#relArr)" />
         </g>
       ))}
-    </svg>
+      <defs>
+        <marker id="relArr" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#047857" /></marker>
+      </defs>
+    </SVG>
   ),
   mindBlow: { stat: "1 → 1, no skips", label: "Bijections are why every WhatsApp message reaches exactly one inbox" },
   realWorld: [
@@ -490,13 +547,12 @@ const relations12Hook: ChapterHookData = {
 const inverseTrigHook: ChapterHookData = {
   icon: "↪️",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <path d="M 30 90 Q 100 30 170 30" fill="none" stroke="#f59e0b" strokeWidth="3" />
-      <path d="M 170 30 Q 100 90 30 90" fill="none" stroke="#f97316" strokeWidth="3" strokeDasharray="4 4" style={{ animation: "hk-pulse 2.5s ease-in-out infinite" }} />
-      <circle cx="170" cy="30" r="5" fill="#f59e0b" />
-      <circle cx="30" cy="90" r="5" fill="#f97316" />
-    </svg>
+    <SVG>
+      <path d="M 30 95 Q 100 25 170 25" fill="none" stroke="#d97706" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M 170 25 Q 100 95 30 95" fill="none" stroke="#f97316" strokeWidth="3.5" strokeLinecap="round" strokeDasharray="6 4" style={{ animation: "hk-shimmer 2s linear infinite" }} />
+      <circle cx="170" cy="25" r="7" fill="#d97706" stroke="#78350f" strokeWidth="2" />
+      <circle cx="30" cy="95" r="7" fill="#f97316" stroke="#78350f" strokeWidth="2" />
+    </SVG>
   ),
   mindBlow: { stat: "θ = sin⁻¹(opp/hyp)", label: "Your phone's compass uses inverse trig 60 times a second" },
   realWorld: [
@@ -516,14 +572,23 @@ const inverseTrigHook: ChapterHookData = {
 const matricesHook: ChapterHookData = {
   icon: "🔢",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
+    <SVG>
       {[0, 1, 2].map((r) => [0, 1, 2].map((c) => (
-        <rect key={`${r}-${c}`} x={50 + c * 30} y={20 + r * 30} width="22" height="22" rx="3"
-          fill={`hsl(${220 + r * 20}, 60%, ${50 + c * 8}%)`}
-          style={{ animation: `hk-pulse 2.5s ease-in-out infinite ${(r + c) * 0.15}s` }} />
+        <g key={`${r}-${c}`} style={{ animation: `hk-pulse 2.4s ease-in-out infinite ${(r + c) * 0.15}s`, transformOrigin: `${65 + c * 28}px ${35 + r * 28}px` }}>
+          <rect
+            x={50 + c * 28}
+            y={20 + r * 28}
+            width="24"
+            height="24"
+            rx="4"
+            fill={`hsl(${220 + r * 18}, 65%, ${48 + c * 10}%)`}
+            stroke="#1e293b"
+            strokeWidth="1.8"
+          />
+          <text x={62 + c * 28} y={36 + r * 28} textAnchor="middle" fontSize="10" fontWeight="800" fill="white">{r * 3 + c + 1}</text>
+        </g>
       )))}
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "3D rotation = matrix", label: "Every spin in every video game = a matrix multiplied per frame, 60× per second" },
   realWorld: [
@@ -543,11 +608,17 @@ const matricesHook: ChapterHookData = {
 const determinantsHook: ChapterHookData = {
   icon: "📐",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <polygon points="60,80 140,75 160,40 80,45" fill="#94a3b8" fillOpacity="0.5" stroke="#475569" strokeWidth="2" style={{ animation: "hk-pulse 2.5s ease-in-out infinite" }} />
-      <text x="100" y="100" textAnchor="middle" fontSize="11" fill="#475569" fontWeight="700">|det| = area</text>
-    </svg>
+    <SVG>
+      <polygon
+        points="50,90 150,82 168,42 68,50"
+        fill="#cbd5e1"
+        fillOpacity="0.7"
+        stroke="#1e293b"
+        strokeWidth="3"
+        style={{ animation: "hk-pulse 2.5s ease-in-out infinite", transformOrigin: "100px 66px" }}
+      />
+      <text x="100" y="108" textAnchor="middle" fontSize="11" fontWeight="800" fill="#1e293b">|det| = area</text>
+    </SVG>
   ),
   mindBlow: { stat: "det = 0", label: "When determinant is zero, the system has infinite solutions OR none — engineers fear this number" },
   realWorld: [
@@ -567,13 +638,12 @@ const determinantsHook: ChapterHookData = {
 const continuityHook: ChapterHookData = {
   icon: "🪜",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <path d="M 20 90 Q 60 30 100 60" fill="none" stroke="#6366f1" strokeWidth="3" />
-      <circle cx="100" cy="60" r="5" fill="white" stroke="#6366f1" strokeWidth="2.5" />
-      <circle cx="100" cy="30" r="5" fill="#6366f1" />
-      <path d="M 100 30 Q 140 50 180 20" fill="none" stroke="#6366f1" strokeWidth="3" style={{ animation: "hk-pulse 2s ease-in-out infinite" }} />
-    </svg>
+    <SVG>
+      <path d="M 16 95 Q 60 20 100 60" fill="none" stroke="#4f46e5" strokeWidth="4" strokeLinecap="round" />
+      <circle cx="100" cy="60" r="7" fill="white" stroke="#4f46e5" strokeWidth="3" />
+      <circle cx="100" cy="28" r="7" fill="#4f46e5" stroke="#312e81" strokeWidth="2" style={{ animation: "hk-pulse 1.6s ease-in-out infinite", transformOrigin: "100px 28px" }} />
+      <path d="M 100 28 Q 140 50 184 14" fill="none" stroke="#4f46e5" strokeWidth="4" strokeLinecap="round" />
+    </SVG>
   ),
   mindBlow: { stat: "No jumps allowed", label: "Why your video doesn't suddenly skip frames — frames are continuous functions" },
   realWorld: [
@@ -593,13 +663,12 @@ const continuityHook: ChapterHookData = {
 const appDerivHook: ChapterHookData = {
   icon: "🎢",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <path d="M 20 90 Q 60 20 100 60 T 180 30" fill="none" stroke="#e11d48" strokeWidth="3" />
-      <circle cx="60" cy="40" r="6" fill="#fbbf24" style={{ animation: "hk-pulse 2s ease-in-out infinite" }} />
-      <circle cx="100" cy="60" r="6" fill="#fbbf24" />
-      <text x="60" y="28" textAnchor="middle" fontSize="10" fill="#92400e" fontWeight="700">max</text>
-    </svg>
+    <SVG>
+      <path d="M 16 100 Q 60 14 100 64 T 184 26" fill="none" stroke="#dc2626" strokeWidth="4" strokeLinecap="round" />
+      <line x1="38" y1="44" x2="80" y2="44" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="3 3" />
+      <circle cx="60" cy="44" r="9" fill="#fbbf24" stroke="#78350f" strokeWidth="2.5" style={{ animation: "hk-pulse 1.6s ease-in-out infinite", transformOrigin: "60px 44px" }} />
+      <text x="60" y="28" textAnchor="middle" fontSize="11" fontWeight="800" fill="#78350f">max</text>
+    </SVG>
   ),
   mindBlow: { stat: "max ↔ min", label: "Tesla optimizes battery range using exactly this — calculus picks the best speed" },
   realWorld: [
@@ -619,13 +688,23 @@ const appDerivHook: ChapterHookData = {
 const integralsHook: ChapterHookData = {
   icon: "🌊",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <path d="M 20 90 Q 50 30 100 60 Q 150 90 180 30" fill="#f97316" fillOpacity="0.35" stroke="#ea580c" strokeWidth="3" />
+    <SVG>
+      <path d="M 16 96 Q 60 20 100 60 Q 140 96 184 28 L 184 100 L 16 100 Z" fill="#fed7aa" stroke="#ea580c" strokeWidth="3" />
       {[0, 1, 2, 3].map((i) => (
-        <rect key={i} x={30 + i * 40} y={50 + i * 5} width="35" height={40 - i * 5} fill="#fbbf24" fillOpacity="0.4" style={{ animation: `hk-pulse 2s ease-in-out infinite ${i * 0.2}s` }} />
+        <rect
+          key={i}
+          x={26 + i * 40}
+          y={48 + i * 6}
+          width="38"
+          height={52 - i * 6}
+          fill="#fb923c"
+          fillOpacity="0.55"
+          stroke="#c2410c"
+          strokeWidth="1.5"
+          style={{ animation: `hk-fade 2s ease-in-out infinite ${i * 0.2}s` }}
+        />
       ))}
-    </svg>
+    </SVG>
   ),
   mindBlow: { stat: "∫ = total", label: "Spotify shows your year's listening time — that's integration of your daily play, all year" },
   realWorld: [
@@ -645,10 +724,10 @@ const integralsHook: ChapterHookData = {
 const appIntegralsHook: ChapterHookData = {
   icon: "🖼️",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <path d="M 20 100 Q 60 20 100 50 Q 140 80 180 30 L 180 100 Z" fill="#f43f5e" fillOpacity="0.4" stroke="#e11d48" strokeWidth="2" style={{ animation: "hk-pulse 3s ease-in-out infinite" }} />
-    </svg>
+    <SVG>
+      <path d="M 14 100 Q 60 14 100 50 Q 140 86 184 22 L 184 100 Z" fill="#fb7185" fillOpacity="0.5" stroke="#be123c" strokeWidth="3" style={{ animation: "hk-fade 2.5s ease-in-out infinite" }} />
+      <text x="100" y="78" textAnchor="middle" fontSize="22" fontWeight="800" fill="#9f1239">∫ f dx</text>
+    </SVG>
   ),
   mindBlow: { stat: "πr²", label: "Why is the area of a circle πr²? Slice it into rings, integrate. That's it" },
   realWorld: [
@@ -668,13 +747,21 @@ const appIntegralsHook: ChapterHookData = {
 const diffEqnsHook: ChapterHookData = {
   icon: "🦠",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      {[20, 35, 55, 80, 105].map((y, i) => (
-        <circle key={i} cx={30 + i * 35} cy={110 - y} r={4 + i * 1.5} fill="#6366f1" style={{ animation: `hk-grow 1.5s ease-out ${i * 0.2}s both` }} />
+    <SVG>
+      {[16, 28, 44, 64, 88].map((y, i) => (
+        <circle
+          key={i}
+          cx={26 + i * 36}
+          cy={104 - y}
+          r={5 + i * 2}
+          fill="#7c3aed"
+          stroke="#3b0764"
+          strokeWidth="2"
+          style={{ transformOrigin: `${26 + i * 36}px ${104 - y}px`, animation: `hk-grow 1.4s ease-out infinite ${i * 0.2}s` }}
+        />
       ))}
-      <path d="M 30 100 Q 100 80 170 10" fill="none" stroke="#6366f1" strokeWidth="2" strokeDasharray="3 3" />
-    </svg>
+      <path d="M 26 88 Q 100 60 174 16" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeDasharray="4 3" />
+    </SVG>
   ),
   mindBlow: { stat: "dN/dt = kN", label: "One equation describes COVID spread, bank interest, AND nuclear decay. Mind-blowing" },
   realWorld: [
@@ -694,12 +781,15 @@ const diffEqnsHook: ChapterHookData = {
 const vectorsHook: ChapterHookData = {
   icon: "➡️",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <defs><marker id="vahArr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#a855f7" /></marker></defs>
-      <line x1="100" y1="80" x2="160" y2="40" stroke="#a855f7" strokeWidth="3.5" markerEnd="url(#vahArr)" style={{ animation: "hk-pulse 2s ease-in-out infinite" }} />
-      <line x1="100" y1="80" x2="40" y2="60" stroke="#8b5cf6" strokeWidth="3" markerEnd="url(#vahArr)" />
-    </svg>
+    <SVG>
+      <defs>
+        <marker id="vahArr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed" /></marker>
+        <marker id="vahArr2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#a855f7" /></marker>
+      </defs>
+      <line x1="100" y1="80" x2="166" y2="32" stroke="#7c3aed" strokeWidth="4" strokeLinecap="round" markerEnd="url(#vahArr)" style={{ animation: "hk-fade 2s ease-in-out infinite" }} />
+      <line x1="100" y1="80" x2="34" y2="60" stroke="#a855f7" strokeWidth="4" strokeLinecap="round" markerEnd="url(#vahArr2)" />
+      <circle cx="100" cy="80" r="4" fill="#1e293b" />
+    </SVG>
   ),
   mindBlow: { stat: "v = (3, 4, 0)", label: "Every Pokémon move, every shot in PUBG, every football kick — a vector calculation" },
   realWorld: [
@@ -719,11 +809,12 @@ const vectorsHook: ChapterHookData = {
 const threeDFullHook: ChapterHookData = {
   icon: "🛩️",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <polygon points="40,90 160,80 170,40 50,50" fill="#a78bfa" fillOpacity="0.35" stroke="#7c3aed" strokeWidth="2" />
-      <line x1="100" y1="20" x2="100" y2="100" stroke="#ec4899" strokeWidth="3" style={{ animation: "hk-pulse 2s ease-in-out infinite" }} />
-    </svg>
+    <SVG>
+      <polygon points="30,90 170,80 178,38 38,48" fill="#e9d5ff" fillOpacity="0.7" stroke="#7c3aed" strokeWidth="3" />
+      <line x1="100" y1="16" x2="100" y2="104" stroke="#ec4899" strokeWidth="4" strokeLinecap="round" style={{ animation: "hk-fade 1.8s ease-in-out infinite" }} />
+      <circle cx="100" cy="60" r="5" fill="#ec4899" stroke="#831843" strokeWidth="2" />
+      <text x="106" y="20" fontSize="11" fontWeight="800" fill="#831843">n</text>
+    </SVG>
   ),
   mindBlow: { stat: "ax + by + cz = d", label: "One equation defines an entire infinite plane. Architecture, robotics, aviation use this daily" },
   realWorld: [
@@ -743,11 +834,18 @@ const threeDFullHook: ChapterHookData = {
 const lpHook: ChapterHookData = {
   icon: "🎯",
   miniViz: (
-    <svg viewBox="0 0 200 120" className="h-full w-full">
-      <A />
-      <polygon points="40,90 120,90 140,60 80,40" fill="#22c55e" fillOpacity="0.4" stroke="#16a34a" strokeWidth="2" style={{ animation: "hk-pulse 2.5s ease-in-out infinite" }} />
-      <circle cx="140" cy="60" r="8" fill="#f59e0b" stroke="white" strokeWidth="2" />
-    </svg>
+    <SVG>
+      <polygon
+        points="30,96 116,96 150,58 78,38"
+        fill="#bbf7d0"
+        fillOpacity="0.7"
+        stroke="#15803d"
+        strokeWidth="3"
+        style={{ animation: "hk-fade 2.5s ease-in-out infinite" }}
+      />
+      <circle cx="150" cy="58" r="10" fill="#f59e0b" stroke="#78350f" strokeWidth="2.5" style={{ animation: "hk-pulse 1.6s ease-in-out infinite", transformOrigin: "150px 58px" }} />
+      <text x="150" y="32" textAnchor="middle" fontSize="11" fontWeight="800" fill="#78350f">optimal</text>
+    </SVG>
   ),
   mindBlow: { stat: "$1 trillion", label: "Saved per year by airlines using LP to schedule planes, crew, and routes optimally" },
   realWorld: [
