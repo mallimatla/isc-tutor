@@ -18,28 +18,48 @@ import VectorAlgebraVizPremium from "@/components/learn-visualizations/VectorAlg
 import ContinuityVizPremium from "@/components/learn-visualizations/ContinuityVizPremium";
 import ApplicationDerivativesVizPremium from "@/components/learn-visualizations/ApplicationDerivativesVizPremium";
 import LinearProgrammingVizPremium from "@/components/learn-visualizations/LinearProgrammingVizPremium";
+import InductionVizPremium from "@/components/learn-visualizations/InductionVizPremium";
+import LinearInequalitiesVizPremium from "@/components/learn-visualizations/LinearInequalitiesVizPremium";
+import ThreeDGeometryVizPremium from "@/components/learn-visualizations/ThreeDGeometryVizPremium";
+import MathReasoningVizPremium from "@/components/learn-visualizations/MathReasoningVizPremium";
+import StatisticsVizPremium from "@/components/learn-visualizations/StatisticsVizPremium";
+import RelationsFunctions12VizPremium from "@/components/learn-visualizations/RelationsFunctions12VizPremium";
+import InverseTrigVizPremium from "@/components/learn-visualizations/InverseTrigVizPremium";
+import ApplicationsIntegralsVizPremium from "@/components/learn-visualizations/ApplicationsIntegralsVizPremium";
+import DifferentialEquationsVizPremium from "@/components/learn-visualizations/DifferentialEquationsVizPremium";
+import ThreeDLinesPlanesVizPremium from "@/components/learn-visualizations/ThreeDLinesPlanesVizPremium";
 
 const registry: Record<string, ComponentType> = {
   // Class 11
   sets: SetsVizPremium,
   "relations-functions": FunctionsVizPremium,
   "trigonometric-functions": TrigVizPremium,
+  "principle-mathematical-induction": InductionVizPremium,
   "complex-numbers-quadratic": ComplexNumbersVizPremium,
+  "linear-inequalities": LinearInequalitiesVizPremium,
   "permutations-combinations": PermutationsVizPremium,
   "binomial-theorem": BinomialVizPremium,
   "sequences-series": SequencesSeriesVizPremium,
   "straight-lines": StraightLinesVizPremium,
   "conic-sections": ConicSectionsVizPremium,
+  "intro-3d-geometry": ThreeDGeometryVizPremium,
   "limits-derivatives": LimitsVizPremium,
+  "mathematical-reasoning": MathReasoningVizPremium,
+  statistics: StatisticsVizPremium,
   probability: ProbabilityVizPremium,
 
   // Class 12
+  "relations-functions-12": RelationsFunctions12VizPremium,
+  "inverse-trigonometric-functions": InverseTrigVizPremium,
   matrices: MatricesVizPremium,
   determinants: DeterminantsVizPremium,
   "continuity-differentiability": ContinuityVizPremium,
   "applications-derivatives": ApplicationDerivativesVizPremium,
   integrals: IntegralsVizPremium,
+  "applications-integrals": ApplicationsIntegralsVizPremium,
+  "differential-equations": DifferentialEquationsVizPremium,
   vectors: VectorAlgebraVizPremium,
+  "3d-geometry": ThreeDLinesPlanesVizPremium,
   "linear-programming": LinearProgrammingVizPremium,
   "probability-12": ProbabilityVizPremium,
 };
