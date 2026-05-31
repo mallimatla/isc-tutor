@@ -1,14 +1,15 @@
 /**
  * Local question-bank seeder for ISC Tutor.
  *
- * Generates a pre-verified pool of practice questions per chapter via OpenAI
- * and writes them to Firestore at `${PREFIX}question_bank/{auto-id}`. The
- * runtime API reads from this pool first; only on a miss does it fall back to
- * Claude generation. This script lives OUTSIDE Vercel — run it locally.
+ * Generates a pre-verified pool of practice questions per chapter via
+ * Anthropic Claude and writes them to Firestore at `${PREFIX}question_bank/{auto-id}`.
+ * The runtime API reads from this pool first; only on a miss does it fall
+ * back to runtime Claude generation. This script lives OUTSIDE Vercel —
+ * run it locally.
  *
  * For each (chapterId, difficulty, type) slot it does:
- *   1. Generate a question + concise solution + proposed answer with model A.
- *   2. INDEPENDENTLY re-solve the same question with model A (no access to
+ *   1. Generate a question + concise solution + proposed answer with Claude.
+ *   2. INDEPENDENTLY re-solve the same question with Claude (no access to
  *      the proposed answer / solution) and compare.
  *   3. Only if both agree, write `verified: true` to Firestore. Otherwise
  *      discard and try again — never serve unverified.
@@ -22,8 +23,8 @@
  *     node scripts/seed-questions.mjs --only=sets --max-attempts=3
  *
  * Requires (.env.local):
- *     OPENAI_API_KEY
- *     OPENAI_QGEN_MODEL              (default: gpt-4o)
+ *     ANTHROPIC_API_KEY
+ *     ANTHROPIC_QGEN_MODEL           (default: claude-sonnet-4-20250514)
  *     FIREBASE_PROJECT_ID
  *     FIREBASE_CLIENT_EMAIL
  *     FIREBASE_PRIVATE_KEY
@@ -35,14 +36,18 @@ dotenv.config({ path: ".env.local" });
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import OpenAI from "openai";
+import Anthropic from "@anthropic-ai/sdk";
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 // ---------------- config ----------------
 
-const MODEL = process.env.OPENAI_QGEN_MODEL || "gpt-4o";
-const SOURCE_TAG = `seed-openai-${MODEL}`;
+// Use a current Claude model for seeding regardless of the runtime
+// ANTHROPIC_MODEL setting (which the app may keep pinned to a specific
+// snapshot). Override with ANTHROPIC_QGEN_MODEL if you want a different
+// seed model.
+const MODEL = process.env.ANTHROPIC_QGEN_MODEL || "claude-sonnet-4-6";
+const SOURCE_TAG = `seed-anthropic-${MODEL}`;
 const TARGET_DEFAULT = 35;
 
 // Difficulty distribution: 7 + 8 + 8 + 7 + 5 = 35 (sums to TARGET_DEFAULT).
@@ -100,7 +105,7 @@ function requireEnv(name) {
     process.exit(1);
   }
 }
-requireEnv("OPENAI_API_KEY");
+requireEnv("ANTHROPIC_API_KEY");
 requireEnv("FIREBASE_PROJECT_ID");
 requireEnv("FIREBASE_CLIENT_EMAIL");
 requireEnv("FIREBASE_PRIVATE_KEY");
@@ -126,7 +131,7 @@ if (getApps().length === 0) {
 const db = getFirestore();
 const PREFIX = process.env.FIRESTORE_COLLECTION_PREFIX || "";
 const COLLECTION = `${PREFIX}question_bank`;
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ---------------- helpers ----------------
 
@@ -151,15 +156,43 @@ function pickType(difficulty) {
   return entries[0][0];
 }
 
+// Extract the first top-level JSON object/array even if the model wrapped
+// it in markdown fences or added explanatory prose before/after. Walks the
+// string brace-by-brace so trailing prose can't break us.
 function safeParseJSON(raw) {
   let text = String(raw).trim();
-  text = text.replace(/^```(?:json|JSON)?\s*\n?/, "").replace(/\n?```\s*$/, "");
-  text = text.trim();
-  if (!text.startsWith("{") && !text.startsWith("[")) {
-    const i = text.indexOf("{");
-    if (i > 0) text = text.slice(i);
+  text = text.replace(/^```(?:json|JSON)?\s*\n?/, "").replace(/\n?```\s*$/, "").trim();
+
+  const firstBrace = text.indexOf("{");
+  const firstBracket = text.indexOf("[");
+  let start = -1;
+  if (firstBrace >= 0 && (firstBracket < 0 || firstBrace < firstBracket)) start = firstBrace;
+  else if (firstBracket >= 0) start = firstBracket;
+  if (start < 0) throw new Error(`No JSON object/array found in response (got: ${text.slice(0, 120)}…)`);
+
+  const open = text[start];
+  const close = open === "{" ? "}" : "]";
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  let end = -1;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (inString) {
+      if (escape) escape = false;
+      else if (c === "\\") escape = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') { inString = true; continue; }
+    if (c === open) depth++;
+    else if (c === close) {
+      depth--;
+      if (depth === 0) { end = i; break; }
+    }
   }
-  return JSON.parse(text);
+  if (end < 0) throw new Error(`Unbalanced JSON braces (raw start: ${text.slice(start, start + 120)}…)`);
+  return JSON.parse(text.slice(start, end + 1));
 }
 
 const DIFFICULTY_LABELS = {
@@ -272,18 +305,27 @@ Solve it. Output ONLY the JSON object with your final answer.`;
   return { system, user };
 }
 
-async function callOpenAI(system, user, { temperature = 0.6 } = {}) {
-  const resp = await openai.chat.completions.create({
-    model: MODEL,
-    temperature,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
-  });
-  const text = resp.choices?.[0]?.message?.content ?? "";
-  return safeParseJSON(text);
+async function callLLM(system, user, { temperature = 0.6 } = {}) {
+  const resp = await anthropic.messages.create(
+    {
+      model: MODEL,
+      temperature,
+      max_tokens: 2048,
+      system,
+      messages: [{ role: "user", content: user }],
+    },
+    { timeout: 60_000 }
+  );
+  const textBlock = resp.content.find((b) => b.type === "text");
+  const text = textBlock && textBlock.type === "text" ? textBlock.text : "";
+  try {
+    return safeParseJSON(text);
+  } catch (err) {
+    if (process.env.SEED_DEBUG === "1") {
+      console.error(`\n--- RAW LLM OUTPUT (parse failed) ---\n${text.slice(0, 800)}\n--- END ---`);
+    }
+    throw err;
+  }
 }
 
 // ---------------- verification compare ----------------
@@ -349,7 +391,7 @@ async function generateAndVerifyOne({ chapter, classLevel, difficulty, type, rec
     subtopics: syl.subtopics,
     recentStems,
   });
-  const gen = await callOpenAI(genP.system, genP.user, { temperature: 0.7 });
+  const gen = await callLLM(genP.system, genP.user, { temperature: 0.7 });
 
   // Basic shape check.
   if (!gen.questionText || !gen.correctAnswer || !gen.conciseSolution) {
@@ -368,7 +410,7 @@ async function generateAndVerifyOne({ chapter, classLevel, difficulty, type, rec
     questionText: gen.questionText,
     options: gen.options ?? null,
   });
-  const ver = await callOpenAI(verP.system, verP.user, { temperature: 0 });
+  const ver = await callLLM(verP.system, verP.user, { temperature: 0 });
 
   const cmp = compareAnswers(type, gen.correctAnswer, ver);
   if (!cmp.ok) {
