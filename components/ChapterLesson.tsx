@@ -170,6 +170,7 @@ export default function ChapterLesson({
         themeGradient={theme.gradient}
         heroImageBase64={heroImageBase64}
         heroImageMimeType={heroImageMimeType}
+        quickReferenceCard={narrative.quickReferenceCard}
       />
 
       {/* NARRATIVE BEATS with INTERLEAVED DIAGRAMS */}
@@ -232,25 +233,6 @@ export default function ChapterLesson({
           ))}
         </div>
       </div>
-
-      {/* QUICK REFERENCE CARD */}
-      {narrative.quickReferenceCard && narrative.quickReferenceCard.length > 0 && (
-        <div className={`rounded-2xl bg-gradient-to-br ${theme.gradient} p-6`}>
-          <h4 className="mb-4 text-base font-bold text-white">
-            Quick Reference Card
-          </h4>
-          <div className="flex flex-col gap-2">
-            {narrative.quickReferenceCard.map((item, idx) => (
-              <div
-                key={idx}
-                className="rounded-xl bg-white/20 px-4 py-2.5 font-mono text-sm text-white backdrop-blur-sm"
-              >
-                <LatexRenderer text={item} />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* KEY TAKEAWAY */}
       <div className="py-4 text-center">
