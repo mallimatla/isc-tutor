@@ -24,7 +24,7 @@
  *
  * Requires (.env.local):
  *     ANTHROPIC_API_KEY
- *     ANTHROPIC_QGEN_MODEL           (default: claude-sonnet-4-20250514)
+ *     ANTHROPIC_QGEN_MODEL           (default: claude-sonnet-4-6)
  *     FIREBASE_PROJECT_ID
  *     FIREBASE_CLIENT_EMAIL
  *     FIREBASE_PRIVATE_KEY

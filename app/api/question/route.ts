@@ -22,7 +22,7 @@ const RequestBodySchema = z.object({
   subject: z.literal("mathematics"),
 });
 
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 
 // Cap servedBankIds array growth — keep the most recent N. A user who has
 // burned through more questions than that gets older bank items eligible again,

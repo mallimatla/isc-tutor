@@ -37,7 +37,7 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 
 const PROMPT_VERSION = "lesson-v3.0";
 const ANTHROPIC_MODEL =
-  process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
+  process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 const OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

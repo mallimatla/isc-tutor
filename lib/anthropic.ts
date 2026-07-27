@@ -38,7 +38,7 @@ const client = new Anthropic({
 });
 
 const MODEL =
-  process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
+  process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 
 /**
  * Defensively strip ```json / ``` fences and surrounding whitespace before JSON.parse.
@@ -106,6 +106,11 @@ export async function callClaude<TSchema extends z.ZodSchema>(
         {
           model: MODEL,
           max_tokens: 4096,
+          // Sonnet 5 turns adaptive thinking ON when `thinking` is omitted,
+          // which would consume the max_tokens budget and add latency. These
+          // are short, schema-validated JSON responses on a latency-sensitive
+          // path, so keep the fast, non-thinking behavior explicitly.
+          thinking: { type: "disabled" },
           system,
           messages: [{ role: "user", content: userMessage }],
         },
@@ -188,6 +193,9 @@ export async function callClaudeStreaming<TSchema extends z.ZodSchema>(
       {
         model: MODEL,
         max_tokens: 4096,
+        // Keep the fast, non-thinking path (see callClaude above) — adaptive
+        // thinking is on by default on Sonnet 5 when `thinking` is omitted.
+        thinking: { type: "disabled" },
         system,
         messages: [{ role: "user", content: user }],
       },

@@ -25,7 +25,7 @@ const RequestBodySchema = z.object({
   ]),
 });
 
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 
 function jsonErrorResponse(
   error: string,

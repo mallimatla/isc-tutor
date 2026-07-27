@@ -23,7 +23,7 @@ const RequestBodySchema = z.object({
   studentAnswer: z.string().min(1).max(5000),
 });
 
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 
 export async function POST(req: NextRequest) {
   let uid = "";
