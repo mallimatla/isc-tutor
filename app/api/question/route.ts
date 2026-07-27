@@ -10,6 +10,7 @@ import {
   ClaudeRateLimitError,
   ClaudeMalformedOutputError,
   ClaudeTimeoutError,
+  MODEL,
 } from "@/lib/anthropic";
 import {
   QuestionGenerationOutputSchema,
@@ -21,8 +22,6 @@ const RequestBodySchema = z.object({
   class: z.enum(["11", "12"]),
   subject: z.literal("mathematics"),
 });
-
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 
 // Cap servedBankIds array growth — keep the most recent N. A user who has
 // burned through more questions than that gets older bank items eligible again,

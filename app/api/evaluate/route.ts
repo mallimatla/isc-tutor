@@ -14,6 +14,7 @@ import {
   ClaudeRateLimitError,
   ClaudeMalformedOutputError,
   ClaudeTimeoutError,
+  MODEL,
 } from "@/lib/anthropic";
 import { AnswerEvaluationOutputSchema } from "@/lib/schemas/evaluation";
 import { updateDifficulty, type Verdict } from "@/lib/difficulty";
@@ -22,8 +23,6 @@ const RequestBodySchema = z.object({
   questionId: z.string().min(1),
   studentAnswer: z.string().min(1).max(5000),
 });
-
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 
 export async function POST(req: NextRequest) {
   let uid = "";

@@ -9,6 +9,7 @@ import {
   ClaudeRateLimitError,
   ClaudeMalformedOutputError,
   ClaudeTimeoutError,
+  MODEL,
 } from "@/lib/anthropic";
 import { SocraticTurnOutputSchema } from "@/lib/schemas/socratic";
 import { updateDifficulty, type Verdict } from "@/lib/difficulty";
@@ -24,8 +25,6 @@ const RequestBodySchema = z.object({
     z.literal(5),
   ]),
 });
-
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
 
 function jsonErrorResponse(
   error: string,

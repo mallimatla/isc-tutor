@@ -37,8 +37,24 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const MODEL =
-  process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
+// The current default reasoning model.
+const DEFAULT_MODEL = "claude-sonnet-5";
+
+// Models Anthropic has retired — requests to these now return 404, which the
+// app surfaces as "Claude API request failed". If a stale ANTHROPIC_MODEL env
+// var (e.g. left over in a Vercel/`.env` config) still points at one, ignore it
+// and fall back to DEFAULT_MODEL rather than hard-failing every request.
+const RETIRED_MODELS = new Set(["claude-sonnet-4-20250514"]);
+
+function resolveModel(): string {
+  const envModel = process.env.ANTHROPIC_MODEL?.trim();
+  if (envModel && !RETIRED_MODELS.has(envModel)) return envModel;
+  return DEFAULT_MODEL;
+}
+
+// Exported so routes log the model actually used (provenance) instead of
+// re-reading the env var and disagreeing with the real request.
+export const MODEL = resolveModel();
 
 /**
  * Defensively strip ```json / ``` fences and surrounding whitespace before JSON.parse.
@@ -130,7 +146,17 @@ export async function callClaude<TSchema extends z.ZodSchema>(
           cause: err,
         });
       }
-      throw new ClaudeInternalError("Claude API request failed", {
+      // Include the real HTTP status + API message so the failure is
+      // diagnosable from logs (and the client banner) instead of an opaque
+      // "Claude API request failed" — e.g. a 404 for a retired model or a 401
+      // for a bad key.
+      const detail =
+        err instanceof Anthropic.APIError
+          ? ` (${err.status ?? "no status"}: ${err.message})`
+          : err instanceof Error
+            ? `: ${err.message}`
+            : "";
+      throw new ClaudeInternalError(`Claude API request failed${detail}`, {
         cause: err,
       });
     }
