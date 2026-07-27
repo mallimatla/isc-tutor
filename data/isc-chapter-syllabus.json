@@ -915,6 +915,516 @@
         "A p-n junction with the depletion region under forward and reverse bias",
         "A full-wave rectifier circuit with the input and output waveforms"
       ]
+    },
+    "basic-concepts": {
+      "subtopics": [
+        "Matter, mixtures and laws of chemical combination",
+        "Atomic and molecular masses",
+        "The mole and Avogadro's number",
+        "Empirical and molecular formulae",
+        "Percentage composition",
+        "Stoichiometry and balancing equations",
+        "Limiting reagent",
+        "Concentration: molarity, molality, mole fraction"
+      ],
+      "suggestedDiagrams": [
+        "A mole-concept map linking mass, moles, number of particles and volume at STP",
+        "A limiting-reagent bar chart showing which reactant runs out first",
+        "A flowchart from percentage composition to empirical to molecular formula"
+      ]
+    },
+    "structure-of-atom": {
+      "subtopics": [
+        "Discovery of electron, proton and neutron",
+        "Bohr's model of the hydrogen atom",
+        "Dual nature and de Broglie relation",
+        "Heisenberg uncertainty principle",
+        "Quantum numbers (n, l, m, s)",
+        "Shapes of s, p and d orbitals",
+        "Aufbau principle, Pauli exclusion, Hund's rule",
+        "Electronic configuration of atoms"
+      ],
+      "suggestedDiagrams": [
+        "An energy-level diagram with orbital filling order (Aufbau)",
+        "Shapes of s and p orbitals with nodes labelled",
+        "The hydrogen emission spectrum and Bohr transitions"
+      ]
+    },
+    "periodic-classification": {
+      "subtopics": [
+        "Modern periodic law and the long form table",
+        "s, p, d and f blocks",
+        "Periodic trends: atomic and ionic radii",
+        "Ionisation enthalpy",
+        "Electron gain enthalpy",
+        "Electronegativity",
+        "Valency and oxidation states across a period",
+        "Anomalous properties and diagonal relationship"
+      ],
+      "suggestedDiagrams": [
+        "The long-form periodic table colour-coded by block",
+        "A graph of atomic radius across a period and down a group",
+        "A graph of ionisation enthalpy showing the zig-zag trend"
+      ]
+    },
+    "chemical-bonding": {
+      "subtopics": [
+        "Ionic (electrovalent) bond and lattice energy",
+        "Covalent bond and Lewis structures",
+        "Formal charge and octet exceptions",
+        "VSEPR theory and molecular shapes",
+        "Valence bond theory and hybridisation (sp, sp², sp³)",
+        "Bond parameters: length, angle, order",
+        "Molecular orbital theory of diatomics",
+        "Hydrogen bonding"
+      ],
+      "suggestedDiagrams": [
+        "VSEPR shapes: linear, trigonal planar, tetrahedral, and their bond angles",
+        "sp, sp² and sp³ hybrid orbital geometries",
+        "A molecular-orbital energy diagram for O₂"
+      ]
+    },
+    "states-of-matter": {
+      "subtopics": [
+        "Intermolecular forces vs thermal energy",
+        "Boyle's, Charles's and Gay-Lussac's laws",
+        "Avogadro's law and the ideal gas equation",
+        "Dalton's law of partial pressures",
+        "Kinetic molecular theory of gases",
+        "Real gases and the van der Waals equation",
+        "Liquefaction and critical temperature",
+        "Surface tension and viscosity of liquids"
+      ],
+      "suggestedDiagrams": [
+        "Pressure–volume curves illustrating Boyle's law",
+        "A molecular view of a gas exerting pressure on the container walls",
+        "Deviation of a real gas from ideal behaviour (compressibility factor)"
+      ]
+    },
+    "chemical-thermodynamics": {
+      "subtopics": [
+        "System, surroundings and state functions",
+        "First law and internal energy",
+        "Enthalpy and enthalpy changes",
+        "Hess's law of constant heat summation",
+        "Bond enthalpy and enthalpies of formation",
+        "Entropy and the second law",
+        "Gibbs free energy and spontaneity",
+        "ΔG = ΔH − TΔS and equilibrium"
+      ],
+      "suggestedDiagrams": [
+        "An enthalpy-level (energy) diagram for exothermic vs endothermic reactions",
+        "A Hess's-law cycle adding step enthalpies to a net change",
+        "A ΔG-vs-temperature line showing where a reaction becomes spontaneous"
+      ]
+    },
+    "equilibrium": {
+      "subtopics": [
+        "Dynamic equilibrium and the equilibrium constant",
+        "Kc and Kp and their relation",
+        "Reaction quotient Q and predicting direction",
+        "Le Chatelier's principle",
+        "Acids and bases: Arrhenius, Bronsted, Lewis",
+        "pH, Ka, Kb and the ionic product of water",
+        "Buffer solutions and salt hydrolysis",
+        "Solubility product Ksp"
+      ],
+      "suggestedDiagrams": [
+        "A concentration-vs-time graph reaching dynamic equilibrium",
+        "Le Chatelier shifts when pressure, concentration or temperature change",
+        "A pH scale with common acids, bases and buffers marked"
+      ]
+    },
+    "redox-reactions": {
+      "subtopics": [
+        "Oxidation and reduction in terms of electron transfer",
+        "Oxidation number rules",
+        "Identifying oxidising and reducing agents",
+        "Balancing redox equations (ion-electron method)",
+        "Redox in terms of oxygen/hydrogen",
+        "Types of redox reactions",
+        "Redox titrations",
+        "Introduction to electrode potential"
+      ],
+      "suggestedDiagrams": [
+        "An electron-transfer diagram between oxidising and reducing agents",
+        "A worked oxidation-number assignment across a molecule",
+        "A galvanic cell showing electron flow from anode to cathode"
+      ]
+    },
+    "hydrogen": {
+      "subtopics": [
+        "Position of hydrogen in the periodic table",
+        "Isotopes of hydrogen",
+        "Preparation and properties of dihydrogen",
+        "Hydrides: ionic, covalent, interstitial",
+        "Water: structure and hard/soft water",
+        "Heavy water",
+        "Hydrogen peroxide: preparation and uses",
+        "Hydrogen as a fuel"
+      ],
+      "suggestedDiagrams": [
+        "A diagram of the three hydrogen isotopes (protium, deuterium, tritium)",
+        "The bent structure of the water molecule with bond angle",
+        "The structure of hydrogen peroxide (H₂O₂)"
+      ]
+    },
+    "s-block-elements": {
+      "subtopics": [
+        "General characteristics of Group 1 and Group 2",
+        "Trends in atomic/ionic radii and ionisation enthalpy",
+        "Reactivity with water, oxygen and halogens",
+        "Anomalous behaviour of Li and Be",
+        "Diagonal relationship (Li–Mg, Be–Al)",
+        "Important compounds of sodium",
+        "Important compounds of calcium",
+        "Biological importance of Na, K, Mg, Ca"
+      ],
+      "suggestedDiagrams": [
+        "The s-block portion of the periodic table highlighted",
+        "A flame-test colour chart for alkali and alkaline-earth metals",
+        "A reactivity trend arrow down Group 1"
+      ]
+    },
+    "p-block-elements-11": {
+      "subtopics": [
+        "General trends in the p-block",
+        "Group 13: boron family characteristics",
+        "Boron compounds: borax, boric acid, diborane",
+        "Aluminium and its compounds",
+        "Group 14: carbon family characteristics",
+        "Allotropes of carbon (diamond, graphite, fullerene)",
+        "Oxides of carbon; carbon cycle",
+        "Silicon, silicates and silicones"
+      ],
+      "suggestedDiagrams": [
+        "Allotropes of carbon: diamond, graphite and fullerene structures",
+        "The layered structure of graphite vs tetrahedral diamond",
+        "The inert-pair effect trend down Group 13/14"
+      ]
+    },
+    "organic-basics": {
+      "subtopics": [
+        "Tetravalence of carbon and hybridisation",
+        "IUPAC nomenclature of organic compounds",
+        "Structural and stereo isomerism",
+        "Electronic effects: inductive, resonance, hyperconjugation",
+        "Electrophiles and nucleophiles",
+        "Types of organic reactions",
+        "Homolytic and heterolytic bond fission",
+        "Purification and detection of elements"
+      ],
+      "suggestedDiagrams": [
+        "Curly-arrow notation for a simple reaction mechanism",
+        "Resonance structures of the carbonate or benzene ring",
+        "A worked IUPAC-naming breakdown of a branched alkane"
+      ]
+    },
+    "hydrocarbons": {
+      "subtopics": [
+        "Alkanes: preparation, conformations, reactions",
+        "Free-radical substitution mechanism",
+        "Alkenes: preparation and electrophilic addition",
+        "Markovnikov and anti-Markovnikov addition",
+        "Alkynes: acidity and addition reactions",
+        "Aromaticity and the structure of benzene",
+        "Electrophilic aromatic substitution",
+        "Directive influence of substituents"
+      ],
+      "suggestedDiagrams": [
+        "The mechanism of electrophilic addition to an alkene",
+        "Resonance in benzene and its delocalised π system",
+        "An energy profile for a substitution reaction"
+      ]
+    },
+    "environmental-chemistry": {
+      "subtopics": [
+        "Atmospheric pollution: tropospheric and stratospheric",
+        "Photochemical smog",
+        "Acid rain",
+        "The greenhouse effect and global warming",
+        "Ozone-layer depletion",
+        "Water pollution and BOD",
+        "Soil pollution and pesticides",
+        "Green chemistry and sustainable practices"
+      ],
+      "suggestedDiagrams": [
+        "A labelled diagram of the greenhouse effect",
+        "Ozone-layer depletion by CFCs in the stratosphere",
+        "The formation of acid rain from SO₂ and NOₓ"
+      ]
+    },
+    "solid-state": {
+      "subtopics": [
+        "Crystalline vs amorphous solids",
+        "Types of crystalline solids (ionic, covalent, molecular, metallic)",
+        "Unit cells and the seven crystal systems",
+        "Cubic packing: simple, bcc, fcc",
+        "Packing efficiency and coordination number",
+        "Density of a unit cell",
+        "Point defects (Schottky, Frenkel)",
+        "Electrical and magnetic properties"
+      ],
+      "suggestedDiagrams": [
+        "Simple cubic, body-centred and face-centred unit cells",
+        "Close packing of spheres (hcp/ccp) with tetrahedral and octahedral voids",
+        "Schottky and Frenkel defects in an ionic lattice"
+      ]
+    },
+    "solutions": {
+      "subtopics": [
+        "Types of solutions and concentration terms",
+        "Solubility and Henry's law",
+        "Raoult's law for ideal solutions",
+        "Deviations from Raoult's law",
+        "Colligative properties overview",
+        "Relative lowering of vapour pressure",
+        "Elevation of boiling point and depression of freezing point",
+        "Osmotic pressure and van't Hoff factor"
+      ],
+      "suggestedDiagrams": [
+        "A vapour-pressure vs composition graph (Raoult's law and deviations)",
+        "An osmosis setup across a semipermeable membrane",
+        "A cooling curve showing depression of freezing point"
+      ]
+    },
+    "electrochemistry": {
+      "subtopics": [
+        "Galvanic (voltaic) cells",
+        "Standard electrode potentials and the EMF series",
+        "Cell EMF and the Nernst equation",
+        "Relation between ΔG, E° and K",
+        "Electrolytic conductance and Kohlrausch's law",
+        "Electrolysis and Faraday's laws",
+        "Batteries: primary and secondary",
+        "Fuel cells and corrosion"
+      ],
+      "suggestedDiagrams": [
+        "A galvanic cell with salt bridge, anode and cathode labelled",
+        "A standard hydrogen electrode reference setup",
+        "Electrolysis of molten/aqueous solution with electron and ion flow"
+      ]
+    },
+    "chemical-kinetics": {
+      "subtopics": [
+        "Rate of a reaction (average and instantaneous)",
+        "Factors affecting reaction rate",
+        "Rate law and order of reaction",
+        "Integrated rate equations (zero and first order)",
+        "Half-life of a reaction",
+        "Collision theory",
+        "Activation energy and the Arrhenius equation",
+        "Effect of a catalyst"
+      ],
+      "suggestedDiagrams": [
+        "A potential-energy profile showing activation energy with and without a catalyst",
+        "Concentration-vs-time curves for zero and first order reactions",
+        "An Arrhenius plot of ln k versus 1/T"
+      ]
+    },
+    "surface-chemistry": {
+      "subtopics": [
+        "Physisorption vs chemisorption",
+        "Adsorption isotherms (Freundlich)",
+        "Homogeneous and heterogeneous catalysis",
+        "Enzyme catalysis",
+        "Colloids: classification and properties",
+        "Tyndall effect and Brownian motion",
+        "Preparation and purification of colloids",
+        "Emulsions and applications"
+      ],
+      "suggestedDiagrams": [
+        "Physisorption vs chemisorption on a surface",
+        "The Tyndall effect scattering light through a colloid",
+        "A Freundlich adsorption isotherm graph"
+      ]
+    },
+    "metallurgy": {
+      "subtopics": [
+        "Occurrence of metals and minerals/ores",
+        "Concentration of ores",
+        "Thermodynamic principles (Ellingham diagram)",
+        "Reduction methods (thermal, electrolytic)",
+        "Extraction of iron (blast furnace)",
+        "Extraction of copper and aluminium",
+        "Refining methods",
+        "Uses of aluminium, copper, zinc and iron"
+      ],
+      "suggestedDiagrams": [
+        "A blast furnace with temperature zones and reactions labelled",
+        "An Ellingham diagram explaining choice of reducing agent",
+        "Froth-flotation ore concentration"
+      ]
+    },
+    "p-block-elements-12": {
+      "subtopics": [
+        "Group 15: nitrogen family and its compounds",
+        "Ammonia and nitric acid (preparation, properties)",
+        "Group 16: oxygen family; oxides and oxoacids",
+        "Sulphuric acid and its manufacture",
+        "Group 17: halogens and their compounds",
+        "Interhalogen compounds",
+        "Group 18: noble gases and xenon compounds",
+        "Trends and anomalies across the groups"
+      ],
+      "suggestedDiagrams": [
+        "The structures of oxoacids of nitrogen/phosphorus",
+        "The Contact process for sulphuric acid manufacture",
+        "Shapes of xenon fluorides (XeF₂, XeF₄, XeF₆)"
+      ]
+    },
+    "d-f-block-elements": {
+      "subtopics": [
+        "General characteristics of transition elements",
+        "Variable oxidation states",
+        "Colour of transition-metal ions",
+        "Magnetic properties and catalytic behaviour",
+        "Formation of complexes and alloys",
+        "Important compounds (KMnO₄, K₂Cr₂O₇)",
+        "Lanthanoids and the lanthanoid contraction",
+        "Actinoids"
+      ],
+      "suggestedDiagrams": [
+        "A colour chart of common transition-metal ions in solution",
+        "A graph of oxidation states across the 3d series",
+        "The lanthanoid contraction trend"
+      ]
+    },
+    "coordination-compounds": {
+      "subtopics": [
+        "Werner's theory and coordination number",
+        "Ligands and denticity",
+        "IUPAC nomenclature of complexes",
+        "Isomerism in coordination compounds",
+        "Valence bond theory of complexes",
+        "Crystal field theory and d-orbital splitting",
+        "Colour and magnetic behaviour",
+        "Importance in biological systems"
+      ],
+      "suggestedDiagrams": [
+        "Octahedral, tetrahedral and square-planar complex geometries",
+        "Crystal-field splitting of d-orbitals in an octahedral field",
+        "Chelation by a bidentate ligand such as ethylenediamine"
+      ]
+    },
+    "haloalkanes-haloarenes": {
+      "subtopics": [
+        "Classification and nomenclature",
+        "Preparation of haloalkanes",
+        "Nucleophilic substitution: SN1 and SN2",
+        "Stereochemistry of substitution",
+        "Elimination reactions",
+        "Haloarenes: preparation and reactions",
+        "Aromatic nucleophilic substitution",
+        "Polyhalogen compounds and their uses"
+      ],
+      "suggestedDiagrams": [
+        "The SN1 vs SN2 mechanism with stereochemistry (inversion)",
+        "An energy profile comparing SN1 and SN2",
+        "Resonance stabilisation in a haloarene"
+      ]
+    },
+    "alcohols-phenols-ethers": {
+      "subtopics": [
+        "Classification and nomenclature",
+        "Preparation of alcohols and phenols",
+        "Physical properties and hydrogen bonding",
+        "Acidity of alcohols and phenols",
+        "Reactions of alcohols (dehydration, oxidation)",
+        "Reactions of phenols (electrophilic substitution)",
+        "Preparation and properties of ethers",
+        "Williamson ether synthesis"
+      ],
+      "suggestedDiagrams": [
+        "Hydrogen bonding between alcohol molecules",
+        "The mechanism of acid-catalysed dehydration of an alcohol",
+        "Electrophilic substitution positions on phenol"
+      ]
+    },
+    "aldehydes-ketones-acids": {
+      "subtopics": [
+        "Nomenclature and the carbonyl group",
+        "Preparation of aldehydes and ketones",
+        "Nucleophilic addition to the carbonyl",
+        "Reactions due to α-hydrogen (aldol, Cannizzaro)",
+        "Oxidation and reduction reactions",
+        "Carboxylic acids: preparation and acidity",
+        "Reactions of the −COOH group",
+        "Tests to distinguish the families"
+      ],
+      "suggestedDiagrams": [
+        "Nucleophilic addition mechanism to a carbonyl group",
+        "The aldol condensation product from two carbonyls",
+        "Factors affecting acidity of carboxylic acids (resonance)"
+      ]
+    },
+    "amines": {
+      "subtopics": [
+        "Classification and nomenclature of amines",
+        "Preparation of amines",
+        "Basic strength of amines",
+        "Reactions of amines",
+        "Diazonium salts: preparation",
+        "Reactions and importance of diazonium salts",
+        "Distinction between primary, secondary, tertiary amines",
+        "Aniline and its reactions"
+      ],
+      "suggestedDiagrams": [
+        "A comparison of basicity of primary/secondary/tertiary amines",
+        "Formation and reactions of a diazonium salt",
+        "The carbylamine test for a primary amine"
+      ]
+    },
+    "biomolecules": {
+      "subtopics": [
+        "Carbohydrates: classification",
+        "Structures of glucose and fructose",
+        "Disaccharides and polysaccharides",
+        "Amino acids and the peptide bond",
+        "Proteins: primary to quaternary structure",
+        "Enzymes as biological catalysts",
+        "Nucleic acids: DNA and RNA",
+        "Vitamins and hormones"
+      ],
+      "suggestedDiagrams": [
+        "The open-chain and ring (Haworth) forms of glucose",
+        "A peptide bond linking two amino acids",
+        "The DNA double helix with base pairing"
+      ]
+    },
+    "polymers": {
+      "subtopics": [
+        "Classification of polymers",
+        "Addition (chain-growth) polymerisation",
+        "Condensation (step-growth) polymerisation",
+        "Copolymers",
+        "Natural polymers (rubber, cellulose)",
+        "Synthetic polymers (nylon, polyester, bakelite)",
+        "Biodegradable polymers",
+        "Molecular mass of polymers"
+      ],
+      "suggestedDiagrams": [
+        "Addition vs condensation polymerisation mechanisms",
+        "The repeating unit of a common polymer (e.g. nylon-6,6)",
+        "Cross-linking in a thermosetting polymer"
+      ]
+    },
+    "everyday-chemistry": {
+      "subtopics": [
+        "Drugs and their classification",
+        "Drug–target interaction",
+        "Antacids, antihistamines",
+        "Antibiotics, antiseptics and disinfectants",
+        "Antifertility drugs and tranquilisers",
+        "Food additives and preservatives",
+        "Artificial sweeteners",
+        "Soaps and detergents: cleansing action"
+      ],
+      "suggestedDiagrams": [
+        "The micelle structure of soap trapping grease",
+        "How an antacid neutralises stomach acid",
+        "Structure of a common food preservative or sweetener"
+      ]
     }
   }
 }

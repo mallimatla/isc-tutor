@@ -9,7 +9,7 @@
  * needs rigour and multiple valid solution paths).
  */
 
-export type SubjectId = "mathematics" | "physics";
+export type SubjectId = "mathematics" | "physics" | "chemistry";
 
 export interface SubjectMeta {
   id: SubjectId;
@@ -52,12 +52,25 @@ const SUBJECTS: Record<SubjectId, SubjectMeta> = {
     contexts:
       "EV acceleration and braking, rockets/ISRO launches, phone-battery charging, cricket-ball swing and projectile, roller-coasters, earbuds/audio and resonance, solar panels, MRI/electromagnets, fibre-optic internet.",
   },
+  chemistry: {
+    id: "chemistry",
+    label: "Chemistry",
+    examSubject: "ISC Chemistry",
+    questionGuidance:
+      "Chemistry spans quantitative (mole concept, stoichiometry, thermodynamics, equilibrium, kinetics, electrochemistry) and qualitative/structural (bonding, mechanisms, periodic trends, inorganic reactions) work. Numerical questions MUST specify units and expect the answer with correct units and sensible significant figures. Balance every chemical equation and respect states, charges and oxidation numbers. Use correct IUPAC names and standard formulae. Write formulae and equations in LaTeX ($...$ inline, $$...$$ display) with subscripts/superscripts (e.g. $H_2SO_4$, $Cl^-$). Organic questions may ask for a mechanism, product prediction or IUPAC name; inorganic may ask for a reaction, trend or structure. Keep numbers realistic.",
+    evalGuidance:
+      "Judge the chemistry, not just the number: numerical answers must be correct in BOTH magnitude and unit; equations must be balanced with correct formulae, states and charges; organic answers need the correct product, mechanism arrows or IUPAC name. A right number from wrong reasoning, an unbalanced equation, or a wrong-formula answer is at best 'partial'. Accept alternative valid methods and equivalent correct names. Allow small rounding differences in the last significant figure.",
+    tutorGuidance:
+      "Start from the chemical picture — what species are present, which reaction or trend applies, what the structure/mechanism looks like — then the balanced equation or relation, then the numbers with units. Emphasise the mole concept, oxidation states, electron movement (curly arrows) and periodic reasoning. Always balance equations and carry units through the working.",
+    contexts:
+      "Rusting and corrosion of vehicles, EV and phone lithium batteries, antacids and stomach acid, soaps/detergents and cleaning, fertilisers and crops, water hardness and purification, food preservatives and cooking, LPG/fuel combustion, medicines and drugs, plastics and recycling.",
+  },
 };
 
 const DEFAULT_SUBJECT: SubjectId = "mathematics";
 
 export function isSubjectId(value: string): value is SubjectId {
-  return value === "mathematics" || value === "physics";
+  return value === "mathematics" || value === "physics" || value === "chemistry";
 }
 
 /** Resolve a subject by id, falling back to Mathematics for anything unknown. */

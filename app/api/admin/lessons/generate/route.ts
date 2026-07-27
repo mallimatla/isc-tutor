@@ -20,7 +20,7 @@ import { sanitizeSvg } from "@/lib/sanitize-svg";
 export const maxDuration = 300;
 
 const RequestBodySchema = z.object({
-  subject: z.enum(["mathematics", "physics"]),
+  subject: z.enum(["mathematics", "physics", "chemistry"]),
   classLevel: z.enum(["11", "12"]),
   chapterId: z.string().min(1).max(120),
   force: z.boolean().optional(),

@@ -3,6 +3,7 @@ import { adminDb, col } from "@/lib/firebase-admin";
 import { verifyRequest, UnauthorizedError } from "@/lib/verify-token";
 import { getAllChapters } from "@/lib/syllabus";
 import { computeMastery } from "@/lib/mastery";
+import { isSubjectId } from "@/lib/subjects";
 
 export async function GET(req: NextRequest) {
   let uid = "";
@@ -11,7 +12,8 @@ export async function GET(req: NextRequest) {
     uid = user.uid;
 
     const subjectParam = req.nextUrl.searchParams.get("subject");
-    const subject = subjectParam === "physics" ? "physics" : "mathematics";
+    const subject =
+      subjectParam && isSubjectId(subjectParam) ? subjectParam : "mathematics";
 
     // Build full syllabus list for the requested subject
     const syllabus = [

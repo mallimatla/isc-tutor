@@ -20,7 +20,7 @@ const TurnSchema = z.object({
 const RequestBodySchema = z.object({
   chapterId: z.string().min(1).max(120),
   classLevel: z.enum(["11", "12"]),
-  subject: z.enum(["mathematics", "physics"]).optional(),
+  subject: z.enum(["mathematics", "physics", "chemistry"]).optional(),
   chapterLabel: z.string().min(1).max(200).optional(),
   message: z.string().min(1).max(5000),
   // Prior turns for multi-turn follow-ups. Bounded so a long thread can't

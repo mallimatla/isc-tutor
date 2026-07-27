@@ -119,9 +119,15 @@ const SUBJECT_META = {
     diagramNote:
       "This is a PHYSICS diagram — physical accuracy is the point. Force/velocity arrows must point in the correct directions and be roughly to scale; circuits, ray paths, free-body diagrams, graphs and field lines must be physically correct and clearly labelled with units where relevant.",
   },
+  chemistry: {
+    label: "Chemistry",
+    noun: "chemistry",
+    diagramNote:
+      "This is a CHEMISTRY diagram — chemical accuracy is the point. Molecular structures, bond angles and geometries (VSEPR, hybridisation) must be correct; reaction mechanisms must show curly arrows from the right source to the right target; apparatus, orbital shapes, energy profiles and graphs must be physically correct and clearly labelled with formulae and units where relevant. Balance any equation shown.",
+  },
 }[SUBJECT];
 if (!SUBJECT_META) {
-  console.error(`Unknown --subject=${SUBJECT}. Use "mathematics" or "physics".`);
+  console.error(`Unknown --subject=${SUBJECT}. Use "mathematics", "physics" or "chemistry".`);
   process.exit(1);
 }
 

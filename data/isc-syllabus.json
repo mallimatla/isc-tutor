@@ -315,6 +315,171 @@
           ]
         }
       }
+    },
+    "chemistry": {
+      "label": "Chemistry",
+      "classes": {
+        "11": {
+          "label": "Class 11",
+          "chapters": [
+            {
+              "id": "basic-concepts",
+              "label": "Some Basic Concepts of Chemistry",
+              "description": "The mole concept, stoichiometry, empirical and molecular formulae, and concentration terms."
+            },
+            {
+              "id": "structure-of-atom",
+              "label": "Structure of Atom",
+              "description": "Subatomic particles, atomic models, quantum numbers, and electronic configuration."
+            },
+            {
+              "id": "periodic-classification",
+              "label": "Classification of Elements and Periodicity",
+              "description": "The modern periodic table and periodic trends in properties."
+            },
+            {
+              "id": "chemical-bonding",
+              "label": "Chemical Bonding and Molecular Structure",
+              "description": "Ionic and covalent bonding, VSEPR shapes, hybridisation, and molecular orbital ideas."
+            },
+            {
+              "id": "states-of-matter",
+              "label": "States of Matter: Gases and Liquids",
+              "description": "Gas laws, the ideal gas equation, kinetic theory, and properties of liquids."
+            },
+            {
+              "id": "chemical-thermodynamics",
+              "label": "Chemical Thermodynamics",
+              "description": "Energy changes in reactions, enthalpy, entropy, and spontaneity."
+            },
+            {
+              "id": "equilibrium",
+              "label": "Equilibrium",
+              "description": "Physical and chemical equilibrium, Le Chatelier's principle, and ionic equilibrium."
+            },
+            {
+              "id": "redox-reactions",
+              "label": "Redox Reactions",
+              "description": "Oxidation, reduction, oxidation numbers, and balancing redox equations."
+            },
+            {
+              "id": "hydrogen",
+              "label": "Hydrogen",
+              "description": "Position of hydrogen, its isotopes, preparation, and compounds including water and peroxide."
+            },
+            {
+              "id": "s-block-elements",
+              "label": "The s-Block Elements",
+              "description": "Alkali and alkaline earth metals: trends, reactions, and important compounds."
+            },
+            {
+              "id": "p-block-elements-11",
+              "label": "The p-Block Elements (Groups 13 & 14)",
+              "description": "The boron and carbon families: trends and important compounds."
+            },
+            {
+              "id": "organic-basics",
+              "label": "Organic Chemistry: Basic Principles and Techniques",
+              "description": "Bonding, nomenclature, isomerism, and reaction mechanisms in organic chemistry."
+            },
+            {
+              "id": "hydrocarbons",
+              "label": "Hydrocarbons",
+              "description": "Alkanes, alkenes, alkynes and aromatic hydrocarbons: preparation, properties and reactions."
+            },
+            {
+              "id": "environmental-chemistry",
+              "label": "Environmental Chemistry",
+              "description": "Atmospheric, water and soil pollution and green chemistry."
+            }
+          ]
+        },
+        "12": {
+          "label": "Class 12",
+          "chapters": [
+            {
+              "id": "solid-state",
+              "label": "The Solid State",
+              "description": "Crystalline solids, unit cells, packing, and defects."
+            },
+            {
+              "id": "solutions",
+              "label": "Solutions",
+              "description": "Concentration, colligative properties, and Raoult's law."
+            },
+            {
+              "id": "electrochemistry",
+              "label": "Electrochemistry",
+              "description": "Redox in cells, electrode potentials, the Nernst equation, and conductance."
+            },
+            {
+              "id": "chemical-kinetics",
+              "label": "Chemical Kinetics",
+              "description": "Rates of reaction, rate laws, order, and the Arrhenius equation."
+            },
+            {
+              "id": "surface-chemistry",
+              "label": "Surface Chemistry",
+              "description": "Adsorption, catalysis, colloids, and emulsions."
+            },
+            {
+              "id": "metallurgy",
+              "label": "General Principles of Isolation of Elements",
+              "description": "Occurrence of metals and the principles of their extraction and refining."
+            },
+            {
+              "id": "p-block-elements-12",
+              "label": "The p-Block Elements (Groups 15–18)",
+              "description": "Nitrogen, oxygen, halogen and noble-gas families."
+            },
+            {
+              "id": "d-f-block-elements",
+              "label": "The d- and f-Block Elements",
+              "description": "Transition and inner-transition elements: trends and important compounds."
+            },
+            {
+              "id": "coordination-compounds",
+              "label": "Coordination Compounds",
+              "description": "Ligands, nomenclature, isomerism, and bonding theories of complexes."
+            },
+            {
+              "id": "haloalkanes-haloarenes",
+              "label": "Haloalkanes and Haloarenes",
+              "description": "Halogen-containing hydrocarbons: preparation, reactions, and mechanisms."
+            },
+            {
+              "id": "alcohols-phenols-ethers",
+              "label": "Alcohols, Phenols and Ethers",
+              "description": "Preparation, properties and reactions of the oxygen-containing families."
+            },
+            {
+              "id": "aldehydes-ketones-acids",
+              "label": "Aldehydes, Ketones and Carboxylic Acids",
+              "description": "The carbonyl and carboxyl families: preparation, properties and reactions."
+            },
+            {
+              "id": "amines",
+              "label": "Amines",
+              "description": "Nitrogen-containing organic compounds: basicity, preparation and reactions."
+            },
+            {
+              "id": "biomolecules",
+              "label": "Biomolecules",
+              "description": "Carbohydrates, proteins, nucleic acids, vitamins and hormones."
+            },
+            {
+              "id": "polymers",
+              "label": "Polymers",
+              "description": "Classification, methods of polymerisation, and important polymers."
+            },
+            {
+              "id": "everyday-chemistry",
+              "label": "Chemistry in Everyday Life",
+              "description": "Drugs, food chemistry, and cleansing agents."
+            }
+          ]
+        }
+      }
     }
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb, col } from "@/lib/firebase-admin";
 import { verifyRequest, assertAdmin, UnauthorizedError } from "@/lib/verify-token";
 import { getAllChapters } from "@/lib/syllabus";
+import { isSubjectId } from "@/lib/subjects";
 
 const ACTIVE_PROMPT_VERSION = "lesson-v3.0";
 
@@ -11,7 +12,8 @@ export async function GET(req: NextRequest) {
     assertAdmin(user);
 
     const subjectParam = req.nextUrl.searchParams.get("subject");
-    const subject = subjectParam === "physics" ? "physics" : "mathematics";
+    const subject =
+      subjectParam && isSubjectId(subjectParam) ? subjectParam : "mathematics";
 
     const syllabus = [
       ...getAllChapters(subject, "11").map((c) => ({

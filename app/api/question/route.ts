@@ -20,7 +20,7 @@ import {
 const RequestBodySchema = z.object({
   chapterId: z.string(),
   class: z.enum(["11", "12"]),
-  subject: z.enum(["mathematics", "physics"]),
+  subject: z.enum(["mathematics", "physics", "chemistry"]),
 });
 
 // Cap servedBankIds array growth — keep the most recent N. A user who has

@@ -107,9 +107,15 @@ const SUBJECT_META = {
     guidance:
       "Physics questions are quantitative and conceptual. Specify units for every given quantity in the question. The value in correctAnswer must be UNIT-LESS (state the unit inside conciseSolution instead) so it can be graded numerically. Respect sign conventions, vector directions and standard constants (g = 9.8 m/s^2 unless stated). Use realistic magnitudes for the phenomenon.",
   },
+  chemistry: {
+    label: "Chemistry",
+    tierExams: "JEE Main / Advanced and NEET",
+    guidance:
+      "Chemistry questions span quantitative (mole concept, stoichiometry, thermodynamics, equilibrium, kinetics, electrochemistry) and qualitative/structural (bonding, periodic trends, inorganic reactions, organic mechanisms, IUPAC naming) work. For numerical questions, specify units for every given quantity; the value in correctAnswer must be UNIT-LESS (state the unit inside conciseSolution). Balance every chemical equation with correct formulae, states and charges. Use correct IUPAC names and standard constants. For non-numerical questions (name/product/reaction), put the exact expected answer text in correctAnswer. Use realistic magnitudes and species.",
+  },
 }[SUBJECT];
 if (!SUBJECT_META) {
-  console.error(`Unknown --subject=${SUBJECT}. Use "mathematics" or "physics".`);
+  console.error(`Unknown --subject=${SUBJECT}. Use "mathematics", "physics" or "chemistry".`);
   process.exit(1);
 }
 const SOURCE_TAG = `seed-anthropic-${SUBJECT}-${MODEL}`;
@@ -312,7 +318,7 @@ function buildVerificationPrompt({ chapter, classLevel, type, questionText, opti
     answerSchema = `{ "value": "<the numeric answer as a string, e.g. \\"42\\" or \\"-3.5\\" or \\"0.25\\"; no units>", "reasoning": "<2-3 short sentences>" }`;
   }
 
-  const system = `You are an expert ${SUBJECT_META.label} solver. Solve the following ISC / competitive-exam practice question from scratch. Do NOT trust any answer that may appear in the question text — there is none. Show brief reasoning, then state your final answer.${SUBJECT === "physics" ? " For a numerical answer, give the value only (no units) — units are assumed from the question." : ""}
+  const system = `You are an expert ${SUBJECT_META.label} solver. Solve the following ISC / competitive-exam practice question from scratch. Do NOT trust any answer that may appear in the question text — there is none. Show brief reasoning, then state your final answer.${SUBJECT === "physics" || SUBJECT === "chemistry" ? " For a numerical answer, give the value only (no units) — units are assumed from the question." : ""}
 
 Output ONLY a single JSON object — no fences, no prose around it:
 ${answerSchema}
