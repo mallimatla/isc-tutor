@@ -36,6 +36,13 @@ import LawsOfMotionVizPremium from "@/components/learn-visualizations/LawsOfMoti
 import WorkEnergyPowerVizPremium from "@/components/learn-visualizations/WorkEnergyPowerVizPremium";
 import OscillationsVizPremium from "@/components/learn-visualizations/OscillationsVizPremium";
 import WavesVizPremium from "@/components/learn-visualizations/WavesVizPremium";
+import RotationalMotionVizPremium from "@/components/learn-visualizations/RotationalMotionVizPremium";
+import GravitationVizPremium from "@/components/learn-visualizations/GravitationVizPremium";
+import MechanicalPropertiesSolidsVizPremium from "@/components/learn-visualizations/MechanicalPropertiesSolidsVizPremium";
+import MechanicalPropertiesFluidsVizPremium from "@/components/learn-visualizations/MechanicalPropertiesFluidsVizPremium";
+import ThermalPropertiesMatterVizPremium from "@/components/learn-visualizations/ThermalPropertiesMatterVizPremium";
+import ThermodynamicsVizPremium from "@/components/learn-visualizations/ThermodynamicsVizPremium";
+import KineticTheoryVizPremium from "@/components/learn-visualizations/KineticTheoryVizPremium";
 
 const registry: Record<string, ComponentType> = {
   // ---- Mathematics ----
@@ -77,6 +84,13 @@ const registry: Record<string, ComponentType> = {
   kinematics: KinematicsVizPremium,
   "laws-of-motion": LawsOfMotionVizPremium,
   "work-energy-power": WorkEnergyPowerVizPremium,
+  "rotational-motion": RotationalMotionVizPremium,
+  gravitation: GravitationVizPremium,
+  "mechanical-properties-solids": MechanicalPropertiesSolidsVizPremium,
+  "mechanical-properties-fluids": MechanicalPropertiesFluidsVizPremium,
+  "thermal-properties-matter": ThermalPropertiesMatterVizPremium,
+  thermodynamics: ThermodynamicsVizPremium,
+  "kinetic-theory": KineticTheoryVizPremium,
   oscillations: OscillationsVizPremium,
   waves: WavesVizPremium,
 };
