@@ -10,12 +10,15 @@ export async function GET(req: NextRequest) {
     const user = await verifyRequest(req);
     assertAdmin(user);
 
+    const subjectParam = req.nextUrl.searchParams.get("subject");
+    const subject = subjectParam === "physics" ? "physics" : "mathematics";
+
     const syllabus = [
-      ...getAllChapters("mathematics", "11").map((c) => ({
+      ...getAllChapters(subject, "11").map((c) => ({
         ...c,
         classLevel: "11" as const,
       })),
-      ...getAllChapters("mathematics", "12").map((c) => ({
+      ...getAllChapters(subject, "12").map((c) => ({
         ...c,
         classLevel: "12" as const,
       })),

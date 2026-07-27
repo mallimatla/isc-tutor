@@ -5,6 +5,7 @@ import AuthGate from "@/components/AuthGate";
 import ChapterLessonPreview from "@/components/ChapterLessonPreview";
 import { useIsAdmin } from "@/lib/use-is-admin";
 import { apiFetch } from "@/lib/api-client";
+import { listSubjects, type SubjectId } from "@/lib/subjects";
 import Link from "next/link";
 
 interface ChapterStatus {
@@ -32,8 +33,38 @@ interface InventoryResponse {
   };
 }
 
+function StatusPill({ status, version }: { status: ChapterStatus["status"]; version: string | null }) {
+  if (status === "current") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        Current
+      </span>
+    );
+  }
+  if (status === "stale") {
+    return (
+      <span
+        title={version ?? ""}
+        className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+        Stale
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-500">
+      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+      Not seeded
+    </span>
+  );
+}
+
 function AdminContent() {
   const isAdminUser = useIsAdmin();
+  const subjects = listSubjects();
+  const [subject, setSubject] = useState<SubjectId>("mathematics");
   const [inventory, setInventory] = useState<InventoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [previewChapter, setPreviewChapter] = useState<{
@@ -46,14 +77,16 @@ function AdminContent() {
   const fetchInventory = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiFetch<InventoryResponse>("/api/admin/lessons");
+      const data = await apiFetch<InventoryResponse>(
+        `/api/admin/lessons?subject=${subject}`
+      );
       setInventory(data);
     } catch {
       // Silent
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [subject]);
 
   useEffect(() => {
     if (isAdminUser) fetchInventory();
@@ -62,18 +95,10 @@ function AdminContent() {
   if (!isAdminUser) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3">
-        <p className="text-sm text-zinc-500">Not authorized.</p>
-        <Link href="/" className="text-sm text-blue-600 underline">
+        <p className="text-sm text-slate-500">Not authorized.</p>
+        <Link href="/" className="text-sm font-semibold text-indigo-600 hover:underline">
           Back to home
         </Link>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-zinc-500">Loading inventory...</p>
       </div>
     );
   }
@@ -93,42 +118,83 @@ function AdminContent() {
     return true;
   });
 
+  const pct = summary.total > 0 ? (summary.current / summary.total) * 100 : 0;
+  const selectClass =
+    "rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100";
+
   return (
-    <div className="flex flex-1 flex-col px-4 py-6">
+    <div className="flex flex-1 flex-col px-4 py-8">
       <div className="mx-auto w-full max-w-5xl">
-        <h1 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Chapter Lessons — Read-only Inventory
-        </h1>
+        {/* Header */}
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900">Chapter Lessons</h1>
+            <p className="mt-0.5 text-sm text-slate-500">
+              Read-only inventory of what&apos;s seeded in Firestore.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-1 self-start rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+            {subjects.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSubject(s.id)}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                  subject === s.id
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Banner */}
-        <div className="mb-5 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
-          <p className="font-medium">Lessons are generated locally, not from this dashboard.</p>
-          <p className="mt-1 text-xs leading-relaxed text-blue-800 dark:text-blue-300">
-            Run <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-[11px] dark:bg-blue-900">npm run seed:lessons</code> on a developer machine.
-            Use <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-[11px] dark:bg-blue-900">--only=&lt;chapter-id&gt;</code> to seed one chapter, <code className="rounded bg-blue-100 px-1.5 py-0.5 font-mono text-[11px] dark:bg-blue-900">--force</code> to regenerate.
-            This view shows what is currently in Firestore.
+        <div className="mb-6 rounded-2xl border border-indigo-100 bg-indigo-50 px-5 py-4 text-sm text-indigo-900">
+          <p className="font-semibold">Lessons are generated locally, not from this dashboard.</p>
+          <p className="mt-1.5 text-xs leading-relaxed text-indigo-800">
+            Generation makes several AI calls per chapter, so it runs from a developer
+            machine (not on the server). To seed {subjects.find((s) => s.id === subject)?.label}:
+          </p>
+          <pre className="mt-2 overflow-x-auto rounded-lg bg-indigo-900 px-3 py-2 font-mono text-[11px] leading-relaxed text-indigo-50">
+{`npm run seed:lessons -- --subject=${subject}
+npm run seed:lessons -- --subject=${subject} --only=<chapter-id>   # one chapter
+npm run seed:lessons -- --subject=${subject} --force               # regenerate`}
+          </pre>
+          <p className="mt-2 text-xs leading-relaxed text-indigo-800">
+            Then click <span className="font-semibold">Refresh</span>. Question banks
+            seed the same way with{" "}
+            <code className="rounded bg-indigo-100 px-1 py-0.5 font-mono text-[11px]">
+              npm run seed:questions -- --subject={subject}
+            </code>
+            .
           </p>
         </div>
 
-        {/* Stats bar */}
-        <div className="mb-4 flex flex-wrap items-center gap-4 text-sm">
-          <span className="text-zinc-600 dark:text-zinc-400">
-            {summary.current} of {summary.total} seeded on{" "}
-            <span className="font-mono text-xs">{summary.activeVersion}</span>
+        {/* Stats */}
+        <div className="mb-5 flex flex-wrap items-center gap-4">
+          <span className="text-sm font-medium text-slate-700">
+            {summary.current} of {summary.total} seeded
+            <span className="ml-1.5 font-mono text-xs text-slate-400">
+              {summary.activeVersion}
+            </span>
           </span>
-          <div className="flex-1 min-w-[140px] rounded-full bg-zinc-200 dark:bg-zinc-700">
+          <div className="h-2 min-w-[160px] flex-1 overflow-hidden rounded-full bg-slate-200">
             <div
-              className="h-2 rounded-full bg-green-500 transition-all"
-              style={{
-                width: `${summary.total > 0 ? (summary.current / summary.total) * 100 : 0}%`,
-              }}
+              className="h-full rounded-full bg-emerald-500 transition-all"
+              style={{ width: `${pct}%` }}
             />
           </div>
           {summary.stale > 0 && (
-            <span className="text-xs text-amber-600">{summary.stale} stale (older version)</span>
+            <span className="text-xs font-medium text-amber-600">
+              {summary.stale} stale
+            </span>
           )}
           {summary.notSeeded > 0 && (
-            <span className="text-xs text-zinc-500">{summary.notSeeded} not seeded</span>
+            <span className="text-xs font-medium text-slate-500">
+              {summary.notSeeded} not seeded
+            </span>
           )}
         </div>
 
@@ -137,106 +203,106 @@ function AdminContent() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as typeof filter)}
-            className="rounded-md border border-zinc-300 px-2 py-1.5 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+            className={selectClass}
           >
-            <option value="all">All</option>
+            <option value="all">All statuses</option>
             <option value="current">Current</option>
             <option value="stale">Stale</option>
             <option value="not-seeded">Not seeded</option>
           </select>
-
           <select
             value={classFilter}
             onChange={(e) => setClassFilter(e.target.value as typeof classFilter)}
-            className="rounded-md border border-zinc-300 px-2 py-1.5 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+            className={selectClass}
           >
-            <option value="all">All Classes</option>
+            <option value="all">All classes</option>
             <option value="11">Class 11</option>
             <option value="12">Class 12</option>
           </select>
-
           <button
             onClick={fetchInventory}
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400"
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition active:scale-95 hover:border-slate-300 hover:bg-slate-50"
           >
             Refresh
           </button>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-md border border-zinc-200 dark:border-zinc-700">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-zinc-50 dark:bg-zinc-800">
-              <tr>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500">Class</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500">Chapter</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500">Status</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500">Beats</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500">Diagrams</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500">Hero img</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500">Generated</th>
-                <th className="px-3 py-2 text-left text-xs font-medium text-zinc-500">Size</th>
-                <th className="px-3 py-2 text-right text-xs font-medium text-zinc-500">Actions</th>
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                {["Class", "Chapter", "Status", "Beats", "Diagrams", "Hero", "Generated", "Size"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500"
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
+                <th className="px-4 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              {filteredChapters.map((ch) => (
-                <tr key={ch.lessonId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                  <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">{ch.classLevel}</td>
-                  <td className="px-3 py-2 text-zinc-900 dark:text-zinc-100">{ch.chapterLabel}</td>
-                  <td className="px-3 py-2">
-                    {ch.status === "current" && (
-                      <span className="text-green-600">Current</span>
-                    )}
-                    {ch.status === "stale" && (
-                      <span title={ch.promptVersion ?? ""} className="text-amber-600">
-                        Stale ({ch.promptVersion ?? "?"})
-                      </span>
-                    )}
-                    {ch.status === "not-seeded" && (
-                      <span className="text-zinc-400">Not seeded</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-zinc-500">
-                    {ch.beatCount || "—"}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-zinc-500">
-                    {ch.diagramCount || "—"}
-                  </td>
-                  <td className="px-3 py-2 text-xs">
-                    {ch.hasHeroImage ? (
-                      <span className="text-green-600">✓</span>
-                    ) : (
-                      <span className="text-zinc-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-zinc-400">
-                    {ch.generatedAt
-                      ? new Date(ch.generatedAt).toLocaleString()
-                      : "—"}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-zinc-400">
-                    {ch.sizeBytes
-                      ? `${(ch.sizeBytes / 1024).toFixed(1)} KB`
-                      : "—"}
-                  </td>
-                  <td className="px-3 py-2 text-right">
-                    {ch.status !== "not-seeded" && (
-                      <button
-                        onClick={() =>
-                          setPreviewChapter({
-                            chapterId: ch.chapterId,
-                            classLevel: ch.classLevel,
-                          })
-                        }
-                        className="rounded px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
-                      >
-                        Preview
-                      </button>
-                    )}
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-400">
+                    Loading inventory…
                   </td>
                 </tr>
-              ))}
+              ) : filteredChapters.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-4 py-10 text-center text-sm text-slate-400">
+                    No chapters match these filters.
+                  </td>
+                </tr>
+              ) : (
+                filteredChapters.map((ch) => (
+                  <tr key={ch.lessonId} className="transition hover:bg-slate-50">
+                    <td className="px-4 py-3 font-medium text-slate-500">{ch.classLevel}</td>
+                    <td className="px-4 py-3 font-medium text-slate-900">{ch.chapterLabel}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill status={ch.status} version={ch.promptVersion} />
+                    </td>
+                    <td className="px-4 py-3 text-slate-600">{ch.beatCount || "—"}</td>
+                    <td className="px-4 py-3 text-slate-600">{ch.diagramCount || "—"}</td>
+                    <td className="px-4 py-3">
+                      {ch.hasHeroImage ? (
+                        <span className="text-emerald-600">✓</span>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-slate-500">
+                      {ch.generatedAt ? new Date(ch.generatedAt).toLocaleString() : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-slate-500">
+                      {ch.sizeBytes ? `${(ch.sizeBytes / 1024).toFixed(1)} KB` : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {ch.status !== "not-seeded" ? (
+                        <button
+                          onClick={() =>
+                            setPreviewChapter({
+                              chapterId: ch.chapterId,
+                              classLevel: ch.classLevel,
+                            })
+                          }
+                          className="rounded-lg px-2.5 py-1 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50"
+                        >
+                          Preview
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-300">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

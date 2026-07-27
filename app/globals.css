@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/*
+ * This app ships a single light theme (see --background / --foreground below —
+ * there is no dark override). By default Tailwind's `dark:` variant activates
+ * on the OS `prefers-color-scheme: dark`, which made stray `dark:` utilities
+ * fire on a light background (e.g. near-white text on the admin page → invisible).
+ * Make `dark:` opt-in via a `.dark` ancestor class instead — which the app never
+ * sets — so those variants stay inert and every page renders consistently light.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #fafafa;
   --foreground: #0f172a;
