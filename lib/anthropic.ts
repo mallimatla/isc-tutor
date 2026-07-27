@@ -299,6 +299,63 @@ interface CallClaudeTextResult {
   latencyMs: number;
 }
 
+/**
+ * Non-streaming plain-text call. Used server-side where we just need the full
+ * text back (e.g. admin lesson generation: narrative JSON + SVG diagrams).
+ */
+export async function callClaudeText(
+  params: CallClaudeTextParams
+): Promise<CallClaudeTextResult> {
+  const { system, user, maxTokens = 4096 } = params;
+  const start = Date.now();
+  try {
+    const response = await client.messages.create(
+      {
+        model: MODEL,
+        max_tokens: maxTokens,
+        thinking: { type: "disabled" },
+        system,
+        messages: [{ role: "user", content: user }],
+      },
+      { timeout: 120_000 }
+    );
+    const textBlock = response.content.find((b) => b.type === "text");
+    if (!textBlock || textBlock.type !== "text") {
+      throw new ClaudeMalformedOutputError("No text block in Claude response");
+    }
+    return {
+      text: textBlock.text,
+      usage: {
+        input: response.usage.input_tokens,
+        output: response.usage.output_tokens,
+      },
+      latencyMs: Date.now() - start,
+    };
+  } catch (err) {
+    if (err instanceof ClaudeMalformedOutputError) throw err;
+    if (err instanceof Anthropic.RateLimitError) {
+      throw new ClaudeRateLimitError("Claude API rate limited", { cause: err });
+    }
+    if (
+      err instanceof Error &&
+      (err.name === "TimeoutError" || err.message.includes("timed out"))
+    ) {
+      throw new ClaudeTimeoutError("Claude API request timed out", {
+        cause: err,
+      });
+    }
+    const detail =
+      err instanceof Anthropic.APIError
+        ? ` (${err.status ?? "no status"}: ${err.message})`
+        : err instanceof Error
+          ? `: ${err.message}`
+          : "";
+    throw new ClaudeInternalError(`Claude API request failed${detail}`, {
+      cause: err,
+    });
+  }
+}
+
 export async function callClaudeTextStreaming(
   params: CallClaudeTextParams,
   onDelta: (text: string) => void

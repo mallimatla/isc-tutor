@@ -5,9 +5,12 @@
  * NOT from any Vercel runtime. Output is parsed with safeParseClaudeJson.
  */
 
+import { getSubject, type SubjectId } from "@/lib/subjects";
+
 export const LESSON_V3_VERSION = "lesson-v3.0";
 
 interface NarrativePromptParams {
+  subject?: SubjectId;
   chapterId: string;
   chapterLabel: string;
   classLevel: "11" | "12";
@@ -21,7 +24,8 @@ export function buildLessonNarrativePrompt(params: NarrativePromptParams): {
   user: string;
   promptVersion: string;
 } {
-  const system = `You are writing a 'Learn this chapter' page for an AI maths tutor used by ISC Class 11 and 12 Science students in India. Imagine the very best one-to-one tutor — the kind who builds intuition before procedure, anchors every idea in a concrete example, and warns students about the exact mistakes they make in board exams.
+  const subj = getSubject(params.subject);
+  const system = `You are writing a 'Learn this chapter' page for an AI ${subj.label} tutor used by ISC Class 11 and 12 Science students in India. Imagine the very best one-to-one tutor — the kind who builds intuition before procedure, anchors every idea in a concrete example, and warns students about the exact mistakes they make in board exams.
 
 You will receive:
 - chapterId, chapterLabel, classLevel
@@ -83,6 +87,7 @@ Output the JSON object now.`;
 }
 
 interface DiagramPromptParams {
+  subject?: SubjectId;
   chapterLabel: string;
   classLevel: "11" | "12";
   diagramTitle: string;
@@ -96,7 +101,8 @@ export function buildLessonDiagramPrompt(params: DiagramPromptParams): {
   user: string;
   promptVersion: string;
 } {
-  const system = `You are an expert at creating beautiful, mathematically ACCURATE SVG diagrams for high-school maths. Output ONLY a single <svg>...</svg> element — no markdown fences, no commentary, no <html> wrapper.
+  const subj = getSubject(params.subject);
+  const system = `You are an expert at creating beautiful, scientifically ACCURATE SVG diagrams for high-school ${subj.label}. Output ONLY a single <svg>...</svg> element — no markdown fences, no commentary, no <html> wrapper.
 
 HARD CONSTRAINTS:
 - NO JavaScript, NO <script>, NO event handlers (on*), NO <foreignObject>.
@@ -104,7 +110,11 @@ HARD CONSTRAINTS:
 - viewBox="0 0 600 400", preserveAspectRatio="xMidYMid meet".
 - White background (draw a <rect width="600" height="400" fill="white"/> as the first element, or omit if a coloured background is intentional).
 - Use the provided primary and secondary hex colours for strokes/fills, with neutrals (#1f2937 for dark text, #6b7280 for secondary text, #e5e7eb for guide lines).
-- Compute all coordinates and angles correctly — this is a MATH diagram, geometric accuracy is the entire point. If you are showing a 30° angle, the angle MUST actually be 30°. If you are graphing y = sin x, the curve points MUST satisfy that equation.
+- Compute all coordinates, angles and directions correctly — ${
+    subj.id === "physics"
+      ? "this is a PHYSICS diagram: force/velocity/field arrows must point the correct way and be roughly to scale, and circuits, ray paths, free-body diagrams and graphs must be physically correct and clearly labelled (with units where relevant)."
+      : "this is a MATH diagram, geometric accuracy is the entire point. If you are showing a 30° angle, the angle MUST actually be 30°. If you are graphing y = sin x, the curve points MUST satisfy that equation."
+  }
 - Labels: readable font sizes (14–18px), font-family="system-ui, -apple-system, sans-serif". Position labels so they don't overlap shapes.
 - Use one subtle linear gradient, soft shadow via filter, and rounded line caps (stroke-linecap="round") to make it visually polished — but never at the expense of mathematical accuracy.
 - The SVG MUST be self-contained and renderable directly in a browser via dangerouslySetInnerHTML. No external references, no <image href="…">.`;

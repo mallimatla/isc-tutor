@@ -73,6 +73,14 @@ function AdminContent() {
   } | null>(null);
   const [filter, setFilter] = useState<"all" | "current" | "stale" | "not-seeded">("all");
   const [classFilter, setClassFilter] = useState<"all" | "11" | "12">("all");
+  const [busy, setBusy] = useState<Set<string>>(new Set());
+  const [bulk, setBulk] = useState<{ running: boolean; done: number; total: number; failed: number }>({
+    running: false,
+    done: 0,
+    total: 0,
+    failed: 0,
+  });
+  const [genError, setGenError] = useState<string | null>(null);
 
   const fetchInventory = useCallback(async () => {
     setLoading(true);
@@ -118,6 +126,90 @@ function AdminContent() {
     return true;
   });
 
+  const pending = (inventory?.chapters ?? []).filter((c) => c.status !== "current");
+
+  const setBusyFor = (lessonId: string, on: boolean) =>
+    setBusy((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(lessonId);
+      else next.delete(lessonId);
+      return next;
+    });
+
+  const markGenerated = (
+    lessonId: string,
+    res: { beatCount: number; diagramCount: number }
+  ) => {
+    setInventory((prev) => {
+      if (!prev) return prev;
+      const chapters = prev.chapters.map((c) =>
+        c.lessonId === lessonId
+          ? {
+              ...c,
+              status: "current" as const,
+              promptVersion: prev.summary.activeVersion,
+              beatCount: res.beatCount,
+              diagramCount: res.diagramCount,
+              generatedAt: new Date().toISOString(),
+            }
+          : c
+      );
+      return {
+        chapters,
+        summary: {
+          ...prev.summary,
+          current: chapters.filter((c) => c.status === "current").length,
+          stale: chapters.filter((c) => c.status === "stale").length,
+          notSeeded: chapters.filter((c) => c.status === "not-seeded").length,
+        },
+      };
+    });
+  };
+
+  const generateOne = async (ch: ChapterStatus, force = false) => {
+    setGenError(null);
+    setBusyFor(ch.lessonId, true);
+    try {
+      const res = await apiFetch<{
+        status: string;
+        beatCount: number;
+        diagramCount: number;
+      }>("/api/admin/lessons/generate", {
+        method: "POST",
+        body: JSON.stringify({
+          subject,
+          classLevel: ch.classLevel,
+          chapterId: ch.chapterId,
+          force,
+        }),
+      });
+      if (res.status === "current") markGenerated(ch.lessonId, res);
+      return true;
+    } catch (e) {
+      setGenError(
+        `${ch.chapterLabel}: ${e instanceof Error ? e.message : "generation failed"}`
+      );
+      return false;
+    } finally {
+      setBusyFor(ch.lessonId, false);
+    }
+  };
+
+  const generateAllMissing = async () => {
+    if (pending.length === 0 || bulk.running) return;
+    setGenError(null);
+    setBulk({ running: true, done: 0, total: pending.length, failed: 0 });
+    let done = 0;
+    let failed = 0;
+    for (const ch of pending) {
+      const ok = await generateOne(ch, ch.status === "stale");
+      done += 1;
+      if (!ok) failed += 1;
+      setBulk({ running: true, done, total: pending.length, failed });
+    }
+    setBulk({ running: false, done, total: pending.length, failed });
+  };
+
   const pct = summary.total > 0 ? (summary.current / summary.total) * 100 : 0;
   const selectClass =
     "rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100";
@@ -152,25 +244,37 @@ function AdminContent() {
 
         {/* Banner */}
         <div className="mb-6 rounded-2xl border border-indigo-100 bg-indigo-50 px-5 py-4 text-sm text-indigo-900">
-          <p className="font-semibold">Lessons are generated locally, not from this dashboard.</p>
+          <p className="font-semibold">Generate lessons right here.</p>
           <p className="mt-1.5 text-xs leading-relaxed text-indigo-800">
-            Generation makes several AI calls per chapter, so it runs from a developer
-            machine (not on the server). To seed {subjects.find((s) => s.id === subject)?.label}:
+            Use <span className="font-semibold">Generate</span> on any row, or{" "}
+            <span className="font-semibold">Generate all missing</span> below, to
+            create illustrated lessons (narrative + diagrams) in the cloud — no
+            local setup. Each chapter takes ~30–60s and runs one at a time.
           </p>
-          <pre className="mt-2 overflow-x-auto rounded-lg bg-indigo-900 px-3 py-2 font-mono text-[11px] leading-relaxed text-indigo-50">
-{`npm run seed:lessons -- --subject=${subject}
-npm run seed:lessons -- --subject=${subject} --only=<chapter-id>   # one chapter
-npm run seed:lessons -- --subject=${subject} --force               # regenerate`}
-          </pre>
-          <p className="mt-2 text-xs leading-relaxed text-indigo-800">
-            Then click <span className="font-semibold">Refresh</span>. Question banks
-            seed the same way with{" "}
+          <p className="mt-2 text-xs leading-relaxed text-indigo-700">
+            Prefer the command line, or want to seed the question bank? Run locally:{" "}
+            <code className="rounded bg-indigo-100 px-1 py-0.5 font-mono text-[11px]">
+              npm run seed:lessons -- --subject={subject}
+            </code>{" "}
+            and{" "}
             <code className="rounded bg-indigo-100 px-1 py-0.5 font-mono text-[11px]">
               npm run seed:questions -- --subject={subject}
             </code>
             .
           </p>
         </div>
+
+        {genError && (
+          <div className="mb-4 rounded-xl border border-rose-100 bg-rose-50 px-4 py-2.5 text-sm text-rose-700">
+            {genError}
+            <button
+              onClick={() => setGenError(null)}
+              className="ml-2 text-xs font-medium text-rose-600 underline-offset-2 hover:underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="mb-5 flex flex-wrap items-center gap-4">
@@ -221,10 +325,25 @@ npm run seed:lessons -- --subject=${subject} --force               # regenerate`
           </select>
           <button
             onClick={fetchInventory}
-            className="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition active:scale-95 hover:border-slate-300 hover:bg-slate-50"
+            disabled={bulk.running}
+            className="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition active:scale-95 hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
           >
             Refresh
           </button>
+
+          <div className="ml-auto">
+            <button
+              onClick={generateAllMissing}
+              disabled={bulk.running || pending.length === 0}
+              className="rounded-lg bg-indigo-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition active:scale-95 hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+            >
+              {bulk.running
+                ? `Generating ${bulk.done}/${bulk.total}…`
+                : pending.length > 0
+                  ? `Generate all missing (${pending.length})`
+                  : "All lessons current"}
+            </button>
+          </div>
         </div>
 
         {/* Table */}
@@ -283,22 +402,38 @@ npm run seed:lessons -- --subject=${subject} --force               # regenerate`
                     <td className="px-4 py-3 text-xs text-slate-500">
                       {ch.sizeBytes ? `${(ch.sizeBytes / 1024).toFixed(1)} KB` : "—"}
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      {ch.status !== "not-seeded" ? (
-                        <button
-                          onClick={() =>
-                            setPreviewChapter({
-                              chapterId: ch.chapterId,
-                              classLevel: ch.classLevel,
-                            })
-                          }
-                          className="rounded-lg px-2.5 py-1 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50"
-                        >
-                          Preview
-                        </button>
-                      ) : (
-                        <span className="text-xs text-slate-300">—</span>
-                      )}
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        {busy.has(ch.lessonId) ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-indigo-600">
+                            <span className="h-3 w-3 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" />
+                            Generating…
+                          </span>
+                        ) : (
+                          <>
+                            {ch.status !== "not-seeded" && (
+                              <button
+                                onClick={() =>
+                                  setPreviewChapter({
+                                    chapterId: ch.chapterId,
+                                    classLevel: ch.classLevel,
+                                  })
+                                }
+                                className="rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-600 transition hover:bg-slate-100"
+                              >
+                                Preview
+                              </button>
+                            )}
+                            <button
+                              onClick={() => generateOne(ch, ch.status !== "not-seeded")}
+                              disabled={bulk.running}
+                              className="rounded-lg px-2.5 py-1 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:opacity-40"
+                            >
+                              {ch.status === "not-seeded" ? "Generate" : "Regenerate"}
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
