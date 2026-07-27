@@ -44,6 +44,22 @@ import ThermalPropertiesMatterVizPremium from "@/components/learn-visualizations
 import ThermodynamicsVizPremium from "@/components/learn-visualizations/ThermodynamicsVizPremium";
 import KineticTheoryVizPremium from "@/components/learn-visualizations/KineticTheoryVizPremium";
 
+// Physics (Class 12)
+import ElectricChargesFieldsVizPremium from "@/components/learn-visualizations/ElectricChargesFieldsVizPremium";
+import ElectrostaticPotentialCapacitanceVizPremium from "@/components/learn-visualizations/ElectrostaticPotentialCapacitanceVizPremium";
+import CurrentElectricityVizPremium from "@/components/learn-visualizations/CurrentElectricityVizPremium";
+import MovingChargesMagnetismVizPremium from "@/components/learn-visualizations/MovingChargesMagnetismVizPremium";
+import MagnetismMatterVizPremium from "@/components/learn-visualizations/MagnetismMatterVizPremium";
+import ElectromagneticInductionVizPremium from "@/components/learn-visualizations/ElectromagneticInductionVizPremium";
+import AlternatingCurrentVizPremium from "@/components/learn-visualizations/AlternatingCurrentVizPremium";
+import ElectromagneticWavesVizPremium from "@/components/learn-visualizations/ElectromagneticWavesVizPremium";
+import RayOpticsVizPremium from "@/components/learn-visualizations/RayOpticsVizPremium";
+import WaveOpticsVizPremium from "@/components/learn-visualizations/WaveOpticsVizPremium";
+import DualNatureRadiationVizPremium from "@/components/learn-visualizations/DualNatureRadiationVizPremium";
+import AtomsVizPremium from "@/components/learn-visualizations/AtomsVizPremium";
+import NucleiVizPremium from "@/components/learn-visualizations/NucleiVizPremium";
+import SemiconductorElectronicsVizPremium from "@/components/learn-visualizations/SemiconductorElectronicsVizPremium";
+
 const registry: Record<string, ComponentType> = {
   // ---- Mathematics ----
   // Class 11
@@ -93,6 +109,22 @@ const registry: Record<string, ComponentType> = {
   "kinetic-theory": KineticTheoryVizPremium,
   oscillations: OscillationsVizPremium,
   waves: WavesVizPremium,
+
+  // ---- Physics (Class 12) ----
+  "electric-charges-fields": ElectricChargesFieldsVizPremium,
+  "electrostatic-potential-capacitance": ElectrostaticPotentialCapacitanceVizPremium,
+  "current-electricity": CurrentElectricityVizPremium,
+  "moving-charges-magnetism": MovingChargesMagnetismVizPremium,
+  "magnetism-matter": MagnetismMatterVizPremium,
+  "electromagnetic-induction": ElectromagneticInductionVizPremium,
+  "alternating-current": AlternatingCurrentVizPremium,
+  "electromagnetic-waves": ElectromagneticWavesVizPremium,
+  "ray-optics": RayOpticsVizPremium,
+  "wave-optics": WaveOpticsVizPremium,
+  "dual-nature-radiation": DualNatureRadiationVizPremium,
+  atoms: AtomsVizPremium,
+  nuclei: NucleiVizPremium,
+  "semiconductor-electronics": SemiconductorElectronicsVizPremium,
 };
 
 export function getPremiumViz(chapterId: string): ComponentType | null {
