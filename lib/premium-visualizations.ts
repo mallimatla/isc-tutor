@@ -29,7 +29,16 @@ import ApplicationsIntegralsVizPremium from "@/components/learn-visualizations/A
 import DifferentialEquationsVizPremium from "@/components/learn-visualizations/DifferentialEquationsVizPremium";
 import ThreeDLinesPlanesVizPremium from "@/components/learn-visualizations/ThreeDLinesPlanesVizPremium";
 
+// Physics (Class 11)
+import UnitsMeasurementsVizPremium from "@/components/learn-visualizations/UnitsMeasurementsVizPremium";
+import KinematicsVizPremium from "@/components/learn-visualizations/KinematicsVizPremium";
+import LawsOfMotionVizPremium from "@/components/learn-visualizations/LawsOfMotionVizPremium";
+import WorkEnergyPowerVizPremium from "@/components/learn-visualizations/WorkEnergyPowerVizPremium";
+import OscillationsVizPremium from "@/components/learn-visualizations/OscillationsVizPremium";
+import WavesVizPremium from "@/components/learn-visualizations/WavesVizPremium";
+
 const registry: Record<string, ComponentType> = {
+  // ---- Mathematics ----
   // Class 11
   sets: SetsVizPremium,
   "relations-functions": FunctionsVizPremium,
@@ -62,6 +71,14 @@ const registry: Record<string, ComponentType> = {
   "3d-geometry": ThreeDLinesPlanesVizPremium,
   "linear-programming": LinearProgrammingVizPremium,
   "probability-12": ProbabilityVizPremium,
+
+  // ---- Physics (Class 11) ----
+  "units-measurements": UnitsMeasurementsVizPremium,
+  kinematics: KinematicsVizPremium,
+  "laws-of-motion": LawsOfMotionVizPremium,
+  "work-energy-power": WorkEnergyPowerVizPremium,
+  oscillations: OscillationsVizPremium,
+  waves: WavesVizPremium,
 };
 
 export function getPremiumViz(chapterId: string): ComponentType | null {
