@@ -13,6 +13,7 @@ import DoubtChat from "@/components/DoubtChat";
 import { apiFetch } from "@/lib/api-client";
 import { useAuth } from "@/lib/use-auth";
 import { getChapterTheme } from "@/lib/chapter-theme";
+import { getChapterIcon } from "@/lib/chapter-icons";
 
 interface QuestionResponse {
   questionId: string;
@@ -195,12 +196,12 @@ function PracticeContent() {
           <div className="flex min-w-0 items-center gap-3">
             <span
               aria-hidden
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm"
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-lg shadow-sm"
               style={{
                 background: `linear-gradient(135deg, ${theme.hex.primary}, ${theme.hex.secondary})`,
               }}
             >
-              {chapterLabel.charAt(0)}
+              {getChapterIcon(chapterId)}
             </span>
             <h1 className="truncate text-base font-semibold text-slate-900 sm:text-lg">
               {chapterLabel}

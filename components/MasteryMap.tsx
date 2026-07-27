@@ -4,6 +4,7 @@ import { useState, useEffect, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
 import { getChapterTheme } from "@/lib/chapter-theme";
+import { getChapterIcon } from "@/lib/chapter-icons";
 import { listSubjects, type SubjectId } from "@/lib/subjects";
 
 interface ChapterMastery {
@@ -164,15 +165,13 @@ function ChapterTile({
       <div className="flex items-start gap-3">
         <span
           aria-hidden
-          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-base font-bold text-white shadow-sm transition-transform group-hover:scale-105"
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl text-xl shadow-sm transition-transform group-hover:scale-110 group-hover:-rotate-3"
           style={{
-            background: isUntouched
-              ? `linear-gradient(135deg, ${theme.hex.primary}, ${theme.hex.secondary})`
-              : `linear-gradient(135deg, ${theme.hex.primary}, ${theme.hex.secondary})`,
-            opacity: isUntouched ? 0.55 : 1,
+            background: `linear-gradient(135deg, ${theme.hex.primary}, ${theme.hex.secondary})`,
+            opacity: isUntouched ? 0.85 : 1,
           }}
         >
-          {ch.chapterLabel.charAt(0)}
+          <span className="drop-shadow-sm">{getChapterIcon(ch.chapterId)}</span>
         </span>
         <div className="min-w-0 flex-1 pr-2">
           <p className="truncate text-sm font-semibold leading-tight text-slate-900">
