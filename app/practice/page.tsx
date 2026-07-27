@@ -321,6 +321,7 @@ function PracticeContent() {
                 chapterId={chapterId}
                 classLevel={classLevel}
                 chapterLabel={chapterLabel}
+                subject={subject}
               />
             )}
           </div>

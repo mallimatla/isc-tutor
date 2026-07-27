@@ -20,6 +20,7 @@ const TurnSchema = z.object({
 const RequestBodySchema = z.object({
   chapterId: z.string().min(1).max(120),
   classLevel: z.enum(["11", "12"]),
+  subject: z.enum(["mathematics", "physics"]).optional(),
   chapterLabel: z.string().min(1).max(200).optional(),
   message: z.string().min(1).max(5000),
   // Prior turns for multi-turn follow-ups. Bounded so a long thread can't
@@ -54,12 +55,14 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { chapterId, classLevel, chapterLabel, message } = parsed.data;
+    const { chapterId, classLevel, subject, chapterLabel, message } =
+      parsed.data;
     const history = (parsed.data.history ?? []).slice(-MAX_HISTORY_TURNS);
 
     const syllabus = getChapterSyllabus(chapterId);
 
     const prompt = buildDoubtPrompt({
+      subject,
       chapterLabel: chapterLabel || chapterId,
       classLevel,
       subtopics: syllabus?.subtopics ?? [],
@@ -93,6 +96,7 @@ export async function POST(req: NextRequest) {
           try {
             await adminDb.collection(col("doubts")).add({
               sessionId: uid,
+              subject: subject ?? "mathematics",
               chapterId,
               classLevel,
               question: message,

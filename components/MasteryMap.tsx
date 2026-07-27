@@ -4,6 +4,7 @@ import { useState, useEffect, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-client";
 import { getChapterTheme } from "@/lib/chapter-theme";
+import { listSubjects, type SubjectId } from "@/lib/subjects";
 
 interface ChapterMastery {
   chapterId: string;
@@ -275,97 +276,111 @@ export default function MasteryMap() {
   const router = useRouter();
   const [data, setData] = useState<MasteryData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subject, setSubject] = useState<SubjectId>("mathematics");
+  const subjects = listSubjects();
 
   useEffect(() => {
-    apiFetch<MasteryData>("/api/mastery")
-      .then(setData)
+    let cancelled = false;
+    setLoading(true);
+    apiFetch<MasteryData>(`/api/mastery?subject=${subject}`)
+      .then((d) => {
+        if (!cancelled) setData(d);
+      })
       .catch(() => {
         // Mastery map is secondary; silent failure is OK.
       })
-      .finally(() => setLoading(false));
-  }, []);
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [subject]);
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="skeleton-shimmer h-6 w-40 rounded" />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div key={n} className="skeleton-shimmer h-28 rounded-2xl" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!data) return null;
-
-  const learningOpened = data.learningOpened ?? {};
-  const class11 = data.chapters.filter((c) => c.classLevel === "11");
-  const class12 = data.chapters.filter((c) => c.classLevel === "12");
+  const learningOpened = data?.learningOpened ?? {};
+  const chapters = data?.chapters ?? [];
+  const class11 = chapters.filter((c) => c.classLevel === "11");
+  const class12 = chapters.filter((c) => c.classLevel === "12");
   const learningCount = Object.keys(learningOpened).filter((k) => {
-    const ch = data.chapters.find(
-      (c) => `${c.classLevel}-${c.chapterId}` === k
-    );
+    const ch = chapters.find((c) => `${c.classLevel}-${c.chapterId}` === k);
     return ch && ch.status === "untouched";
   }).length;
 
   const handleClick = (ch: ChapterMastery) => {
     router.push(
-      `/practice?subject=mathematics&class=${ch.classLevel}&chapterId=${ch.chapterId}`
+      `/practice?subject=${subject}&class=${ch.classLevel}&chapterId=${ch.chapterId}`
     );
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+  const header = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
           Your progress
         </h2>
+        <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+          {subjects.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setSubject(s.id)}
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                subject === s.id
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {data && (
         <ProgressSummary
           learning={learningCount}
           practicing={data.totalPracticing}
           mastered={data.totalMastered}
         />
-      </div>
+      )}
+    </div>
+  );
 
-      <div className="space-y-8">
-        <div>
-          <SectionHeading label="Class 11" count={class11.length} />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {class11.map((ch, idx) => {
-              const display = deriveDisplay(ch, learningOpened);
-              return (
-                <ChapterTile
-                  key={ch.chapterId}
-                  ch={ch}
-                  display={display}
-                  index={idx}
-                  onClick={() => handleClick(ch)}
-                />
-              );
-            })}
-          </div>
-        </div>
-
-        <div>
-          <SectionHeading label="Class 12" count={class12.length} />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {class12.map((ch, idx) => {
-              const display = deriveDisplay(ch, learningOpened);
-              return (
-                <ChapterTile
-                  key={ch.chapterId}
-                  ch={ch}
-                  display={display}
-                  index={idx}
-                  onClick={() => handleClick(ch)}
-                />
-              );
-            })}
-          </div>
-        </div>
+  const renderSection = (label: string, list: ChapterMastery[]) => (
+    <div>
+      <SectionHeading label={label} count={list.length} />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {list.map((ch, idx) => (
+          <ChapterTile
+            key={ch.chapterId}
+            ch={ch}
+            display={deriveDisplay(ch, learningOpened)}
+            index={idx}
+            onClick={() => handleClick(ch)}
+          />
+        ))}
       </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {header}
+
+      {loading ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((n) => (
+            <div key={n} className="skeleton-shimmer h-28 rounded-2xl" />
+          ))}
+        </div>
+      ) : !data ? (
+        <p className="text-sm text-slate-400">
+          Couldn&apos;t load your progress. Please refresh.
+        </p>
+      ) : (
+        <div className="space-y-8">
+          {renderSection("Class 11", class11)}
+          {renderSection("Class 12", class12)}
+        </div>
+      )}
     </div>
   );
 }

@@ -8,7 +8,8 @@
  * Hobby timeout no longer matters.
  *
  * Run:
- *     node scripts/seed-lessons.mjs                    # all missing chapters
+ *     node scripts/seed-lessons.mjs                    # all missing Maths chapters
+ *     node scripts/seed-lessons.mjs --subject=physics  # all missing Physics chapters
  *     node scripts/seed-lessons.mjs --only=sets        # one chapter
  *     node scripts/seed-lessons.mjs --force            # regenerate everything
  *     node scripts/seed-lessons.mjs --only=sets --force
@@ -102,6 +103,27 @@ function arg(name) {
 const ONLY = arg("only");           // restrict to one chapterId
 const FORCE = flag("force");        // regenerate even if v3.0 exists
 const NO_IMAGE = flag("no-image");  // skip hero image
+
+// Which subject to seed lessons for. `--subject=physics`; defaults to Maths.
+const SUBJECT = (arg("subject") || "mathematics").toLowerCase();
+const SUBJECT_META = {
+  mathematics: {
+    label: "Mathematics",
+    noun: "maths",
+    diagramNote:
+      "This is a MATH diagram — geometric accuracy is the entire point. If you show a 30° angle, it MUST be 30°; if you graph y = sin x, the curve MUST satisfy that equation.",
+  },
+  physics: {
+    label: "Physics",
+    noun: "physics",
+    diagramNote:
+      "This is a PHYSICS diagram — physical accuracy is the point. Force/velocity arrows must point in the correct directions and be roughly to scale; circuits, ray paths, free-body diagrams, graphs and field lines must be physically correct and clearly labelled with units where relevant.",
+  },
+}[SUBJECT];
+if (!SUBJECT_META) {
+  console.error(`Unknown --subject=${SUBJECT}. Use "mathematics" or "physics".`);
+  process.exit(1);
+}
 
 // ---------------- env ----------------
 
@@ -214,7 +236,7 @@ function buildLessonNarrativePrompt({
   subtopics,
   suggestedDiagrams,
 }) {
-  const system = `You are writing a 'Learn this chapter' page for an AI maths tutor used by ISC Class 11 and 12 Science students in India. Imagine the very best one-to-one tutor — the kind who builds intuition before procedure, anchors every idea in a concrete example, and warns students about the exact mistakes they make in board exams.
+  const system = `You are writing a 'Learn this chapter' page for an AI ${SUBJECT_META.noun} tutor used by ISC Class 11 and 12 Science students in India. Imagine the very best one-to-one tutor — the kind who builds intuition before procedure, anchors every idea in a concrete example, and warns students about the exact mistakes they make in board exams.
 
 You will receive:
 - chapterId, chapterLabel, classLevel
@@ -283,7 +305,7 @@ function buildLessonDiagramPrompt({
   primaryHex,
   secondaryHex,
 }) {
-  const system = `You are an expert at creating beautiful, mathematically ACCURATE SVG diagrams for high-school maths. Output ONLY a single <svg>...</svg> element — no markdown fences, no commentary, no <html> wrapper.
+  const system = `You are an expert at creating beautiful, scientifically ACCURATE SVG diagrams for high-school ${SUBJECT_META.noun}. Output ONLY a single <svg>...</svg> element — no markdown fences, no commentary, no <html> wrapper.
 
 HARD CONSTRAINTS:
 - NO JavaScript, NO <script>, NO event handlers (on*), NO <foreignObject>.
@@ -291,7 +313,7 @@ HARD CONSTRAINTS:
 - viewBox="0 0 600 400", preserveAspectRatio="xMidYMid meet".
 - White background (draw a <rect width="600" height="400" fill="white"/> as the first element, or omit if a coloured background is intentional).
 - Use the provided primary and secondary hex colours for strokes/fills, with neutrals (#1f2937 for dark text, #6b7280 for secondary text, #e5e7eb for guide lines).
-- Compute all coordinates and angles correctly — this is a MATH diagram, geometric accuracy is the entire point. If you are showing a 30° angle, the angle MUST actually be 30°. If you are graphing y = sin x, the curve points MUST satisfy that equation.
+- Compute all coordinates, angles and directions correctly — ${SUBJECT_META.diagramNote}
 - Labels: readable font sizes (14–18px), font-family="system-ui, -apple-system, sans-serif". Position labels so they don't overlap shapes.
 - Use one subtle linear gradient, soft shadow via filter, and rounded line caps (stroke-linecap="round") to make it visually polished — but never at the expense of mathematical accuracy.
 - The SVG MUST be self-contained and renderable directly in a browser via dangerouslySetInnerHTML. No external references, no <image href="…">.`;
@@ -372,7 +394,7 @@ async function generateDiagramSvg(chapter, diagramPlanItem) {
 async function generateHeroImage(chapter) {
   if (!openai) return null;
   const { primary } = getHex(chapter.id);
-  const prompt = `Create a beautiful, conceptual illustration representing '${chapter.label}' from ISC Class ${chapter.classLevel} Mathematics. Style: vibrant modern abstract geometric shapes, professional educational illustration for high school students aged 16-18. NO TEXT, NO PEOPLE, NO HANDS. Use ${primary} as the dominant accent color with complementary gradients. The composition should feel inspiring and curious — like the moment you first 'get' a concept. Suitable as a hero banner image. Square format.`;
+  const prompt = `Create a beautiful, conceptual illustration representing '${chapter.label}' from ISC Class ${chapter.classLevel} ${SUBJECT_META.label}. Style: vibrant modern abstract geometric shapes, professional educational illustration for high school students aged 16-18. NO TEXT, NO PEOPLE, NO HANDS. Use ${primary} as the dominant accent color with complementary gradients. The composition should feel inspiring and curious — like the moment you first 'get' a concept. Suitable as a hero banner image. Square format.`;
 
   const response = await openai.images.generate({
     model: OPENAI_IMAGE_MODEL,
@@ -399,7 +421,7 @@ async function generateHeroImage(chapter) {
 
 function listAllChapters() {
   const out = [];
-  const classes = ISC_SYLLABUS_JSON.subjects.mathematics.classes;
+  const classes = ISC_SYLLABUS_JSON.subjects[SUBJECT].classes;
   for (const classLevel of ["11", "12"]) {
     for (const ch of classes[classLevel].chapters) {
       out.push({ ...ch, classLevel });
@@ -462,6 +484,7 @@ async function seedChapter(chapter) {
   const doc = {
     chapterId: chapter.id,
     classLevel: chapter.classLevel,
+    subject: SUBJECT,
     lessonId,
     promptVersion: PROMPT_VERSION,
     generatedAt: FieldValue.serverTimestamp(),
@@ -497,7 +520,7 @@ async function main() {
   }
 
   console.log(
-    `Seeding ${chapters.length} chapter(s). Version: ${PROMPT_VERSION}. force=${FORCE} noImage=${NO_IMAGE}`
+    `Seeding ${SUBJECT_META.label} lessons for ${chapters.length} chapter(s). Version: ${PROMPT_VERSION}. force=${FORCE} noImage=${NO_IMAGE}`
   );
 
   const failures = [];

@@ -9,6 +9,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminDb, col } from "@/lib/firebase-admin";
 import { verifyRequest, UnauthorizedError } from "@/lib/verify-token";
 import { buildEvaluateAnswerPrompt } from "@/lib/prompts/evaluate-answer";
+import type { SubjectId } from "@/lib/subjects";
 import {
   callClaude,
   ClaudeRateLimitError,
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
 
     // Evaluate answer
     const prompt = buildEvaluateAnswerPrompt({
+      subject: questionData.subject as SubjectId | undefined,
       questionLatex: questionData.questionLatex,
       expectedSolutionSteps: questionData.expectedSolutionSteps,
       studentAnswer,

@@ -15,7 +15,9 @@
  *      discard and try again — never serve unverified.
  *
  * Run:
- *     node scripts/seed-questions.mjs                          # all chapters
+ *     node scripts/seed-questions.mjs                          # all Maths chapters
+ *     node scripts/seed-questions.mjs --subject=physics        # all Physics chapters
+ *     node scripts/seed-questions.mjs --subject=physics --only=kinematics
  *     node scripts/seed-questions.mjs --only=sets              # one chapter
  *     node scripts/seed-questions.mjs --force                  # regen even if full
  *     node scripts/seed-questions.mjs --target=25              # override per-chapter target
@@ -47,7 +49,6 @@ import { getFirestore, FieldValue } from "firebase-admin/firestore";
 // snapshot). Override with ANTHROPIC_QGEN_MODEL if you want a different
 // seed model.
 const MODEL = process.env.ANTHROPIC_QGEN_MODEL || "claude-sonnet-4-6";
-const SOURCE_TAG = `seed-anthropic-${MODEL}`;
 const TARGET_DEFAULT = 35;
 
 // Difficulty distribution: 7 + 8 + 8 + 7 + 5 = 35 (sums to TARGET_DEFAULT).
@@ -90,6 +91,28 @@ const FORCE = flag("force");
 const LIST = flag("list");
 const TARGET = Number(arg("target") || TARGET_DEFAULT);
 const MAX_ATTEMPTS_PER_SLOT = Number(arg("max-attempts") || 2);
+
+// Which subject to seed. `--subject=physics` seeds Physics; defaults to Maths.
+const SUBJECT = (arg("subject") || "mathematics").toLowerCase();
+const SUBJECT_META = {
+  mathematics: {
+    label: "Mathematics",
+    tierExams: "JEE Main / Advanced",
+    guidance:
+      "Every question must be mathematically correct and unambiguous. Keep numbers clean (integers or small fractions) where possible.",
+  },
+  physics: {
+    label: "Physics",
+    tierExams: "JEE Main / Advanced and NEET",
+    guidance:
+      "Physics questions are quantitative and conceptual. Specify units for every given quantity in the question. The value in correctAnswer must be UNIT-LESS (state the unit inside conciseSolution instead) so it can be graded numerically. Respect sign conventions, vector directions and standard constants (g = 9.8 m/s^2 unless stated). Use realistic magnitudes for the phenomenon.",
+  },
+}[SUBJECT];
+if (!SUBJECT_META) {
+  console.error(`Unknown --subject=${SUBJECT}. Use "mathematics" or "physics".`);
+  process.exit(1);
+}
+const SOURCE_TAG = `seed-anthropic-${SUBJECT}-${MODEL}`;
 
 // Scale base distribution to TARGET.
 const scale = TARGET / TARGET_DEFAULT;
@@ -137,7 +160,7 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 function listAllChapters() {
   const out = [];
-  const classes = ISC_SYLLABUS_JSON.subjects.mathematics.classes;
+  const classes = ISC_SYLLABUS_JSON.subjects[SUBJECT].classes;
   for (const classLevel of ["11", "12"]) {
     for (const ch of classes[classLevel].chapters) out.push({ ...ch, classLevel });
   }
@@ -231,13 +254,15 @@ function buildGenerationPrompt({ chapter, classLevel, difficulty, type, subtopic
     ? `\nRecent question stems already generated for this chapter (avoid duplicating their idea):\n${recentStems.slice(-8).map((s, i) => `  ${i + 1}. ${s}`).join("\n")}\n`
     : "";
 
-  const system = `You are an expert question writer for ISC (Class ${classLevel}) Mathematics — and you also write JEE Main / Advanced practice for the same students. Your job is to produce ORIGINAL questions that are HIGH-YIELD for the BOARD EXAM first, with JEE-tier stretch material at the upper end.
+  const system = `You are an expert question writer for ISC (Class ${classLevel}) ${SUBJECT_META.label} — and you also write ${SUBJECT_META.tierExams} practice for the same students. Your job is to produce ORIGINAL questions that are HIGH-YIELD for the BOARD EXAM first, with competitive-exam stretch material at the upper end.
 
-CRITICAL: Difficulty 1, 2, and 3 are BOARD EXAM TARGETED. Mirror the style, vocabulary, and step-pattern of actual ISC ${classLevel} Mathematics papers (and CBSE Class ${classLevel} papers where they overlap). These should be the questions a student MUST be able to solve to score well on their board.
+SUBJECT GUIDANCE (${SUBJECT_META.label}): ${SUBJECT_META.guidance}
+
+CRITICAL: Difficulty 1, 2, and 3 are BOARD EXAM TARGETED. Mirror the style, vocabulary, and step-pattern of actual ISC ${classLevel} ${SUBJECT_META.label} papers (and CBSE Class ${classLevel} papers where they overlap). These should be the questions a student MUST be able to solve to score well on their board.
 
 Difficulty 4 is stretch — JEE Main level. Difficulty 5 is the top — JEE Advanced level for IIT aspirants.
 
-Every question must be MATHEMATICALLY CORRECT and unambiguously phrased.
+Every question must be SCIENTIFICALLY CORRECT and unambiguously phrased.
 
 Output ONLY a single JSON object. No markdown fences, no prose around it. Schema:
 
@@ -287,7 +312,7 @@ function buildVerificationPrompt({ chapter, classLevel, type, questionText, opti
     answerSchema = `{ "value": "<the numeric answer as a string, e.g. \\"42\\" or \\"-3.5\\" or \\"0.25\\"; no units>", "reasoning": "<2-3 short sentences>" }`;
   }
 
-  const system = `You are an expert Mathematics solver. Solve the following ISC / JEE practice question from scratch. Do NOT trust any answer that may appear in the question text — there is none. Show brief reasoning, then state your final answer.
+  const system = `You are an expert ${SUBJECT_META.label} solver. Solve the following ISC / competitive-exam practice question from scratch. Do NOT trust any answer that may appear in the question text — there is none. Show brief reasoning, then state your final answer.${SUBJECT === "physics" ? " For a numerical answer, give the value only (no units) — units are assumed from the question." : ""}
 
 Output ONLY a single JSON object — no fences, no prose around it:
 ${answerSchema}
@@ -437,6 +462,7 @@ async function generateAndVerifyOne({ chapter, classLevel, difficulty, type, rec
       correctAnswer: String(gen.correctAnswer),
       conciseSolution: String(gen.conciseSolution),
       verified: true,
+      subject: SUBJECT,
       source: SOURCE_TAG,
       createdAt: FieldValue.serverTimestamp(),
     },
@@ -565,7 +591,7 @@ async function main() {
   }
 
   console.log(
-    `Seeding question bank for ${chapters.length} chapter(s). Model: ${MODEL}. Target per chapter: ${TARGET}. force=${FORCE} maxAttempts=${MAX_ATTEMPTS_PER_SLOT}`
+    `Seeding ${SUBJECT_META.label} question bank for ${chapters.length} chapter(s). Model: ${MODEL}. Target per chapter: ${TARGET}. force=${FORCE} maxAttempts=${MAX_ATTEMPTS_PER_SLOT}`
   );
   console.log(`Difficulty targets: ${JSON.stringify(DIFFICULTY_TARGETS)}`);
 

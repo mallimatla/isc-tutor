@@ -4,6 +4,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminDb, col } from "@/lib/firebase-admin";
 import { verifyRequest, UnauthorizedError } from "@/lib/verify-token";
 import { buildSocraticTurnPrompt } from "@/lib/prompts/socratic-turn";
+import type { SubjectId } from "@/lib/subjects";
 import {
   callClaudeStreaming,
   ClaudeRateLimitError,
@@ -87,6 +88,7 @@ export async function POST(req: NextRequest) {
     dialogueHistory.push({ role: "student", message: studentTurn });
 
     const prompt = buildSocraticTurnPrompt({
+      subject: questionData.subject as SubjectId | undefined,
       questionLatex: questionData.questionLatex,
       expectedSolutionSteps: questionData.expectedSolutionSteps,
       dialogueHistory,

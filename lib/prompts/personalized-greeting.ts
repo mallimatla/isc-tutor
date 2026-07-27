@@ -58,7 +58,7 @@ Output ONLY a JSON object:
 }
 
 Examples by case:
-- First-time visitor: 'Hi Nag — first time here. ISC Mathematics is big, but you don't have to swallow it all at once. Pick any chapter you're working on right now and let's start there.'
+- First-time visitor: 'Hi Nag — first time here. The ISC syllabus is big, but you don't have to swallow it all at once. Pick any chapter you're working on right now and let's start there.'
 - Returning, did well: 'Welcome back, Nag. You crushed Trigonometric Functions yesterday — 8 out of 10 on hard questions. Ready to try Inverse Trig today, or want to bank the win first with one more easy round?'
 - Returning, struggled: 'Hey Nag. Yesterday you got tangled up on the cardinality formula in Sets — totally normal, that's where most students slip. Let's clean that up today with three focused questions before moving on. Sound good?'`;
 

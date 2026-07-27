@@ -10,13 +10,16 @@ export async function GET(req: NextRequest) {
     const user = await verifyRequest(req);
     uid = user.uid;
 
-    // Build full syllabus list
+    const subjectParam = req.nextUrl.searchParams.get("subject");
+    const subject = subjectParam === "physics" ? "physics" : "mathematics";
+
+    // Build full syllabus list for the requested subject
     const syllabus = [
-      ...getAllChapters("mathematics", "11").map((c) => ({
+      ...getAllChapters(subject, "11").map((c) => ({
         ...c,
         classLevel: "11" as const,
       })),
-      ...getAllChapters("mathematics", "12").map((c) => ({
+      ...getAllChapters(subject, "12").map((c) => ({
         ...c,
         classLevel: "12" as const,
       })),
@@ -28,15 +31,20 @@ export async function GET(req: NextRequest) {
       .where("sessionId", "==", uid)
       .get();
 
-    const questions = questionsSnap.docs.map((doc) => ({
+    const allQuestions = questionsSnap.docs.map((doc) => ({
       questionId: doc.id,
       ...doc.data(),
     })) as Array<{
       questionId: string;
       chapterId: string;
       class: string;
+      subject?: string;
       difficultyActual?: number;
     }>;
+    // Older questions predate the subject field — treat them as mathematics.
+    const questions = allQuestions.filter(
+      (q) => (q.subject ?? "mathematics") === subject
+    );
 
     // Load all evaluations for this user
     const evalsSnap = await adminDb

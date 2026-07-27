@@ -16,6 +16,7 @@ interface DoubtChatProps {
   chapterId: string;
   classLevel: string;
   chapterLabel: string;
+  subject?: string;
 }
 
 function TutorAvatar() {
@@ -33,6 +34,7 @@ export default function DoubtChat({
   chapterId,
   classLevel,
   chapterLabel,
+  subject,
 }: DoubtChatProps) {
   const [turns, setTurns] = useState<DoubtTurn[]>([]);
   const [input, setInput] = useState("");
@@ -70,6 +72,7 @@ export default function DoubtChat({
           body: JSON.stringify({
             chapterId,
             classLevel,
+            subject,
             chapterLabel,
             message,
             history,
@@ -176,7 +179,7 @@ export default function DoubtChat({
         setHasFirstToken(false);
       }
     },
-    [turns, chapterId, classLevel, chapterLabel]
+    [turns, chapterId, classLevel, chapterLabel, subject]
   );
 
   const handleSubmit = () => {

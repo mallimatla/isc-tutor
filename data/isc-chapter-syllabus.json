@@ -456,6 +456,465 @@
         "Two-stage tree diagram for drawing two balls without replacement, with conditional probabilities written on the second-stage branches",
         "Bar chart of the binomial distribution Bin(n=10, p=0.4) with each bar's height equal to P(X=k) and the mean np marked"
       ]
+    },
+    "units-measurements": {
+      "subtopics": [
+        "SI base and derived units",
+        "Dimensions and dimensional formulae",
+        "Dimensional analysis and checking equations",
+        "Significant figures and rounding",
+        "Orders of magnitude and scientific notation",
+        "Errors: absolute, relative and percentage",
+        "Combination of errors in sums, products and powers",
+        "Accuracy vs precision, least count"
+      ],
+      "suggestedDiagrams": [
+        "A labelled table linking base quantities to their SI units and dimensional symbols",
+        "A vernier caliper / screw gauge scale showing how least count and reading are obtained",
+        "Error bars on a measured quantity illustrating absolute vs percentage error"
+      ]
+    },
+    "kinematics": {
+      "subtopics": [
+        "Distance, displacement, speed and velocity",
+        "Average vs instantaneous velocity and acceleration",
+        "Equations of uniformly accelerated motion",
+        "Position-time and velocity-time graphs",
+        "Relative velocity in one and two dimensions",
+        "Vectors: addition, resolution into components",
+        "Projectile motion: range, height, time of flight",
+        "Uniform circular motion basics"
+      ],
+      "suggestedDiagrams": [
+        "A velocity-time graph whose slope and area are labelled as acceleration and displacement",
+        "A projectile trajectory parabola with components of velocity marked at launch, top and landing",
+        "A vector resolved into perpendicular x and y components with the angle labelled"
+      ]
+    },
+    "laws-of-motion": {
+      "subtopics": [
+        "Newton's first law and inertia",
+        "Linear momentum and Newton's second law",
+        "Newton's third law and action-reaction pairs",
+        "Free-body diagrams",
+        "Conservation of linear momentum",
+        "Static, kinetic and rolling friction",
+        "Dynamics of uniform circular motion",
+        "Banking of roads and centripetal force"
+      ],
+      "suggestedDiagrams": [
+        "A free-body diagram of a block on an inclined plane with weight, normal and friction forces",
+        "Two colliding trolleys showing momentum before and after to illustrate conservation",
+        "A car on a banked curve with the normal force resolved to supply centripetal force"
+      ]
+    },
+    "work-energy-power": {
+      "subtopics": [
+        "Work done by a constant and a variable force",
+        "Kinetic energy and the work-energy theorem",
+        "Potential energy: gravitational and spring",
+        "Conservation of mechanical energy",
+        "Power: average and instantaneous",
+        "Conservative vs non-conservative forces",
+        "Elastic and inelastic collisions in 1D",
+        "Coefficient of restitution"
+      ],
+      "suggestedDiagrams": [
+        "A spring being compressed with the area under the force-extension graph shown as stored energy",
+        "A ball rolling in a valley showing interchange of kinetic and potential energy at three points",
+        "A one-dimensional elastic collision with velocity vectors before and after"
+      ]
+    },
+    "rotational-motion": {
+      "subtopics": [
+        "Centre of mass of a system of particles",
+        "Torque and its relation to angular acceleration",
+        "Angular momentum and its conservation",
+        "Moment of inertia and radius of gyration",
+        "Theorems of parallel and perpendicular axes",
+        "Rotational kinetic energy",
+        "Rolling without slipping",
+        "Comparison of translational and rotational quantities"
+      ],
+      "suggestedDiagrams": [
+        "A rigid rod with a force applied off-axis showing the torque arm about the pivot",
+        "A spinning skater pulling arms in to illustrate conservation of angular momentum",
+        "A disc, ring and sphere rolling down an incline compared by moment of inertia"
+      ]
+    },
+    "gravitation": {
+      "subtopics": [
+        "Newton's universal law of gravitation",
+        "Gravitational field intensity",
+        "Acceleration due to gravity and its variation",
+        "Gravitational potential and potential energy",
+        "Escape velocity",
+        "Orbital velocity of a satellite",
+        "Kepler's three laws of planetary motion",
+        "Geostationary and polar satellites"
+      ],
+      "suggestedDiagrams": [
+        "A satellite orbiting Earth with gravitational force acting as the centripetal force",
+        "An elliptical planetary orbit illustrating Kepler's law of equal areas",
+        "A graph of g versus distance from Earth's centre, inside and outside the planet"
+      ]
+    },
+    "mechanical-properties-solids": {
+      "subtopics": [
+        "Stress and strain and their types",
+        "Hooke's law and the elastic limit",
+        "Stress-strain curve for a metal wire",
+        "Young's modulus",
+        "Bulk modulus and compressibility",
+        "Shear modulus (modulus of rigidity)",
+        "Poisson's ratio",
+        "Elastic potential energy in a stretched wire"
+      ],
+      "suggestedDiagrams": [
+        "A labelled stress-strain curve marking proportional limit, elastic limit, yield and fracture points",
+        "A wire under tension showing original and stretched length for the strain definition",
+        "A cube under shear stress with the deformation angle labelled"
+      ]
+    },
+    "mechanical-properties-fluids": {
+      "subtopics": [
+        "Pressure in a fluid and Pascal's law",
+        "Atmospheric pressure and gauge pressure",
+        "Buoyancy and Archimedes' principle",
+        "Streamline and turbulent flow, equation of continuity",
+        "Bernoulli's theorem and its applications",
+        "Viscosity and Stokes' law, terminal velocity",
+        "Surface tension and surface energy",
+        "Capillary rise and angle of contact"
+      ],
+      "suggestedDiagrams": [
+        "A hydraulic lift showing Pascal's law transmitting pressure to a larger piston",
+        "A pipe of varying cross-section illustrating the equation of continuity and Bernoulli effect",
+        "A liquid rising in a capillary tube with the meniscus and contact angle labelled"
+      ]
+    },
+    "thermal-properties-matter": {
+      "subtopics": [
+        "Temperature scales and thermometry",
+        "Thermal expansion of solids, liquids and gases",
+        "Specific heat capacity and calorimetry",
+        "Change of state and latent heat",
+        "Conduction and thermal conductivity",
+        "Convection",
+        "Radiation, black body and Stefan-Boltzmann law",
+        "Newton's law of cooling"
+      ],
+      "suggestedDiagrams": [
+        "A temperature-versus-heat graph for ice to steam showing plateaus at the phase changes",
+        "A composite rod (two metals) illustrating steady-state heat conduction and temperature gradient",
+        "A cooling curve of a hot body approaching room temperature (Newton's law of cooling)"
+      ]
+    },
+    "thermodynamics": {
+      "subtopics": [
+        "Thermal equilibrium and the zeroth law",
+        "Internal energy, heat and work",
+        "First law of thermodynamics",
+        "Isothermal, adiabatic, isobaric and isochoric processes",
+        "Work done in different processes (P-V area)",
+        "Second law of thermodynamics",
+        "Heat engines and efficiency",
+        "Carnot cycle and refrigerators"
+      ],
+      "suggestedDiagrams": [
+        "A P-V diagram with the area under the curve labelled as work done by the gas",
+        "A block diagram of a heat engine showing heat in, work out and heat rejected",
+        "The four steps of the Carnot cycle drawn on a P-V diagram"
+      ]
+    },
+    "kinetic-theory": {
+      "subtopics": [
+        "Assumptions of the kinetic theory",
+        "Ideal gas equation and gas laws",
+        "Pressure of a gas from molecular motion",
+        "Kinetic interpretation of temperature",
+        "RMS, average and most probable speeds",
+        "Degrees of freedom",
+        "Law of equipartition of energy",
+        "Specific heats of gases and mean free path"
+      ],
+      "suggestedDiagrams": [
+        "Gas molecules in a box bombarding a wall to illustrate the origin of pressure",
+        "A distribution curve of molecular speeds marking rms, average and most probable speeds",
+        "A diatomic molecule showing translational, rotational and vibrational degrees of freedom"
+      ]
+    },
+    "oscillations": {
+      "subtopics": [
+        "Periodic and oscillatory motion",
+        "Simple harmonic motion: displacement, velocity, acceleration",
+        "Phase and phasor representation",
+        "Energy in SHM (kinetic and potential)",
+        "Oscillations of a spring-mass system",
+        "The simple pendulum",
+        "Damped oscillations",
+        "Forced oscillations and resonance"
+      ],
+      "suggestedDiagrams": [
+        "Displacement, velocity and acceleration versus time for SHM drawn on one axis with phase differences",
+        "A spring-mass system with the restoring force proportional to displacement labelled",
+        "A resonance curve of amplitude versus driving frequency for different damping"
+      ]
+    },
+    "waves": {
+      "subtopics": [
+        "Transverse and longitudinal waves",
+        "Wave speed, wavelength, frequency and the wave equation",
+        "Speed of a wave on a string and in a gas",
+        "Principle of superposition",
+        "Reflection of waves and standing waves",
+        "Modes of vibration of strings and air columns",
+        "Beats",
+        "Doppler effect in sound"
+      ],
+      "suggestedDiagrams": [
+        "A standing wave on a string with nodes and antinodes labelled for the first few harmonics",
+        "Two overlapping waves adding by superposition to show constructive and destructive interference",
+        "A moving source emitting compressed wavefronts ahead to illustrate the Doppler effect"
+      ]
+    },
+    "electric-charges-fields": {
+      "subtopics": [
+        "Electric charge and its quantisation",
+        "Coulomb's law and superposition of forces",
+        "Electric field and field lines",
+        "Electric field due to point charges",
+        "Electric dipole and dipole moment",
+        "Torque on a dipole in a uniform field",
+        "Electric flux and Gauss's law",
+        "Field of a line, sheet and shell using Gauss's law"
+      ],
+      "suggestedDiagrams": [
+        "Electric field lines around positive, negative and dipole charge configurations",
+        "A Gaussian surface enclosing a charge to illustrate electric flux",
+        "A dipole in a uniform field with the torque couple shown"
+      ]
+    },
+    "electrostatic-potential-capacitance": {
+      "subtopics": [
+        "Electric potential and potential difference",
+        "Potential due to a point charge and a dipole",
+        "Equipotential surfaces",
+        "Relation between field and potential",
+        "Capacitance and the parallel-plate capacitor",
+        "Effect of a dielectric",
+        "Capacitors in series and parallel",
+        "Energy stored in a capacitor"
+      ],
+      "suggestedDiagrams": [
+        "Equipotential surfaces perpendicular to field lines for a point charge",
+        "A parallel-plate capacitor with a dielectric slab partly inserted",
+        "A network of capacitors reduced step by step in series and parallel"
+      ]
+    },
+    "current-electricity": {
+      "subtopics": [
+        "Electric current and drift velocity",
+        "Ohm's law and its limitations",
+        "Resistivity and its temperature dependence",
+        "Resistors in series and parallel",
+        "EMF, terminal voltage and internal resistance",
+        "Kirchhoff's current and voltage laws",
+        "Wheatstone bridge and metre bridge",
+        "Potentiometer and its applications"
+      ],
+      "suggestedDiagrams": [
+        "A circuit with a cell, its internal resistance and an external load showing terminal voltage",
+        "A Wheatstone bridge with four resistors and the galvanometer at balance",
+        "A resistor network being simplified from series-parallel combinations"
+      ]
+    },
+    "moving-charges-magnetism": {
+      "subtopics": [
+        "Magnetic force on a moving charge (Lorentz force)",
+        "Motion of a charge in a magnetic field, the cyclotron",
+        "Force on a current-carrying conductor",
+        "Biot-Savart law and field of a current loop",
+        "Ampere's circuital law",
+        "Magnetic field of a solenoid and toroid",
+        "Force between parallel currents",
+        "Torque on a current loop and the moving-coil galvanometer"
+      ],
+      "suggestedDiagrams": [
+        "A charged particle moving in a circle in a perpendicular magnetic field with force vectors",
+        "Concentric magnetic field circles around a straight current-carrying wire (right-hand rule)",
+        "A current loop in a magnetic field showing the torque that rotates a galvanometer coil"
+      ]
+    },
+    "magnetism-matter": {
+      "subtopics": [
+        "The bar magnet as a magnetic dipole",
+        "Magnetic field lines and dipole moment",
+        "Torque and potential energy of a dipole",
+        "Earth's magnetism: declination, dip and horizontal component",
+        "Magnetising field, intensity of magnetisation and permeability",
+        "Diamagnetic materials",
+        "Paramagnetic materials",
+        "Ferromagnetism and hysteresis"
+      ],
+      "suggestedDiagrams": [
+        "Magnetic field lines of a bar magnet compared with those of a solenoid",
+        "Earth's magnetic field with declination and angle of dip labelled",
+        "A hysteresis loop (B versus H) for a ferromagnetic material"
+      ]
+    },
+    "electromagnetic-induction": {
+      "subtopics": [
+        "Magnetic flux",
+        "Faraday's laws of induction",
+        "Lenz's law and conservation of energy",
+        "Motional EMF",
+        "Eddy currents and their uses",
+        "Self-inductance",
+        "Mutual inductance",
+        "Energy stored in an inductor"
+      ],
+      "suggestedDiagrams": [
+        "A bar magnet moving into a coil with the induced current direction from Lenz's law",
+        "A conducting rod sliding on rails in a field producing a motional EMF",
+        "Two coupled coils illustrating mutual inductance"
+      ]
+    },
+    "alternating-current": {
+      "subtopics": [
+        "Alternating voltage and current, RMS values",
+        "AC through a resistor, inductor and capacitor",
+        "Phasor diagrams",
+        "Reactance and impedance",
+        "Series LCR circuit and resonance",
+        "Quality factor and bandwidth",
+        "Power in AC circuits and power factor",
+        "Transformer and its working"
+      ],
+      "suggestedDiagrams": [
+        "Phasor diagram of voltage and current in a series LCR circuit",
+        "A resonance curve of current versus frequency for a series LCR circuit",
+        "A step-up transformer with primary and secondary turns labelled"
+      ]
+    },
+    "electromagnetic-waves": {
+      "subtopics": [
+        "Displacement current",
+        "Maxwell's equations (qualitative)",
+        "Nature of electromagnetic waves",
+        "Transverse character and speed of light",
+        "Energy and momentum of EM waves",
+        "The electromagnetic spectrum",
+        "Uses of different regions of the spectrum",
+        "Relation between E, B and c"
+      ],
+      "suggestedDiagrams": [
+        "An electromagnetic wave with perpendicular oscillating E and B fields propagating along one axis",
+        "The electromagnetic spectrum ordered by wavelength and frequency with typical sources",
+        "A capacitor being charged showing the displacement current between the plates"
+      ]
+    },
+    "ray-optics": {
+      "subtopics": [
+        "Reflection at plane and spherical mirrors",
+        "The mirror formula and magnification",
+        "Refraction and Snell's law",
+        "Total internal reflection and its applications",
+        "Refraction at spherical surfaces and the lens maker's formula",
+        "Thin lens formula and power of a lens",
+        "Refraction through a prism and dispersion",
+        "The eye, microscope and telescope"
+      ],
+      "suggestedDiagrams": [
+        "A ray diagram forming an image with a concave mirror using two principal rays",
+        "A light ray refracting through a prism showing the angle of deviation",
+        "Total internal reflection in an optical fibre with the critical angle marked"
+      ]
+    },
+    "wave-optics": {
+      "subtopics": [
+        "Huygens' principle and wavefronts",
+        "Coherent sources and interference",
+        "Young's double-slit experiment and fringe width",
+        "Conditions for constructive and destructive interference",
+        "Diffraction at a single slit",
+        "Width of the central maximum",
+        "Polarisation of light",
+        "Malus's law and Brewster's angle"
+      ],
+      "suggestedDiagrams": [
+        "Young's double-slit setup with the path difference and bright/dark fringes on the screen",
+        "A single-slit diffraction pattern with the central maximum and secondary minima",
+        "Unpolarised light passing through a polaroid and an analyser (Malus's law)"
+      ]
+    },
+    "dual-nature-radiation": {
+      "subtopics": [
+        "Photoelectric effect and its observations",
+        "Work function and threshold frequency",
+        "Einstein's photoelectric equation",
+        "Stopping potential and its dependence on frequency",
+        "Photon: energy and momentum",
+        "Particle nature of light",
+        "de Broglie hypothesis and matter waves",
+        "Davisson-Germer experiment (qualitative)"
+      ],
+      "suggestedDiagrams": [
+        "A graph of stopping potential versus frequency giving Planck's constant as the slope",
+        "A photocell showing incident photons ejecting electrons from a metal surface",
+        "A comparison of photon energy for different frequencies above and below threshold"
+      ]
+    },
+    "atoms": {
+      "subtopics": [
+        "Rutherford's alpha-scattering experiment",
+        "The nuclear model of the atom",
+        "Bohr's postulates",
+        "Energy levels of the hydrogen atom",
+        "The hydrogen spectral series",
+        "Radius and energy of Bohr orbits",
+        "Excitation and ionisation energy",
+        "Limitations of Bohr's model"
+      ],
+      "suggestedDiagrams": [
+        "Alpha particles scattering off a nucleus in Rutherford's experiment",
+        "Energy-level diagram of hydrogen with transitions labelled by spectral series",
+        "Bohr orbits with an electron transition emitting a photon"
+      ]
+    },
+    "nuclei": {
+      "subtopics": [
+        "Composition and size of the nucleus",
+        "Atomic mass unit and mass-energy equivalence",
+        "Mass defect and binding energy",
+        "Binding energy per nucleon curve",
+        "Radioactivity: alpha, beta and gamma decay",
+        "Law of radioactive decay and half-life",
+        "Nuclear fission",
+        "Nuclear fusion"
+      ],
+      "suggestedDiagrams": [
+        "The binding-energy-per-nucleon curve peaking near iron, marking fission and fusion regions",
+        "A radioactive decay curve of activity versus time showing successive half-lives",
+        "A nuclear fission event of a heavy nucleus splitting with neutrons released"
+      ]
+    },
+    "semiconductor-electronics": {
+      "subtopics": [
+        "Energy bands in solids: conductor, insulator, semiconductor",
+        "Intrinsic and extrinsic semiconductors",
+        "p-type and n-type doping",
+        "The p-n junction and depletion region",
+        "Forward and reverse bias, diode characteristics",
+        "Half-wave and full-wave rectifiers",
+        "Special diodes: Zener and LED (qualitative)",
+        "Logic gates: OR, AND, NOT, NAND, NOR"
+      ],
+      "suggestedDiagrams": [
+        "Energy-band diagrams comparing conductors, insulators and semiconductors",
+        "A p-n junction with the depletion region under forward and reverse bias",
+        "A full-wave rectifier circuit with the input and output waveforms"
+      ]
     }
   }
 }

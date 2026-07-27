@@ -7,40 +7,156 @@
         "11": {
           "label": "Class 11",
           "chapters": [
-            { "id": "sets", "label": "Sets", "description": "Set notation, types of sets, subsets, power sets, universal set, Venn diagrams, union, intersection, complement, difference, and cardinality formulas including the inclusion-exclusion principle." },
-            { "id": "relations-functions", "label": "Relations and Functions", "description": "Ordered pairs, Cartesian product, relations, domain and range, types of relations, functions as special relations, one-one, onto, and composition of functions." },
-            { "id": "trigonometric-functions", "label": "Trigonometric Functions", "description": "Angles and their measures (degrees and radians), trigonometric ratios, identities, graphs of sin/cos/tan, trigonometric equations, and general solutions." },
-            { "id": "principle-mathematical-induction", "label": "Principle of Mathematical Induction", "description": "Statement of the principle, proving formulas for sums, divisibility, and inequalities using the base case and inductive step." },
-            { "id": "complex-numbers-quadratic", "label": "Complex Numbers and Quadratic Equations", "description": "Complex numbers as a+bi, algebra of complex numbers, modulus, conjugate, Argand plane, and solving quadratic equations with complex roots." },
-            { "id": "linear-inequalities", "label": "Linear Inequalities", "description": "Solving linear inequalities in one and two variables, graphical representation, and system of linear inequalities." },
-            { "id": "permutations-combinations", "label": "Permutations and Combinations", "description": "Fundamental counting principle, factorial notation, permutations (nPr), combinations (nCr), and applications to word problems." },
-            { "id": "binomial-theorem", "label": "Binomial Theorem", "description": "Binomial theorem for positive integral index, general term, middle term, and applications of binomial coefficients." },
-            { "id": "sequences-series", "label": "Sequences and Series", "description": "Arithmetic progressions (AP), geometric progressions (GP), sum of n terms, arithmetic and geometric means, and special series (sum of squares, cubes)." },
-            { "id": "straight-lines", "label": "Straight Lines", "description": "Slope of a line, various forms of equations (slope-intercept, point-slope, two-point, intercept), angle between lines, distance from a point to a line, and family of lines." },
-            { "id": "conic-sections", "label": "Conic Sections", "description": "Circle, parabola, ellipse, and hyperbola — standard equations, focus, directrix, eccentricity, and latus rectum." },
-            { "id": "intro-3d-geometry", "label": "Introduction to Three-Dimensional Geometry", "description": "Coordinate axes in 3D, distance formula, section formula, and coordinates of a point dividing a line segment." },
-            { "id": "limits-derivatives", "label": "Limits and Derivatives", "description": "Intuitive idea of limits, limit laws, limits of polynomials and rational functions, definition of derivative, derivative of sum/difference/product/quotient, and derivatives of polynomial and trigonometric functions." },
-            { "id": "mathematical-reasoning", "label": "Mathematical Reasoning", "description": "Statements, logical connectives (and, or, not, implies, if and only if), quantifiers, validity of statements, and methods of proof." },
-            { "id": "statistics", "label": "Statistics", "description": "Measures of dispersion — range, mean deviation, variance, and standard deviation for grouped and ungrouped data." },
-            { "id": "probability", "label": "Probability", "description": "Random experiments, sample spaces, events, classical and axiomatic probability, addition theorem, and complementary events." }
+            {
+              "id": "sets",
+              "label": "Sets",
+              "description": "Set notation, types of sets, subsets, power sets, universal set, Venn diagrams, union, intersection, complement, difference, and cardinality formulas including the inclusion-exclusion principle."
+            },
+            {
+              "id": "relations-functions",
+              "label": "Relations and Functions",
+              "description": "Ordered pairs, Cartesian product, relations, domain and range, types of relations, functions as special relations, one-one, onto, and composition of functions."
+            },
+            {
+              "id": "trigonometric-functions",
+              "label": "Trigonometric Functions",
+              "description": "Angles and their measures (degrees and radians), trigonometric ratios, identities, graphs of sin/cos/tan, trigonometric equations, and general solutions."
+            },
+            {
+              "id": "principle-mathematical-induction",
+              "label": "Principle of Mathematical Induction",
+              "description": "Statement of the principle, proving formulas for sums, divisibility, and inequalities using the base case and inductive step."
+            },
+            {
+              "id": "complex-numbers-quadratic",
+              "label": "Complex Numbers and Quadratic Equations",
+              "description": "Complex numbers as a+bi, algebra of complex numbers, modulus, conjugate, Argand plane, and solving quadratic equations with complex roots."
+            },
+            {
+              "id": "linear-inequalities",
+              "label": "Linear Inequalities",
+              "description": "Solving linear inequalities in one and two variables, graphical representation, and system of linear inequalities."
+            },
+            {
+              "id": "permutations-combinations",
+              "label": "Permutations and Combinations",
+              "description": "Fundamental counting principle, factorial notation, permutations (nPr), combinations (nCr), and applications to word problems."
+            },
+            {
+              "id": "binomial-theorem",
+              "label": "Binomial Theorem",
+              "description": "Binomial theorem for positive integral index, general term, middle term, and applications of binomial coefficients."
+            },
+            {
+              "id": "sequences-series",
+              "label": "Sequences and Series",
+              "description": "Arithmetic progressions (AP), geometric progressions (GP), sum of n terms, arithmetic and geometric means, and special series (sum of squares, cubes)."
+            },
+            {
+              "id": "straight-lines",
+              "label": "Straight Lines",
+              "description": "Slope of a line, various forms of equations (slope-intercept, point-slope, two-point, intercept), angle between lines, distance from a point to a line, and family of lines."
+            },
+            {
+              "id": "conic-sections",
+              "label": "Conic Sections",
+              "description": "Circle, parabola, ellipse, and hyperbola — standard equations, focus, directrix, eccentricity, and latus rectum."
+            },
+            {
+              "id": "intro-3d-geometry",
+              "label": "Introduction to Three-Dimensional Geometry",
+              "description": "Coordinate axes in 3D, distance formula, section formula, and coordinates of a point dividing a line segment."
+            },
+            {
+              "id": "limits-derivatives",
+              "label": "Limits and Derivatives",
+              "description": "Intuitive idea of limits, limit laws, limits of polynomials and rational functions, definition of derivative, derivative of sum/difference/product/quotient, and derivatives of polynomial and trigonometric functions."
+            },
+            {
+              "id": "mathematical-reasoning",
+              "label": "Mathematical Reasoning",
+              "description": "Statements, logical connectives (and, or, not, implies, if and only if), quantifiers, validity of statements, and methods of proof."
+            },
+            {
+              "id": "statistics",
+              "label": "Statistics",
+              "description": "Measures of dispersion — range, mean deviation, variance, and standard deviation for grouped and ungrouped data."
+            },
+            {
+              "id": "probability",
+              "label": "Probability",
+              "description": "Random experiments, sample spaces, events, classical and axiomatic probability, addition theorem, and complementary events."
+            }
           ]
         },
         "12": {
           "label": "Class 12",
           "chapters": [
-            { "id": "relations-functions-12", "label": "Relations and Functions", "description": "Types of relations (reflexive, symmetric, transitive, equivalence), types of functions (injective, surjective, bijective), composition and invertible functions, and binary operations." },
-            { "id": "inverse-trigonometric-functions", "label": "Inverse Trigonometric Functions", "description": "Definition, domain, range, and principal value branches of inverse trigonometric functions, and properties of inverse trig functions." },
-            { "id": "matrices", "label": "Matrices", "description": "Types of matrices, matrix operations (addition, scalar multiplication, multiplication), transpose, symmetric and skew-symmetric matrices, and elementary row/column operations." },
-            { "id": "determinants", "label": "Determinants", "description": "Determinant of a square matrix (up to 3x3), properties, cofactors, adjoint, inverse of a matrix, and solving systems of linear equations using Cramer's rule." },
-            { "id": "continuity-differentiability", "label": "Continuity and Differentiability", "description": "Continuity of functions, differentiability, chain rule, derivatives of implicit functions, exponential and logarithmic functions, logarithmic differentiation, and Rolle's and Mean Value theorems." },
-            { "id": "applications-derivatives", "label": "Applications of Derivatives", "description": "Rate of change, increasing/decreasing functions, tangents and normals, maxima and minima (first and second derivative tests), and applied optimization problems." },
-            { "id": "integrals", "label": "Integrals", "description": "Indefinite integrals (substitution, partial fractions, by parts), definite integrals, fundamental theorem of calculus, and properties of definite integrals." },
-            { "id": "applications-integrals", "label": "Applications of Integrals", "description": "Area under curves, area between two curves using integration." },
-            { "id": "differential-equations", "label": "Differential Equations", "description": "Order and degree, formation of differential equations, methods of solution (variable separable, homogeneous, linear first-order), and applications." },
-            { "id": "vectors", "label": "Vector Algebra", "description": "Vectors and scalars, magnitude and direction, position vectors, addition, scalar multiplication, dot product, cross product, and scalar triple product." },
-            { "id": "3d-geometry", "label": "Three-Dimensional Geometry", "description": "Direction cosines and ratios, equations of a line in space, angle between lines, shortest distance, equation of a plane, angle between planes, and distance of a point from a plane." },
-            { "id": "linear-programming", "label": "Linear Programming", "description": "Formulation of LP problems, graphical method of solution, feasible and infeasible regions, optimal solution, and bounded/unbounded regions." },
-            { "id": "probability-12", "label": "Probability", "description": "Conditional probability, multiplication theorem, independent events, Bayes' theorem, and probability distributions (mean and variance of random variables, binomial distribution)." }
+            {
+              "id": "relations-functions-12",
+              "label": "Relations and Functions",
+              "description": "Types of relations (reflexive, symmetric, transitive, equivalence), types of functions (injective, surjective, bijective), composition and invertible functions, and binary operations."
+            },
+            {
+              "id": "inverse-trigonometric-functions",
+              "label": "Inverse Trigonometric Functions",
+              "description": "Definition, domain, range, and principal value branches of inverse trigonometric functions, and properties of inverse trig functions."
+            },
+            {
+              "id": "matrices",
+              "label": "Matrices",
+              "description": "Types of matrices, matrix operations (addition, scalar multiplication, multiplication), transpose, symmetric and skew-symmetric matrices, and elementary row/column operations."
+            },
+            {
+              "id": "determinants",
+              "label": "Determinants",
+              "description": "Determinant of a square matrix (up to 3x3), properties, cofactors, adjoint, inverse of a matrix, and solving systems of linear equations using Cramer's rule."
+            },
+            {
+              "id": "continuity-differentiability",
+              "label": "Continuity and Differentiability",
+              "description": "Continuity of functions, differentiability, chain rule, derivatives of implicit functions, exponential and logarithmic functions, logarithmic differentiation, and Rolle's and Mean Value theorems."
+            },
+            {
+              "id": "applications-derivatives",
+              "label": "Applications of Derivatives",
+              "description": "Rate of change, increasing/decreasing functions, tangents and normals, maxima and minima (first and second derivative tests), and applied optimization problems."
+            },
+            {
+              "id": "integrals",
+              "label": "Integrals",
+              "description": "Indefinite integrals (substitution, partial fractions, by parts), definite integrals, fundamental theorem of calculus, and properties of definite integrals."
+            },
+            {
+              "id": "applications-integrals",
+              "label": "Applications of Integrals",
+              "description": "Area under curves, area between two curves using integration."
+            },
+            {
+              "id": "differential-equations",
+              "label": "Differential Equations",
+              "description": "Order and degree, formation of differential equations, methods of solution (variable separable, homogeneous, linear first-order), and applications."
+            },
+            {
+              "id": "vectors",
+              "label": "Vector Algebra",
+              "description": "Vectors and scalars, magnitude and direction, position vectors, addition, scalar multiplication, dot product, cross product, and scalar triple product."
+            },
+            {
+              "id": "3d-geometry",
+              "label": "Three-Dimensional Geometry",
+              "description": "Direction cosines and ratios, equations of a line in space, angle between lines, shortest distance, equation of a plane, angle between planes, and distance of a point from a plane."
+            },
+            {
+              "id": "linear-programming",
+              "label": "Linear Programming",
+              "description": "Formulation of LP problems, graphical method of solution, feasible and infeasible regions, optimal solution, and bounded/unbounded regions."
+            },
+            {
+              "id": "probability-12",
+              "label": "Probability",
+              "description": "Conditional probability, multiplication theorem, independent events, Bayes' theorem, and probability distributions (mean and variance of random variables, binomial distribution)."
+            }
           ]
         }
       }
@@ -49,6 +165,156 @@
       "label": "Computer Science (Phase 2 — coming soon)",
       "_note": "Roadmapped, not shipped in v1. Java code execution sandbox and SQL question handling are separate engineering problems.",
       "classes": {}
+    },
+    "physics": {
+      "label": "Physics",
+      "classes": {
+        "11": {
+          "label": "Class 11",
+          "chapters": [
+            {
+              "id": "units-measurements",
+              "label": "Units and Measurements",
+              "description": "SI units, dimensions and dimensional analysis, significant figures, orders of magnitude, and errors in measurement."
+            },
+            {
+              "id": "kinematics",
+              "label": "Kinematics",
+              "description": "Motion in a straight line and in a plane, velocity and acceleration, equations of motion, relative velocity, and projectile motion."
+            },
+            {
+              "id": "laws-of-motion",
+              "label": "Laws of Motion",
+              "description": "Newton's three laws, inertia, momentum, friction, and dynamics of circular motion including banking of roads."
+            },
+            {
+              "id": "work-energy-power",
+              "label": "Work, Energy and Power",
+              "description": "Work done by a force, kinetic and potential energy, the work-energy theorem, power, and elastic/inelastic collisions."
+            },
+            {
+              "id": "rotational-motion",
+              "label": "System of Particles and Rotational Motion",
+              "description": "Centre of mass, torque, angular momentum, moment of inertia, and rolling motion of rigid bodies."
+            },
+            {
+              "id": "gravitation",
+              "label": "Gravitation",
+              "description": "Newton's law of gravitation, gravitational field and potential, orbital and escape velocity, and Kepler's laws."
+            },
+            {
+              "id": "mechanical-properties-solids",
+              "label": "Mechanical Properties of Solids",
+              "description": "Stress, strain, Hooke's law, elastic moduli, and elastic potential energy in deformed solids."
+            },
+            {
+              "id": "mechanical-properties-fluids",
+              "label": "Mechanical Properties of Fluids",
+              "description": "Pressure, Pascal's and Archimedes' principles, viscosity, Bernoulli's theorem, and surface tension."
+            },
+            {
+              "id": "thermal-properties-matter",
+              "label": "Thermal Properties of Matter",
+              "description": "Temperature, thermal expansion, calorimetry, latent heat, and modes of heat transfer."
+            },
+            {
+              "id": "thermodynamics",
+              "label": "Thermodynamics",
+              "description": "Thermodynamic system and processes, the first and second laws, heat engines, and the Carnot cycle."
+            },
+            {
+              "id": "kinetic-theory",
+              "label": "Kinetic Theory of Gases",
+              "description": "The molecular model of an ideal gas, pressure from molecular motion, kinetic interpretation of temperature, and degrees of freedom."
+            },
+            {
+              "id": "oscillations",
+              "label": "Oscillations",
+              "description": "Simple harmonic motion, its energy, and oscillations of springs and pendulums including damping and resonance."
+            },
+            {
+              "id": "waves",
+              "label": "Waves",
+              "description": "Transverse and longitudinal waves, the wave equation, superposition, standing waves, beats, and the Doppler effect."
+            }
+          ]
+        },
+        "12": {
+          "label": "Class 12",
+          "chapters": [
+            {
+              "id": "electric-charges-fields",
+              "label": "Electric Charges and Fields",
+              "description": "Electric charge, Coulomb's law, the electric field, field lines, dipoles, and Gauss's law with applications."
+            },
+            {
+              "id": "electrostatic-potential-capacitance",
+              "label": "Electrostatic Potential and Capacitance",
+              "description": "Electric potential and potential energy, equipotentials, capacitors, dielectrics, and energy stored."
+            },
+            {
+              "id": "current-electricity",
+              "label": "Current Electricity",
+              "description": "Electric current, Ohm's law, resistivity, combinations of resistors, EMF, and Kirchhoff's laws with the Wheatstone bridge."
+            },
+            {
+              "id": "moving-charges-magnetism",
+              "label": "Moving Charges and Magnetism",
+              "description": "Magnetic force on charges and currents, the Biot-Savart and Ampere laws, solenoids, and moving-coil instruments."
+            },
+            {
+              "id": "magnetism-matter",
+              "label": "Magnetism and Matter",
+              "description": "Bar magnets, the magnetic dipole, Earth's magnetism, and dia-, para- and ferromagnetic materials."
+            },
+            {
+              "id": "electromagnetic-induction",
+              "label": "Electromagnetic Induction",
+              "description": "Magnetic flux, Faraday's and Lenz's laws, motional EMF, eddy currents, and self and mutual inductance."
+            },
+            {
+              "id": "alternating-current",
+              "label": "Alternating Current",
+              "description": "AC voltage and current, phasors, reactance and impedance, LCR circuits, resonance, and transformers."
+            },
+            {
+              "id": "electromagnetic-waves",
+              "label": "Electromagnetic Waves",
+              "description": "Displacement current, the nature of electromagnetic waves, and the electromagnetic spectrum."
+            },
+            {
+              "id": "ray-optics",
+              "label": "Ray Optics and Optical Instruments",
+              "description": "Reflection and refraction, mirrors and lenses, total internal reflection, prisms, and optical instruments."
+            },
+            {
+              "id": "wave-optics",
+              "label": "Wave Optics",
+              "description": "Huygens' principle, interference, diffraction, and polarisation of light."
+            },
+            {
+              "id": "dual-nature-radiation",
+              "label": "Dual Nature of Radiation and Matter",
+              "description": "The photoelectric effect, Einstein's photon theory, and the de Broglie wavelength of matter."
+            },
+            {
+              "id": "atoms",
+              "label": "Atoms",
+              "description": "Atomic models, the hydrogen spectrum, and Bohr's model of the atom."
+            },
+            {
+              "id": "nuclei",
+              "label": "Nuclei",
+              "description": "Nuclear size and composition, mass-energy, binding energy, radioactivity, and fission and fusion."
+            },
+            {
+              "id": "semiconductor-electronics",
+              "label": "Semiconductor Electronics",
+              "description": "Semiconductors, p-n junctions and diodes, rectification, and basic logic gates."
+            }
+          ]
+        }
+      }
     }
   }
 }
