@@ -60,6 +60,40 @@ import AtomsVizPremium from "@/components/learn-visualizations/AtomsVizPremium";
 import NucleiVizPremium from "@/components/learn-visualizations/NucleiVizPremium";
 import SemiconductorElectronicsVizPremium from "@/components/learn-visualizations/SemiconductorElectronicsVizPremium";
 
+// Chemistry (Class 11)
+import BasicConceptsVizPremium from "@/components/learn-visualizations/BasicConceptsVizPremium";
+import StructureOfAtomVizPremium from "@/components/learn-visualizations/StructureOfAtomVizPremium";
+import PeriodicClassificationVizPremium from "@/components/learn-visualizations/PeriodicClassificationVizPremium";
+import ChemicalBondingVizPremium from "@/components/learn-visualizations/ChemicalBondingVizPremium";
+import StatesOfMatterVizPremium from "@/components/learn-visualizations/StatesOfMatterVizPremium";
+import ChemicalThermodynamicsVizPremium from "@/components/learn-visualizations/ChemicalThermodynamicsVizPremium";
+import EquilibriumVizPremium from "@/components/learn-visualizations/EquilibriumVizPremium";
+import RedoxReactionsVizPremium from "@/components/learn-visualizations/RedoxReactionsVizPremium";
+import HydrogenVizPremium from "@/components/learn-visualizations/HydrogenVizPremium";
+import SBlockElementsVizPremium from "@/components/learn-visualizations/SBlockElementsVizPremium";
+import PBlockElements11VizPremium from "@/components/learn-visualizations/PBlockElements11VizPremium";
+import OrganicBasicsVizPremium from "@/components/learn-visualizations/OrganicBasicsVizPremium";
+import HydrocarbonsVizPremium from "@/components/learn-visualizations/HydrocarbonsVizPremium";
+import EnvironmentalChemistryVizPremium from "@/components/learn-visualizations/EnvironmentalChemistryVizPremium";
+
+// Chemistry (Class 12)
+import SolidStateVizPremium from "@/components/learn-visualizations/SolidStateVizPremium";
+import SolutionsVizPremium from "@/components/learn-visualizations/SolutionsVizPremium";
+import ElectrochemistryVizPremium from "@/components/learn-visualizations/ElectrochemistryVizPremium";
+import ChemicalKineticsVizPremium from "@/components/learn-visualizations/ChemicalKineticsVizPremium";
+import SurfaceChemistryVizPremium from "@/components/learn-visualizations/SurfaceChemistryVizPremium";
+import MetallurgyVizPremium from "@/components/learn-visualizations/MetallurgyVizPremium";
+import PBlockElements12VizPremium from "@/components/learn-visualizations/PBlockElements12VizPremium";
+import DFBlockElementsVizPremium from "@/components/learn-visualizations/DFBlockElementsVizPremium";
+import CoordinationCompoundsVizPremium from "@/components/learn-visualizations/CoordinationCompoundsVizPremium";
+import HaloalkanesHaloarenesVizPremium from "@/components/learn-visualizations/HaloalkanesHaloarenesVizPremium";
+import AlcoholsPhenolsEthersVizPremium from "@/components/learn-visualizations/AlcoholsPhenolsEthersVizPremium";
+import AldehydesKetonesAcidsVizPremium from "@/components/learn-visualizations/AldehydesKetonesAcidsVizPremium";
+import AminesVizPremium from "@/components/learn-visualizations/AminesVizPremium";
+import BiomoleculesVizPremium from "@/components/learn-visualizations/BiomoleculesVizPremium";
+import PolymersVizPremium from "@/components/learn-visualizations/PolymersVizPremium";
+import EverydayChemistryVizPremium from "@/components/learn-visualizations/EverydayChemistryVizPremium";
+
 const registry: Record<string, ComponentType> = {
   // ---- Mathematics ----
   // Class 11
@@ -125,6 +159,40 @@ const registry: Record<string, ComponentType> = {
   atoms: AtomsVizPremium,
   nuclei: NucleiVizPremium,
   "semiconductor-electronics": SemiconductorElectronicsVizPremium,
+
+  // ---- Chemistry (Class 11) ----
+  "basic-concepts": BasicConceptsVizPremium,
+  "structure-of-atom": StructureOfAtomVizPremium,
+  "periodic-classification": PeriodicClassificationVizPremium,
+  "chemical-bonding": ChemicalBondingVizPremium,
+  "states-of-matter": StatesOfMatterVizPremium,
+  "chemical-thermodynamics": ChemicalThermodynamicsVizPremium,
+  equilibrium: EquilibriumVizPremium,
+  "redox-reactions": RedoxReactionsVizPremium,
+  hydrogen: HydrogenVizPremium,
+  "s-block-elements": SBlockElementsVizPremium,
+  "p-block-elements-11": PBlockElements11VizPremium,
+  "organic-basics": OrganicBasicsVizPremium,
+  hydrocarbons: HydrocarbonsVizPremium,
+  "environmental-chemistry": EnvironmentalChemistryVizPremium,
+
+  // ---- Chemistry (Class 12) ----
+  "solid-state": SolidStateVizPremium,
+  solutions: SolutionsVizPremium,
+  electrochemistry: ElectrochemistryVizPremium,
+  "chemical-kinetics": ChemicalKineticsVizPremium,
+  "surface-chemistry": SurfaceChemistryVizPremium,
+  metallurgy: MetallurgyVizPremium,
+  "p-block-elements-12": PBlockElements12VizPremium,
+  "d-f-block-elements": DFBlockElementsVizPremium,
+  "coordination-compounds": CoordinationCompoundsVizPremium,
+  "haloalkanes-haloarenes": HaloalkanesHaloarenesVizPremium,
+  "alcohols-phenols-ethers": AlcoholsPhenolsEthersVizPremium,
+  "aldehydes-ketones-acids": AldehydesKetonesAcidsVizPremium,
+  amines: AminesVizPremium,
+  biomolecules: BiomoleculesVizPremium,
+  polymers: PolymersVizPremium,
+  "everyday-chemistry": EverydayChemistryVizPremium,
 };
 
 export function getPremiumViz(chapterId: string): ComponentType | null {
