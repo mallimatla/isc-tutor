@@ -276,3 +276,100 @@ export async function callClaudeStreaming<TSchema extends z.ZodSchema>(
     latencyMs,
   };
 }
+
+// --- Plain-text streaming variant ---
+//
+// Unlike callClaude / callClaudeStreaming (which expect the model to return a
+// strict-JSON object validated against a Zod schema), this streams the model's
+// prose answer directly. Use it for open-ended, conversational replies — e.g.
+// the "Ask a doubt" tutor — where the output is markdown/LaTeX text meant to be
+// rendered as-is, not parsed. Deltas are clean answer text, so nothing has to
+// strip a JSON wrapper on the client.
+
+interface CallClaudeTextParams {
+  system: string;
+  user: string;
+  promptVersion: string;
+  maxTokens?: number;
+}
+
+interface CallClaudeTextResult {
+  text: string;
+  usage: { input: number; output: number };
+  latencyMs: number;
+}
+
+export async function callClaudeTextStreaming(
+  params: CallClaudeTextParams,
+  onDelta: (text: string) => void
+): Promise<CallClaudeTextResult> {
+  const { system, user, maxTokens = 2048 } = params;
+  const start = Date.now();
+
+  let accumulated = "";
+  let inputTokens = 0;
+  let outputTokens = 0;
+
+  try {
+    const stream = client.messages.stream(
+      {
+        model: MODEL,
+        max_tokens: maxTokens,
+        // Non-thinking, fast path (see callClaude) — the prompt itself asks the
+        // model to reason step-by-step in the visible answer.
+        thinking: { type: "disabled" },
+        system,
+        messages: [{ role: "user", content: user }],
+      },
+      { timeout: 60_000 }
+    );
+
+    for await (const event of stream) {
+      if (
+        event.type === "content_block_delta" &&
+        event.delta.type === "text_delta"
+      ) {
+        accumulated += event.delta.text;
+        onDelta(event.delta.text);
+      }
+    }
+
+    const finalMessage = await stream.finalMessage();
+    inputTokens = finalMessage.usage.input_tokens;
+    outputTokens = finalMessage.usage.output_tokens;
+  } catch (err) {
+    // No output at all → surface a typed error the route can turn into an SSE
+    // error event. If we already streamed some text, keep it (the reader has
+    // seen those deltas) and return the partial answer.
+    if (!accumulated) {
+      if (err instanceof Anthropic.RateLimitError) {
+        throw new ClaudeRateLimitError("Claude API rate limited", {
+          cause: err,
+        });
+      }
+      if (
+        err instanceof Error &&
+        (err.name === "TimeoutError" || err.message.includes("timed out"))
+      ) {
+        throw new ClaudeTimeoutError("Claude API request timed out", {
+          cause: err,
+        });
+      }
+      const detail =
+        err instanceof Anthropic.APIError
+          ? ` (${err.status ?? "no status"}: ${err.message})`
+          : err instanceof Error
+            ? `: ${err.message}`
+            : "";
+      throw new ClaudeInternalError(`Claude API request failed${detail}`, {
+        cause: err,
+      });
+    }
+  }
+
+  return {
+    text: accumulated,
+    usage: { input: inputTokens, output: outputTokens },
+    latencyMs: Date.now() - start,
+  };
+}
